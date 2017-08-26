@@ -38,6 +38,7 @@ private:
 
   shape_def circle_shape;
   shape_def arrow_shape;
+  std::map<int, std::map<int, shape_def>> rect_shapes;
 
 public:
 
@@ -56,17 +57,18 @@ public:
   void UpdateVertexData();
 
   void SetupShapes();
+  void DeleteShapes();
 
   void DrawShape(GLenum draw_type, shape_def const & shape);
 
   void DrawCircle(int radius, float x, float y);
   void FillCircle(int radius, float x, float y);
-
   void RenderBall(const struct Ball & ball, bool draw_outline = true);
 
-  void RenderArrow(const struct Ball & ball);
+  void RenderArrow(const Ball & ball);
 
-  void DeleteCircle();
+  shape_def GetRectShape(int w, int h);
+  void RenderRect(const struct Rect & rect);
 
 
   void DrawGameState(const class Game & game);

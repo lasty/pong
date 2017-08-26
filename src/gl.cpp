@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <string.h>
 
 
 static_assert(sizeof(GLfloat) == sizeof(float), "opengl float wrong size");
@@ -60,6 +61,7 @@ void opengl_debug_callback(
   [[maybe_unused]] const void *userParam)
 {
   //if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+  if (strstr(message, "Buffer detailed") != message)
   {
     std::cout << "[OPENGL"
       << " " << get_map(enum_to_string, type, "?")

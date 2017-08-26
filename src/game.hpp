@@ -10,6 +10,16 @@ using Velocity = vec2;
 using Colour = vec4;
 
 
+struct Rect
+{
+  Position position;
+  Velocity velocity;
+  float width;
+  float height;
+  Colour colour;
+};
+
+
 struct Ball
 {
   int radius = 20;
@@ -18,7 +28,6 @@ struct Ball
   Colour colour;
   float rot = 0.0f;
 };
-
 
 
 class Game
@@ -33,6 +42,7 @@ private:
   bool friction_enabled = false;
 
   std::vector<Ball> balls;
+  std::vector<Rect> rects;
 
   Ball player;
   Ball mouse_pointer;
@@ -48,8 +58,9 @@ public:
   Position RandomPosition() const;
 
   Ball NewBall() const;
+  Rect NewRect() const;
 
-  void NewBalls();
+  void NewObjects();
   void ToggleGravity();
   void ToggleFriction();
 

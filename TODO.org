@@ -10,9 +10,6 @@
 
 ## Todo Low Priority
 - [TODO] Watch more of those videos
-- Add more shapes
-  - rectangles
-  - [DONE] Arrow
 - Investigate data flow..  (flux) ..  input -> gamestate -> render
 - [TODO] Investigate atom clang-format
 
@@ -20,6 +17,9 @@
 ## Done!
 
 
+- [DONE] Add more shapes
+  - [DONE] rectangles
+  - [DONE] Arrow
 - [DONE] Pick GLEW or SDL ...  or just use SDL for sound/images
 - [DONE] Refactor input and key queuing?  Could put in own input class I think
 - [DONE] Add blend state to opengl state thingy

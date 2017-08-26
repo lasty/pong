@@ -49,7 +49,7 @@ Game::Game(int width, int height)
 {
   srand (static_cast <unsigned> (time(0)));
 
-  NewBalls();
+  NewObjects();
 
   player = NewBall();
   player.radius = 20;
@@ -100,7 +100,24 @@ Ball Game::NewBall() const
 }
 
 
-void Game::NewBalls()
+Rect Game::NewRect() const
+{
+  Rect r;
+  r.position = RandomPosition();
+
+  const float speed = 100.0f;
+  r.velocity = { RandomFloat(-speed, speed) , RandomFloat(-speed, speed)};
+
+  r.width = RandomInt(10, 100);
+  r.height = RandomInt(10, 100);
+
+  r.colour = RandomRGB();
+
+  return r;
+}
+
+
+void Game::NewObjects()
 {
   balls.clear();
 
@@ -111,6 +128,17 @@ void Game::NewBalls()
   }
 
   std::cout << "Generated " << balls.size() << " new balls." << std::endl;
+
+
+  rects.clear();
+
+  for(int i=0; i<10; i++)
+  {
+    Rect rect = NewRect();
+    rects.push_back(rect);
+  }
+
+  std::cout << "Generated " << rects.size() << " new rects." << std::endl;
 }
 
 
@@ -224,14 +252,10 @@ void Game::Update(float dt)
   for(Ball &b : balls)
   {
     b = UpdatePhysics(dt, b);
-    b.rot += dt * TWO_PI / 8.0f;
-
+    //b.rot += dt * TWO_PI / 8.0f;
   }
 
-  //player.rot += dt * PI;
 }
-
-// #include "maths_utils.hpp"
 
 
 
@@ -285,9 +309,6 @@ void Game::PlayerInput(float dt, Input const &input)
   }
 
 
-
-
-
   if (MOUSE_rotation)
   {
     vec2 angle_to_mouse = mouse_pointer.position - player.position;
@@ -311,10 +332,7 @@ void Game::PlayerInput(float dt, Input const &input)
   }
 
 
-
-
   player = UpdatePhysics(dt, player);
-
 
 
   // TRACE

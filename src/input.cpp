@@ -75,7 +75,7 @@ void Input::HandleCommand(Control control, bool down)
     break;
 
     case Control::new_balls :
-      if (down) game.NewBalls();
+      if (down) game.NewObjects();
     break;
 
     case Control::toggle_grav :

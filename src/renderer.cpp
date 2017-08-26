@@ -47,6 +47,25 @@ std::vector<float> MakeArrow(float radius)
 }
 
 
+std::vector<float> MakeRect(float width, float height)
+{
+  std::vector<float> out;
+
+  out.push_back(0);
+  out.push_back(0);
+
+  out.push_back(width);
+  out.push_back(0);
+
+  out.push_back(width);
+  out.push_back(height);
+
+  out.push_back(0);
+  out.push_back(height);
+
+  return out;
+}
+
 
 Renderer::Renderer()
 {
@@ -56,7 +75,7 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
-  DeleteCircle();
+  DeleteShapes();
 }
 
 
@@ -148,6 +167,13 @@ void Renderer::SetupShapes()
 }
 
 
+void Renderer::DeleteShapes()
+{
+  //glDeleteBuffers(fbo);
+  //glDeleteFBO(fbo);
+}
+
+
 void Renderer::DrawShape(GLenum draw_type, shape_def const & shape)
 {
   glDrawArrays(draw_type, shape.offset, shape.count);
@@ -177,12 +203,6 @@ void Renderer::FillCircle(int radius, float x, float y)
   glDrawArrays(GL_TRIANGLE_FAN, circle_shape.offset, circle_shape.count);
 }
 
-
-void Renderer::DeleteCircle()
-{
-  //glDeleteBuffers(fbo);
-  //glDeleteFBO(fbo);
-}
 
 
 void Renderer::RenderBall(const Ball & ball, bool draw_outline)
@@ -226,6 +246,33 @@ void Renderer::RenderArrow(const Ball & arrow)
 }
 
 
+shape_def Renderer::GetRectShape(int w, int h)
+{
+  auto shape = rect_shapes[w][h];
+  if (shape.offset == 0)
+  {
+    shape = AddShape(MakeRect(w, h));
+    UpdateVertexData();
+    rect_shapes[w][h] = shape;
+  }
+
+  return shape;
+}
+
+
+void Renderer::RenderRect(const Rect & rect)
+{
+  auto shape = GetRectShape(rect.width, rect.height);
+
+  basic_shader.SetOffset(rect.position);
+  basic_shader.SetRotation(0.0f);
+  basic_shader.SetColour(rect.colour);
+  basic_shader.SetZoom(1.0f);
+
+  DrawShape(GL_LINE_LOOP, shape);
+}
+
+
 void Renderer::DrawGameState(const Game & game)
 {
   EnableBlend();
@@ -234,6 +281,11 @@ void Renderer::DrawGameState(const Game & game)
   for(const auto &ball : game.balls)
   {
       RenderBall(ball, game.Collides_Any(ball));
+  }
+
+  for(const auto &rect : game.rects)
+  {
+      RenderRect(rect);
   }
 
   RenderArrow(game.player);
