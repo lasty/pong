@@ -67,6 +67,8 @@ public:
   void Resize(int width, int height);
 
   bool Collides(const Ball &b1, const Ball &b2) const;
+  bool Collides(const Rect &r, vec2 point) const;
+
   bool Collides_Any(const Ball &ball) const;
 
 

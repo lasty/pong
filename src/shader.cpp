@@ -122,7 +122,7 @@ vec2 ScreenToClip(const vec2 screen)
 
 mat2 RotateMatrix(float angle)
 {
-  return mat2(cos(angle), sin(angle), sin(angle), -cos(angle));
+  return mat2(cos(angle), sin(angle), -sin(angle), cos(angle));
   //return mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
   //return mat2(sin(angle), cos(angle) , cos(angle), -sin(angle));
 }

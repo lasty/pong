@@ -4,6 +4,9 @@
 
 - Collision detection
   - [DONE] Simple circle detection
+  - [DONE] Rect point collisions
+  - rect rect collisions
+  - rect circle collisions
   - force when collided
   - Somehow rework boundaries to new collision detection routines
 

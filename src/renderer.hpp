@@ -68,7 +68,7 @@ public:
   void RenderArrow(const Ball & ball);
 
   shape_def GetRectShape(int w, int h);
-  void RenderRect(const struct Rect & rect);
+  void RenderRect(const struct Rect & rect, bool draw_outline = false);
 
 
   void DrawGameState(const class Game & game);

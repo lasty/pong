@@ -126,6 +126,10 @@ void Renderer::Resize(int width, int height)
 
 shape_def Renderer::AddShape(std::vector<float> const & vertexes)
 {
+  if (vertexes.size() % 2 != 0)
+    { throw std::runtime_error("Uneven vertexes given to AddShape"); }
+
+
   shape_def s;
   s.offset = (vertex_data.size() / 2);
   s.count = vertexes.size() / 2;
@@ -260,7 +264,7 @@ shape_def Renderer::GetRectShape(int w, int h)
 }
 
 
-void Renderer::RenderRect(const Rect & rect)
+void Renderer::RenderRect(const Rect & rect, bool draw_outline)
 {
   auto shape = GetRectShape(rect.width, rect.height);
 
@@ -270,6 +274,14 @@ void Renderer::RenderRect(const Rect & rect)
   basic_shader.SetZoom(1.0f);
 
   DrawShape(GL_LINE_LOOP, shape);
+
+  if (draw_outline)
+  {
+    DrawShape(GL_TRIANGLE_FAN, shape);
+  }
+
+  DrawCircle(5, rect.position.x, rect.position.y);
+  FillCircle(5, rect.position.x + rect.width, rect.position.y + rect.height);
 }
 
 
@@ -285,7 +297,7 @@ void Renderer::DrawGameState(const Game & game)
 
   for(const auto &rect : game.rects)
   {
-      RenderRect(rect);
+      RenderRect(rect, game.Collides(rect, game.mouse_pointer.position));
   }
 
   RenderArrow(game.player);

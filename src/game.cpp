@@ -175,6 +175,21 @@ bool Game::Collides(const Ball &b1, const Ball &b2) const
 }
 
 
+bool in_range(float beg, float end, float p)
+{
+  return (p >= beg and p <= end);
+}
+
+
+bool Game::Collides(const Rect &r, vec2 point) const
+{
+  return
+    in_range(r.position.x, r.position.x + r.width, point.x)
+    and
+    in_range(r.position.y, r.position.y + r.height, point.y);
+}
+
+
 bool Game::Collides_Any(const Ball &ball) const
 {
   for (const Ball & b : balls)
