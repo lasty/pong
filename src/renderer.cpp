@@ -237,8 +237,7 @@ void Renderer::RenderBall(const Ball & ball, bool draw_outline)
 
 void Renderer::RenderArrow(const Ball & arrow)
 {
-  UseProgram(basic_shader.GetProgramId());
-  UseVAO(vao_id);
+
 
   basic_shader.SetOffset(arrow.position.x, arrow.position.y);
   basic_shader.SetRotation(arrow.rot);
@@ -290,6 +289,9 @@ void Renderer::DrawGameState(const Game & game)
   EnableBlend();
   glLineWidth(2.0f);
 
+  UseProgram(basic_shader.GetProgramId());
+  UseVAO(vao_id);
+
   for(const auto &ball : game.balls)
   {
       RenderBall(ball, game.Collides_Any(ball));
@@ -297,7 +299,13 @@ void Renderer::DrawGameState(const Game & game)
 
   for(const auto &rect : game.rects)
   {
-      RenderRect(rect, game.Collides(rect, game.mouse_pointer.position));
+      bool collides =
+        //game.Collides(rect, game.mouse_pointer.position)
+        game.Collides(rect, game.mouse_pointer)
+        or
+        game.Collides_Any(rect);
+
+      RenderRect(rect, collides);
   }
 
   RenderArrow(game.player);

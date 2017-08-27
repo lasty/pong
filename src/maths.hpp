@@ -30,6 +30,8 @@ vec2 & operator/=(vec2 &a, float s);
 
 vec4 operator*(vec4 const &a, float s);
 
+vec2 vec_abs(vec2 const &v);
+
 const float * gl_data(vec2 const &v);
 const float * gl_data(vec3 const &v);
 const float * gl_data(vec4 const &v);

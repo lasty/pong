@@ -68,8 +68,11 @@ public:
 
   bool Collides(const Ball &b1, const Ball &b2) const;
   bool Collides(const Rect &r, vec2 point) const;
+  bool Collides(const Rect &r1, const Rect &r2) const;
+  bool Collides(const Rect &r, const Ball &c) const;
 
   bool Collides_Any(const Ball &ball) const;
+  bool Collides_Any(const Rect &rect) const;
 
 
   Ball UpdatePhysics(float dt, const Ball & b) const;

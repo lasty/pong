@@ -105,6 +105,14 @@ vec4 operator*(vec4 const &a, float s)
   return { a.x * s, a.y * s, a.z * s, a.w * s };
 }
 
+
+vec2 vec_abs(vec2 const &v)
+{
+  return {fabs(v.x), fabs(v.y)};
+}
+
+
+
 const float * gl_data(vec2 const &v)
 {
   return reinterpret_cast<const float*>(&v);
@@ -120,6 +128,8 @@ const float * gl_data(vec4 const &v)
   return reinterpret_cast<const float*>(&v);
 }
 
+
+#ifdef TEST_MATHS
 
 #include "gl.hpp"
 
@@ -221,3 +231,6 @@ void TestMaths()
   }
 
 }
+
+
+#endif //TEST_MATHS

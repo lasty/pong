@@ -57,7 +57,7 @@ Game::Game(int width, int height)
   player.velocity = {0.0f, 0.0f};
 
 
-  mouse_pointer.radius = 10;
+  mouse_pointer.radius = 20;
   mouse_pointer.position = GetCenterScreen();
   mouse_pointer.colour = {1.0f, 1.0f, 0.8f, 1.0f};
   mouse_pointer.velocity = {0.0f, 0.0f};
@@ -108,8 +108,8 @@ Rect Game::NewRect() const
   const float speed = 100.0f;
   r.velocity = { RandomFloat(-speed, speed) , RandomFloat(-speed, speed)};
 
-  r.width = RandomInt(10, 100);
-  r.height = RandomInt(10, 100);
+  r.width = RandomInt(50, 200);
+  r.height = RandomInt(50, 200);
 
   r.colour = RandomRGB();
 
@@ -121,24 +121,24 @@ void Game::NewObjects()
 {
   balls.clear();
 
-  for(int i=0; i<10; i++)
+  for(int i=0; i<0; i++)
   {
     Ball ball = NewBall();
     balls.push_back(ball);
   }
 
-  std::cout << "Generated " << balls.size() << " new balls." << std::endl;
+  //std::cout << "Generated " << balls.size() << " new balls." << std::endl;
 
 
   rects.clear();
 
-  for(int i=0; i<10; i++)
+  for(int i=0; i<1; i++)
   {
     Rect rect = NewRect();
     rects.push_back(rect);
   }
 
-  std::cout << "Generated " << rects.size() << " new rects." << std::endl;
+  //std::cout << "Generated " << rects.size() << " new rects." << std::endl;
 }
 
 
@@ -190,6 +190,100 @@ bool Game::Collides(const Rect &r, vec2 point) const
 }
 
 
+bool Game::Collides(const Rect &r1, const Rect &r2) const
+{
+  return
+    (r1.position.x < r2.position.x + r2.width)
+    and
+    (r1.position.x + r1.width > r2.position.x)
+    and
+    (r1.position.y < r2.position.y + r2.height)
+    and
+    (r1.position.y + r1.height > r2.position.y);
+}
+
+#include "maths_utils.hpp"
+
+bool Game::Collides(const Rect &r, const Ball &c) const
+{
+  const vec2 rect_center {r.position.x + r.width/2.0f , r.position.y + r.height/2.0f };
+  const vec2 circle_distance = vec_abs(c.position - rect_center);
+
+  TRACE << "circle_distance " << circle_distance << "  ";
+
+  if ((circle_distance.x > (r.width/2.0f + c.radius))
+    or (circle_distance.y > (r.height/2.0f + c.radius))) return false;
+
+  if ((circle_distance.x <= (r.width/2.0f))
+    or (circle_distance.y <= (r.height/2.0f))) return true;
+
+  vec2 corner { r.width/2.0f, r.height/2.0f };
+
+  vec2 dist_to_corner = circle_distance - corner;
+
+  return (get_length(dist_to_corner) <= c.radius);
+}
+
+//
+// float point_point_distance(const vec2& p1, const vec2 &p2)
+// {
+//   vec2 dist = p1 - p2;
+//   return get_length(dist);
+// }
+//
+//
+// float point_line_distance(const vec2 &l1, const vec2 &l2, const vec2 &p1)
+// {
+//   float x1 = l1.x;
+//   float x2 = l2.x;
+//   float y1 = l1.y;
+//   float y2 = l2.y;
+//
+//   float px = p1.x;
+//   float py = p1.y;
+//   float dist = abs( (l2.x - l1.x)*(l1.y-p1.y) - (l1.x-p1.x)*(l2.y-l1.y)) /
+//
+// //  float dist = abs( (x2-x1)*(y1-py)-(x1-px)*(y2-y1) ) /
+//     point_point_distance(l1, l2);
+//   return dist;
+// }
+//
+//
+// bool Game::Collides(const Rect &r, const Ball &c) const
+// {
+//   const vec2 v1 = r.position;
+//   const vec2 v2 = {r.position.x + r.width, r.position.y};
+//   const vec2 v3 = {r.position.x + r.width, r.position.y + r.height};
+//   const vec2 v4 = {r.position.x, r.position.y + r.height};
+//
+//   const float radius = c.radius;
+//   const vec2 circle = c.position;
+//   //
+//   // if (
+//   //   (point_point_distance(circle, v1) < radius)
+//   //   or
+//   //   (point_point_distance(circle, v2) < radius)
+//   //   or
+//   //   (point_point_distance(circle, v3) < radius)
+//   //   or
+//   //   (point_point_distance(circle, v4) < radius)
+//   // ) return true;
+//
+//   if (
+//     (point_line_distance(v1, v2, circle) < radius)
+//     // or
+//     // (point_line_distance(v2, v3, circle) < radius)
+//     // or
+//     // (point_line_distance(v3, v4, circle) < radius)
+//     // or
+//     // (point_line_distance(v4, v1, circle) < radius)
+//   ) return true;
+//
+//
+//   //return false;
+//   return Collides(r, circle);
+// }
+
 bool Game::Collides_Any(const Ball &ball) const
 {
   for (const Ball & b : balls)
@@ -197,6 +291,19 @@ bool Game::Collides_Any(const Ball &ball) const
     if (&b == &ball) continue;  //Don't test self
 
     if (Collides(ball, b))
+      return true;
+  }
+  return false;
+}
+
+
+bool Game::Collides_Any(const Rect &rect) const
+{
+  for (const Rect &r : rects)
+  {
+    if (&r == &rect) continue;  //Don't test self
+
+    if (Collides(rect, r))
       return true;
   }
   return false;
