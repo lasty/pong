@@ -272,40 +272,26 @@ bool Collides_List(const OBJ1 &o, const LIST &other)
 }
 
 
-//TODO see if i can templatize this function too
-
-bool Game::Collides_Any(const Ball &ball) const
+template <typename OBJ>
+bool Game::Collides_Any(const OBJ &obj) const
 {
   //Balls
-  if (Collides_List(ball, balls)) return true;
-  if (Collides(ball, mouse_pointer)) return true;
-  if (Collides(ball, player)) return true;
+  if (Collides_List(obj, balls)) return true;
+  if (Collides(obj, mouse_pointer)) return true;
+  if (Collides(obj, player)) return true;
 
   //Rects
-  if (Collides_List(ball, rects)) return true;
+  if (Collides_List(obj, rects)) return true;
 
   //Lines
-  if (Collides_List(ball, lines)) return true;
-
-
-  return false;
-}
-
-
-bool Game::Collides_Any(const Rect &rect) const
-{
-  if (Collides_List(rect, balls)) return true;
-  if (Collides(rect, mouse_pointer)) return true;
-  if (Collides(rect, player)) return true;
-  //
-  // //Rects
-  if (Collides_List(rect, rects)) return true;
-  //
-  // //Lines
-  if (Collides_List(rect, lines)) return true;
+  if (Collides_List(obj, lines)) return true;
 
   return false;
 }
+
+//Explicit template instantiation
+template bool Game::Collides_Any<>(const Ball &obj) const;
+template bool Game::Collides_Any<>(const Rect &obj) const;
 
 
 Ball Game::UpdatePhysics(float dt, const Ball & b) const

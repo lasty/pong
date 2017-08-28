@@ -77,8 +77,8 @@ public:
 
   void Resize(int width, int height);
 
-  bool Collides_Any(const Ball &ball) const;
-  bool Collides_Any(const Rect &rect) const;
+  template <typename OBJ>
+  bool Collides_Any(const OBJ &obj) const;
 
   Ball UpdatePhysics(float dt, const Ball & b) const;
 
