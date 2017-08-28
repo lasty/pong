@@ -9,6 +9,8 @@
 
 #include "gl.hpp"
 
+#include "maths_utils.hpp"
+
 
 std::vector<float> MakeCircle(float radius, int segments)
 {
@@ -70,6 +72,8 @@ std::vector<float> MakeRect(float width, float height)
 Renderer::Renderer()
 {
   SetupShapes();
+
+  SetupDynamicVertexData();
 }
 
 
@@ -126,13 +130,13 @@ void Renderer::Resize(int width, int height)
 
 shape_def Renderer::AddShape(std::vector<float> const & vertexes)
 {
-  if (vertexes.size() % 2 != 0)
+  if (vertexes.size() % attribs_per_vertex != 0)
     { throw std::runtime_error("Uneven vertexes given to AddShape"); }
 
 
   shape_def s;
-  s.offset = (vertex_data.size() / 2);
-  s.count = vertexes.size() / 2;
+  s.offset = (vertex_data.size() / attribs_per_vertex);
+  s.count = vertexes.size() / attribs_per_vertex;
 
   vertex_data.insert(vertex_data.end(), vertexes.begin(), vertexes.end());
 
@@ -157,6 +161,58 @@ void Renderer::SetupVertexData()
 void Renderer::UpdateVertexData()
 {
   glNamedBufferData(buf_id, sizeof(float) * vertex_data.size(), vertex_data.data(), GL_STATIC_DRAW);
+}
+
+
+
+void Renderer::SetupDynamicVertexData()
+{
+  dynamic_buff_id = GL::CreateBuffers();
+  dynamic_vao_id = GL::CreateVertexArrays();
+
+  int buffer_index = 0;
+  glVertexArrayVertexBuffer(dynamic_vao_id, buffer_index, dynamic_buff_id, 0, stride);
+
+  int attrib_id = 0;
+  GL::AttachAttribute(dynamic_vao_id, attrib_id, attribs_per_vertex, GL_FLOAT);
+
+  DynamicLine({0,0}, {10,10});
+  UpdateDynamicVertexData();
+}
+
+
+void Renderer::ClearDynamicVertexData()
+{
+  dynamic_vertex_data.clear();
+}
+
+
+void Renderer::DynamicLine(vec2 const &v1, vec2 const &v2)
+{
+  dynamic_vertex_data.push_back(v1.x);
+  dynamic_vertex_data.push_back(v1.y);
+
+  dynamic_vertex_data.push_back(v2.x);
+  dynamic_vertex_data.push_back(v2.y);
+}
+
+
+void Renderer::UpdateDynamicVertexData()
+{
+  glNamedBufferData(dynamic_buff_id, sizeof(float) * dynamic_vertex_data.size(), dynamic_vertex_data.data(), GL_DYNAMIC_DRAW);
+}
+
+
+void Renderer::DrawDynamic(GLenum draw_type)
+{
+  UseProgram(basic_shader.GetProgramId());
+  UseVAO(dynamic_vao_id);
+
+  basic_shader.SetOffset(0.0f, 0.0f);
+  basic_shader.SetRotation(0.0f);
+  basic_shader.SetZoom(1.0f);
+
+  glDrawArrays(draw_type, 0, dynamic_vertex_data.size() / attribs_per_vertex);
 }
 
 
@@ -208,7 +264,6 @@ void Renderer::FillCircle(int radius, float x, float y)
 }
 
 
-
 void Renderer::RenderBall(const Ball & ball, bool draw_outline)
 {
   const auto & radius = ball.radius;
@@ -237,13 +292,10 @@ void Renderer::RenderBall(const Ball & ball, bool draw_outline)
 
 void Renderer::RenderArrow(const Ball & arrow)
 {
-
-
   basic_shader.SetOffset(arrow.position.x, arrow.position.y);
   basic_shader.SetRotation(arrow.rot);
   basic_shader.SetColour(arrow.colour);
   basic_shader.SetZoom(1.0f);
-
 
   DrawShape(GL_LINE_LOOP, arrow_shape);
 }
@@ -294,16 +346,14 @@ void Renderer::DrawGameState(const Game & game)
 
   for(const auto &ball : game.balls)
   {
-      RenderBall(ball, game.Collides_Any(ball));
+    bool collides = game.Collides_Any(ball);
+
+    RenderBall(ball, collides);
   }
 
   for(const auto &rect : game.rects)
   {
-      bool collides =
-        //game.Collides(rect, game.mouse_pointer.position)
-        game.Collides(rect, game.mouse_pointer)
-        or
-        game.Collides_Any(rect);
+      bool collides = game.Collides_Any(rect);
 
       RenderRect(rect, collides);
   }
@@ -313,5 +363,15 @@ void Renderer::DrawGameState(const Game & game)
   RenderBall(game.mouse_pointer);
 
   basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
+
+
+  ClearDynamicVertexData();
+  for(const auto &line : game.lines)
+  {
+    DynamicLine(line.p1, line.p2);
+  }
+
+  UpdateDynamicVertexData();
+  DrawDynamic(GL_LINES);
 
 }

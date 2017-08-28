@@ -5,57 +5,24 @@
 - Collision detection
   - [DONE] Simple circle detection
   - [DONE] Rect point collisions
-  - rect rect collisions
-  - rect circle collisions
+  - [DONE] rect rect collisions
+  - [DONE] rect circle collisions
+  - [TODO] circle line collision
+  - line line collision (needed?)
+  - line rect collision (needed?)
+  - try rect algorithm with circle line collision
   - force when collided
   - Somehow rework boundaries to new collision detection routines
+  - Refactor and clean up code again  (move things to maths, collision routines out of game class)
 
 
 ## Todo Low Priority
 - [TODO] Watch more of those videos
-- Investigate data flow..  (flux) ..  input -> gamestate -> render
 - [TODO] Investigate atom clang-format
 
 
 ## Done!
 
-
-- [DONE] Add more shapes
-  - [DONE] rectangles
-  - [DONE] Arrow
-- [DONE] Pick GLEW or SDL ...  or just use SDL for sound/images
-- [DONE] Refactor input and key queuing?  Could put in own input class I think
-- [DONE] Add blend state to opengl state thingy
-- [DONE] Move gl debug calback code to gl.cpp
-- [DONE] Make thrust along arrow/player
-- [DONE] Make shader handle rotate and zoom (Matrix?)
-  - [DONE] Change circle to compensate, switch on num segments
-- [DONE] Make arrow follow mouse
-- [DONE] remove old code
-- [DONE] investigate how slow glm:: library is still  -->  Screw it
-  - [DONE] old code - 1.9s for full build...  1.5s partial build
-  - [DONE] glm code - 2.2s fullbuild, 2.2s partial build
-- [DONE] more linear math? (vec2)
-- [DONE] Get colours in compiler output
-- [DONE] Circle radius per ball
-- [DONE] Dynamic circle generation?
-  - [DONE] now I have spam for buffer generation :/
-- [DONE] Individual colours for balls
-- [DONE] Have WASD/arrows control something on screen
-- [DONE] Setup controls for SDL
-- [DONE] Mouse button inputs, bind to controls?
-  - [DONE] Shoot balls from player in direction of mouse
-
-
-
-- Timing
-  - clang   full 1.5s  delta 1.0s
-  - linmath
-    - GLFW  full 2.1s  delta 1.3s
-    - SDL full 2.6s  delta 1.3s
-  - custom math
-    - GLFW  full 2.1s  delta 1.25s
-    - SDL full 2.6s  delta 1.2s
 
 
 ## Other Ideas

@@ -65,10 +65,7 @@ Game::Game(int width, int height)
 }
 
 
-Game::~Game()
-{
-
-}
+//Game::~Game() { }
 
 
 Position Game::GetCenterScreen() const
@@ -117,28 +114,44 @@ Rect Game::NewRect() const
 }
 
 
+Line Game::NewLine() const
+{
+  Line l;
+
+  l.p1 = RandomPosition();
+  l.p2 = RandomPosition();
+
+  l.colour = RandomRGB();
+
+  return l;
+}
+
+
 void Game::NewObjects()
 {
   balls.clear();
-
-  for(int i=0; i<0; i++)
+  for(int i=0; i<10; i++)
   {
-    Ball ball = NewBall();
-    balls.push_back(ball);
+    balls.push_back(NewBall());
   }
-
   //std::cout << "Generated " << balls.size() << " new balls." << std::endl;
 
 
   rects.clear();
-
   for(int i=0; i<1; i++)
   {
-    Rect rect = NewRect();
-    rects.push_back(rect);
+    rects.push_back(NewRect());
+  }
+  //std::cout << "Generated " << rects.size() << " new rects." << std::endl;
+
+
+  lines.clear();
+  for(int i=0; i<2; i++)
+  {
+    lines.push_back(NewLine());
   }
 
-  //std::cout << "Generated " << rects.size() << " new rects." << std::endl;
+
 }
 
 
@@ -165,23 +178,20 @@ void Game::Resize(int width, int height)
 }
 
 
-bool Game::Collides(const Ball &b1, const Ball &b2) const
+
+bool Collides(const Ball &b1, const Ball &b2)
 {
+  if (&b1 == &b2) return false;
+
   float radii = b1.radius + b2.radius;
 
   float dist = get_length(b2.position - b1.position);
 
-  return dist <= radii;
+  return (dist <= radii);
 }
 
 
-bool in_range(float beg, float end, float p)
-{
-  return (p >= beg and p <= end);
-}
-
-
-bool Game::Collides(const Rect &r, vec2 point) const
+bool Collides(const Rect &r, vec2 point)
 {
   return
     in_range(r.position.x, r.position.x + r.width, point.x)
@@ -190,8 +200,10 @@ bool Game::Collides(const Rect &r, vec2 point) const
 }
 
 
-bool Game::Collides(const Rect &r1, const Rect &r2) const
+bool Collides(const Rect &r1, const Rect &r2)
 {
+  if (&r1 == &r2) return false;
+
   return
     (r1.position.x < r2.position.x + r2.width)
     and
@@ -202,14 +214,11 @@ bool Game::Collides(const Rect &r1, const Rect &r2) const
     (r1.position.y + r1.height > r2.position.y);
 }
 
-#include "maths_utils.hpp"
 
-bool Game::Collides(const Rect &r, const Ball &c) const
+bool Collides(const Rect &r, const Ball &c)
 {
   const vec2 rect_center {r.position.x + r.width/2.0f , r.position.y + r.height/2.0f };
   const vec2 circle_distance = vec_abs(c.position - rect_center);
-
-  TRACE << "circle_distance " << circle_distance << "  ";
 
   if ((circle_distance.x > (r.width/2.0f + c.radius))
     or (circle_distance.y > (r.height/2.0f + c.radius))) return false;
@@ -224,88 +233,77 @@ bool Game::Collides(const Rect &r, const Ball &c) const
   return (get_length(dist_to_corner) <= c.radius);
 }
 
-//
-// float point_point_distance(const vec2& p1, const vec2 &p2)
-// {
-//   vec2 dist = p1 - p2;
-//   return get_length(dist);
-// }
-//
-//
-// float point_line_distance(const vec2 &l1, const vec2 &l2, const vec2 &p1)
-// {
-//   float x1 = l1.x;
-//   float x2 = l2.x;
-//   float y1 = l1.y;
-//   float y2 = l2.y;
-//
-//   float px = p1.x;
-//   float py = p1.y;
-//   float dist = abs( (l2.x - l1.x)*(l1.y-p1.y) - (l1.x-p1.x)*(l2.y-l1.y)) /
-//
-// //  float dist = abs( (x2-x1)*(y1-py)-(x1-px)*(y2-y1) ) /
-//     point_point_distance(l1, l2);
-//   return dist;
-// }
-//
-//
-// bool Game::Collides(const Rect &r, const Ball &c) const
-// {
-//   const vec2 v1 = r.position;
-//   const vec2 v2 = {r.position.x + r.width, r.position.y};
-//   const vec2 v3 = {r.position.x + r.width, r.position.y + r.height};
-//   const vec2 v4 = {r.position.x, r.position.y + r.height};
-//
-//   const float radius = c.radius;
-//   const vec2 circle = c.position;
-//   //
-//   // if (
-//   //   (point_point_distance(circle, v1) < radius)
-//   //   or
-//   //   (point_point_distance(circle, v2) < radius)
-//   //   or
-//   //   (point_point_distance(circle, v3) < radius)
-//   //   or
-//   //   (point_point_distance(circle, v4) < radius)
-//   // ) return true;
-//
-//   if (
-//     (point_line_distance(v1, v2, circle) < radius)
-//     // or
-//     // (point_line_distance(v2, v3, circle) < radius)
-//     // or
-//     // (point_line_distance(v3, v4, circle) < radius)
-//     // or
-//     // (point_line_distance(v4, v1, circle) < radius)
-//   ) return true;
-//
-//
-//   //return false;
-//   return Collides(r, circle);
-// }
 
-bool Game::Collides_Any(const Ball &ball) const
+bool Collides(const Ball &ball, Line const &line)
 {
-  for (const Ball & b : balls)
-  {
-    if (&b == &ball) continue;  //Don't test self
+  vec2 collision_point = nearest_point_on_line(line.p1, line.p2, ball.position);
 
-    if (Collides(ball, b))
+  float dist = distance(collision_point, ball.position);
+
+  return (dist < ball.radius);
+}
+
+
+bool Collides([[maybe_unused]] const Rect &rect, [[maybe_unused]] const Line &line)
+{
+  //TODO
+  return false;
+}
+
+
+//Try swapping the order of the arguments
+template <typename OBJ1, typename OBJ2>
+bool Collides(const OBJ1 &o1, const OBJ2 &o2)
+{
+  return Collides(o2, o1);
+}
+
+
+//Applies Collides() to lists
+template <typename OBJ1, typename LIST>
+bool Collides_List(const OBJ1 &o, const LIST &other)
+{
+  for(auto const &item : other)
+  {
+    if (Collides(o, item))
       return true;
   }
   return false;
 }
 
 
+//TODO see if i can templatize this function too
+
+bool Game::Collides_Any(const Ball &ball) const
+{
+  //Balls
+  if (Collides_List(ball, balls)) return true;
+  if (Collides(ball, mouse_pointer)) return true;
+  if (Collides(ball, player)) return true;
+
+  //Rects
+  if (Collides_List(ball, rects)) return true;
+
+  //Lines
+  if (Collides_List(ball, lines)) return true;
+
+
+  return false;
+}
+
+
 bool Game::Collides_Any(const Rect &rect) const
 {
-  for (const Rect &r : rects)
-  {
-    if (&r == &rect) continue;  //Don't test self
+  if (Collides_List(rect, balls)) return true;
+  if (Collides(rect, mouse_pointer)) return true;
+  if (Collides(rect, player)) return true;
+  //
+  // //Rects
+  if (Collides_List(rect, rects)) return true;
+  //
+  // //Lines
+  if (Collides_List(rect, lines)) return true;
 
-    if (Collides(rect, r))
-      return true;
-  }
   return false;
 }
 
@@ -374,11 +372,10 @@ void Game::Update(float dt)
   for(Ball &b : balls)
   {
     b = UpdatePhysics(dt, b);
-    //b.rot += dt * TWO_PI / 8.0f;
   }
 
+  //TODO update other objects?
 }
-
 
 
 void Game::PlayerInput(float dt, Input const &input)

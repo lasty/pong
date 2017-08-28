@@ -40,6 +40,12 @@ private:
   shape_def arrow_shape;
   std::map<int, std::map<int, shape_def>> rect_shapes;
 
+
+  int dynamic_buff_id = 0;
+  int dynamic_vao_id = 0;
+  std::vector<float> dynamic_vertex_data;
+
+
 public:
 
   Renderer();
@@ -55,6 +61,12 @@ public:
   void SetupVertexData();
   shape_def AddShape(std::vector<float> const & vertexes);
   void UpdateVertexData();
+
+  void SetupDynamicVertexData();
+  void ClearDynamicVertexData();
+  void DynamicLine(vec2 const &v1, vec2 const &v2);
+  void UpdateDynamicVertexData();
+  void DrawDynamic(GLenum draw_type);
 
   void SetupShapes();
   void DeleteShapes();

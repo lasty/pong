@@ -32,6 +32,15 @@ vec4 operator*(vec4 const &a, float s);
 
 vec2 vec_abs(vec2 const &v);
 
+float dot(vec2 const &a, vec2 const &b);
+float distance(vec2 const &v1, vec2 const &v2);
+float distance_squared(vec2 const &v1, vec2 const &v2);
+
+vec2 nearest_point_on_line(vec2 const &v, vec2 const &w, vec2 const &p);
+
+bool in_range(float beg, float end, float p);
+
+
 const float * gl_data(vec2 const &v);
 const float * gl_data(vec3 const &v);
 const float * gl_data(vec4 const &v);

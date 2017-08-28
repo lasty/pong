@@ -37,7 +37,6 @@ float get_length(vec2 const & v)
   return sqrtf(v.x * v.x + v.y * v.y);
 }
 
-
 vec2 angle_to_vec2(float angle, float length)
 {
   return {cosf(angle) * length, sinf(angle) * length};
@@ -109,6 +108,55 @@ vec4 operator*(vec4 const &a, float s)
 vec2 vec_abs(vec2 const &v)
 {
   return {fabs(v.x), fabs(v.y)};
+}
+
+
+float dot(vec2 const &a, vec2 const &b)
+{
+  return (a.x * b.x) + (a.y * b.y);
+}
+
+
+float distance_squared(vec2 const &v1, vec2 const &v2)
+{
+  vec2 diff = v2 - v1;
+  return diff.x * diff.x + diff.y * diff.y;
+}
+
+
+float distance(vec2 const &v1, vec2 const &v2)
+{
+  vec2 diff = v2 - v1;
+  return sqrt(diff.x * diff.x + diff.y * diff.y);
+}
+
+
+vec2 nearest_point_on_line(vec2 const &v, vec2 const &w, vec2 const &p)
+{
+  const float line_length = distance_squared(v, w);  // i.e. |w-v|^2 -  avoid a sqrt
+
+  // v == w case
+  if (line_length == 0.0) return v;
+  //return distance(p, v);
+
+
+  // Consider the line extending the segment, parameterized as v + t (w - v).
+  // We find projection of point p onto the line.
+  // It falls where t = [(p-v) . (w-v)] / |w-v|^2
+  // We clamp t from [0,1] to handle points outside the segment vw.
+  float t = dot(p - v, w - v) / line_length;
+  t = std::max(0.0f, std::min(1.0f, t));
+
+  const vec2 projection = v + (w - v) * t;  // Projection falls on the segment
+
+  return projection;
+  //return distance(p, projection);
+}
+
+
+bool in_range(float beg, float end, float p)
+{
+  return (p >= beg and p <= end);
 }
 
 

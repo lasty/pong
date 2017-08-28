@@ -29,6 +29,13 @@ struct Ball
   float rot = 0.0f;
 };
 
+struct Line
+{
+  Position p1;
+  Position p2;
+  Colour colour;
+};
+
 
 class Game
 {
@@ -41,16 +48,19 @@ private:
   bool gravity_enabled = false;
   bool friction_enabled = false;
 
+public: //XXX
   std::vector<Ball> balls;
   std::vector<Rect> rects;
+  std::vector<Line> lines;
 
   Ball player;
   Ball mouse_pointer;
 
+
 public:
 
   Game(int width, int height);
-  ~Game();
+  //~Game();
 
   bool running = true;
 
@@ -59,6 +69,7 @@ public:
 
   Ball NewBall() const;
   Rect NewRect() const;
+  Line NewLine() const;
 
   void NewObjects();
   void ToggleGravity();
@@ -66,14 +77,8 @@ public:
 
   void Resize(int width, int height);
 
-  bool Collides(const Ball &b1, const Ball &b2) const;
-  bool Collides(const Rect &r, vec2 point) const;
-  bool Collides(const Rect &r1, const Rect &r2) const;
-  bool Collides(const Rect &r, const Ball &c) const;
-
   bool Collides_Any(const Ball &ball) const;
   bool Collides_Any(const Rect &rect) const;
-
 
   Ball UpdatePhysics(float dt, const Ball & b) const;
 
