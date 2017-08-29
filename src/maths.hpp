@@ -36,6 +36,10 @@ float dot(vec2 const &a, vec2 const &b);
 float distance(vec2 const &v1, vec2 const &v2);
 float distance_squared(vec2 const &v1, vec2 const &v2);
 
+vec2 get_normal(vec2 const &p1, vec2 const &p2);
+vec2 normalize(vec2 const &v);
+vec2 reflect(vec2 const &incident, vec2 const &normal);
+
 vec2 nearest_point_on_line(vec2 const &v, vec2 const &w, vec2 const &p);
 
 bool in_range(float beg, float end, float p);

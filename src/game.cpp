@@ -5,10 +5,15 @@
 #include <ctime>
 
 #include <iostream>
+#include <algorithm>
 
 #include "input.hpp"
 
 #include "maths.hpp"
+
+
+const int num_balls = 10;
+const int num_rects = 10;
 
 
 float RandomFloat()
@@ -83,13 +88,13 @@ Position Game::RandomPosition() const
 Ball Game::NewBall() const
 {
   Ball b;
-  b.position = GetCenterScreen();
-  //b.position = RandomPosition();
+  //b.position = GetCenterScreen();
+  b.position = RandomPosition();
 
   const float speed = 100.0f;
   b.velocity = { RandomFloat(-speed, speed) , RandomFloat(-speed, speed)};
 
-  b.radius = RandomInt(1, 100);
+  b.radius = RandomInt(5, 50);
 
   b.colour = RandomRGB();
 
@@ -105,8 +110,8 @@ Rect Game::NewRect() const
   const float speed = 100.0f;
   r.velocity = { RandomFloat(-speed, speed) , RandomFloat(-speed, speed)};
 
-  r.width = RandomInt(50, 200);
-  r.height = RandomInt(50, 200);
+  r.width = RandomInt(50, 100);
+  r.height = RandomInt(50, 100);
 
   r.colour = RandomRGB();
 
@@ -127,10 +132,16 @@ Line Game::NewLine() const
 }
 
 
+Line MakeLine(vec2 const &p1, vec2 const &p2)
+{
+  return {p1, p2, RandomRGB()};
+}
+
+
 void Game::NewObjects()
 {
   balls.clear();
-  for(int i=0; i<10; i++)
+  for(int i=0; i<num_balls; i++)
   {
     balls.push_back(NewBall());
   }
@@ -138,7 +149,7 @@ void Game::NewObjects()
 
 
   rects.clear();
-  for(int i=0; i<1; i++)
+  for(int i=0; i<num_rects; i++)
   {
     rects.push_back(NewRect());
   }
@@ -151,6 +162,19 @@ void Game::NewObjects()
     lines.push_back(NewLine());
   }
 
+
+  border_lines.clear();
+
+  float b = 5.0f;
+  vec2 tl { b, b };
+  vec2 tr { width - b, b };
+  vec2 bl { b, height - b };
+  vec2 br { width - b, height - b };
+
+  border_lines.push_back(MakeLine(tl, tr));
+  border_lines.push_back(MakeLine(tr, br));
+  border_lines.push_back(MakeLine(br, bl));
+  border_lines.push_back(MakeLine(bl, tl));
 
 }
 
@@ -178,6 +202,32 @@ void Game::Resize(int width, int height)
 }
 
 
+bool Collides(const Ball &b1, const vec2 &point)
+{
+  float dist = distance(b1.position, point);
+
+  return (dist <= b1.radius);
+}
+
+
+bool Collides(const Ball &c, const Rect &r)
+{
+  const vec2 rect_center {r.position.x + r.width/2.0f , r.position.y + r.height/2.0f };
+  const vec2 circle_distance = vec_abs(c.position - rect_center);
+
+  if ((circle_distance.x > (r.width/2.0f + c.radius))
+    or (circle_distance.y > (r.height/2.0f + c.radius))) return false;
+
+  if ((circle_distance.x <= (r.width/2.0f))
+    or (circle_distance.y <= (r.height/2.0f))) return true;
+
+  vec2 corner { r.width/2.0f, r.height/2.0f };
+
+  vec2 dist_to_corner = circle_distance - corner;
+
+  return (get_length(dist_to_corner) <= c.radius);
+}
+
 
 bool Collides(const Ball &b1, const Ball &b2)
 {
@@ -188,6 +238,16 @@ bool Collides(const Ball &b1, const Ball &b2)
   float dist = get_length(b2.position - b1.position);
 
   return (dist <= radii);
+}
+
+
+bool Collides(const Ball &ball, Line const &line)
+{
+  vec2 collision_point = nearest_point_on_line(line.p1, line.p2, ball.position);
+
+  float dist = distance(collision_point, ball.position);
+
+  return (dist < ball.radius);
 }
 
 
@@ -215,35 +275,6 @@ bool Collides(const Rect &r1, const Rect &r2)
 }
 
 
-bool Collides(const Rect &r, const Ball &c)
-{
-  const vec2 rect_center {r.position.x + r.width/2.0f , r.position.y + r.height/2.0f };
-  const vec2 circle_distance = vec_abs(c.position - rect_center);
-
-  if ((circle_distance.x > (r.width/2.0f + c.radius))
-    or (circle_distance.y > (r.height/2.0f + c.radius))) return false;
-
-  if ((circle_distance.x <= (r.width/2.0f))
-    or (circle_distance.y <= (r.height/2.0f))) return true;
-
-  vec2 corner { r.width/2.0f, r.height/2.0f };
-
-  vec2 dist_to_corner = circle_distance - corner;
-
-  return (get_length(dist_to_corner) <= c.radius);
-}
-
-
-bool Collides(const Ball &ball, Line const &line)
-{
-  vec2 collision_point = nearest_point_on_line(line.p1, line.p2, ball.position);
-
-  float dist = distance(collision_point, ball.position);
-
-  return (dist < ball.radius);
-}
-
-
 bool Collides([[maybe_unused]] const Rect &rect, [[maybe_unused]] const Line &line)
 {
   //TODO
@@ -251,9 +282,30 @@ bool Collides([[maybe_unused]] const Rect &rect, [[maybe_unused]] const Line &li
 }
 
 
+bool Collides(const Line &line, const vec2 &point)
+{
+  //XXX maybe useless?
+
+  vec2 nearest = nearest_point_on_line(line.p1, line.p2, point);
+
+  float dist = distance(nearest, point);
+
+  return (dist < 1.0f);
+}
+
+
+bool Collides([[maybe_unused]] const Line &line1, [[maybe_unused]] const Line &line2)
+{
+  if (&line1 == &line2) return false;
+
+  //TODO
+  return false;
+}
+
+
 //Try swapping the order of the arguments
 template <typename OBJ1, typename OBJ2>
-bool Collides(const OBJ1 &o1, const OBJ2 &o2)
+inline bool Collides(const OBJ1 &o1, const OBJ2 &o2)
 {
   return Collides(o2, o1);
 }
@@ -271,20 +323,36 @@ bool Collides_List(const OBJ1 &o, const LIST &other)
   return false;
 }
 
+//Applies Collides() to lists
+template <typename OBJ1, typename LIST, typename VECTYPE = std::vector<const typename LIST::value_type *>>
+VECTYPE GetVec_Collides_List(const OBJ1 &o, const LIST &other)
+{
+  VECTYPE vec;
+
+  for(auto const &item : other)
+  {
+    if (Collides(o, item))
+    vec.push_back(&item);
+  }
+  return vec;
+}
+
+
 
 template <typename OBJ>
 bool Game::Collides_Any(const OBJ &obj) const
 {
   //Balls
   if (Collides_List(obj, balls)) return true;
-  if (Collides(obj, mouse_pointer)) return true;
-  if (Collides(obj, player)) return true;
+  //if (Collides(obj, mouse_pointer)) return true;
+  //if (Collides(obj, player)) return true;
 
   //Rects
   if (Collides_List(obj, rects)) return true;
 
   //Lines
   if (Collides_List(obj, lines)) return true;
+  if (Collides_List(obj, border_lines)) return true;
 
   return false;
 }
@@ -304,6 +372,30 @@ Ball Game::UpdatePhysics(float dt, const Ball & b) const
   const float bounce = -0.8f;
   const float friction_amount = 1.0f;
 
+  //Lines
+  for (auto & vec : {lines, border_lines})
+  {
+    auto line_list = GetVec_Collides_List(b, vec);
+    if (line_list.size())
+    {
+      auto line = *line_list.front();
+
+      //reflect bounce
+      vec2 normal = get_normal(line.p1, line.p2);
+      out.velocity = reflect(out.velocity, normal);
+
+
+      //back off position by radius
+      vec2 contact_pos = nearest_point_on_line(line.p1, line.p2, out.position);
+
+      out.position = contact_pos + (normal * (b.radius + 5));
+      //vec2 towards_last = normalize(contact_pos - b.position);
+      //out.position = contact_pos + (towards_last * (b.radius + 5));
+
+    }
+  }
+
+/*
   //Simple boundary collision
   if (out.position.x < b.radius)
   {
@@ -328,6 +420,7 @@ Ball Game::UpdatePhysics(float dt, const Ball & b) const
     out.position.y = (height - b.radius);
     out.velocity.y *= bounce;
   }
+*/
 
   if (gravity_enabled)
   {
@@ -353,12 +446,27 @@ Ball Game::UpdatePhysics(float dt, const Ball & b) const
 }
 
 
+template <typename CONT, typename PRED>
+void remove_inplace(CONT &container, const PRED &pred)
+{
+  container.erase(
+    std::remove_if(container.begin(), container.end(), pred)
+    , container.end());
+}
+
+
 void Game::Update(float dt)
 {
   for(Ball &b : balls)
   {
     b = UpdatePhysics(dt, b);
   }
+
+  remove_inplace(rects, [=](auto &r){ return Collides_Any(r); } );
+
+
+  //remove_inplace(balls, [=](auto &b){ return b.radius == 10 && Collides_Any(b); } );
+
 
   //TODO update other objects?
 }
@@ -453,6 +561,8 @@ void Game::Shoot()
 
   b.position = player.position;
   b.velocity = angle_to_vec2(player.rot, 1000.0f);
+  b.position += b.velocity * 0.03f;
+
   b.colour.r = RandomFloat(0.5f, 1.0f);
   b.colour.g = RandomFloat(0.5f, 1.0f);
   b.colour.b = RandomFloat(0.5f, 1.0f);

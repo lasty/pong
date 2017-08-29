@@ -25,4 +25,5 @@ inline std::ostream & operator<<(std::ostream &out, vec4 const & v4)
 }
 
 
-extern std::stringstream TRACE;
+//Defined in main.cpp - outputs to window title, cleared per frame
+extern std::ostringstream TRACE;

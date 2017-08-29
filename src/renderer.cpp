@@ -4,11 +4,8 @@
 #include <vector>
 
 #include "maths.hpp"
-
 #include "game.hpp"
-
 #include "gl.hpp"
-
 #include "maths_utils.hpp"
 
 
@@ -164,7 +161,6 @@ void Renderer::UpdateVertexData()
 }
 
 
-
 void Renderer::SetupDynamicVertexData()
 {
   dynamic_buff_id = GL::CreateBuffers();
@@ -229,6 +225,7 @@ void Renderer::SetupShapes()
 
 void Renderer::DeleteShapes()
 {
+  //TODO
   //glDeleteBuffers(fbo);
   //glDeleteFBO(fbo);
 }
@@ -321,18 +318,20 @@ void Renderer::RenderRect(const Rect & rect, bool draw_outline)
 
   basic_shader.SetOffset(rect.position);
   basic_shader.SetRotation(0.0f);
-  basic_shader.SetColour(rect.colour);
+  basic_shader.SetColour(rect.colour.r, rect.colour.g, rect.colour.b, 0.3f);
   basic_shader.SetZoom(1.0f);
 
-  DrawShape(GL_LINE_LOOP, shape);
+  DrawShape(GL_TRIANGLE_FAN, shape);
+
 
   if (draw_outline)
   {
-    DrawShape(GL_TRIANGLE_FAN, shape);
+    basic_shader.SetColour(rect.colour);
+    DrawShape(GL_LINE_LOOP, shape);
   }
 
-  DrawCircle(5, rect.position.x, rect.position.y);
-  FillCircle(5, rect.position.x + rect.width, rect.position.y + rect.height);
+  // DrawCircle(5, rect.position.x, rect.position.y);
+  // FillCircle(5, rect.position.x + rect.width, rect.position.y + rect.height);
 }
 
 
@@ -360,15 +359,26 @@ void Renderer::DrawGameState(const Game & game)
 
   RenderArrow(game.player);
 
-  RenderBall(game.mouse_pointer);
+  RenderBall(game.mouse_pointer, game.Collides_Any(game.mouse_pointer));
 
   basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
 
 
   ClearDynamicVertexData();
-  for(const auto &line : game.lines)
+
+  for (const auto &vec : {game.lines, game.border_lines})
   {
-    DynamicLine(line.p1, line.p2);
+    for(const auto &line : vec)
+    {
+      DynamicLine(line.p1, line.p2);
+
+      vec2 normal = get_normal(line.p1, line.p2);
+
+      vec2 center = (line.p1 + line.p2) / 2.0f;
+
+      DynamicLine(center, center+ (normal * 20.0f));
+
+    }
   }
 
   UpdateDynamicVertexData();

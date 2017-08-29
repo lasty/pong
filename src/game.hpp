@@ -48,10 +48,10 @@ private:
   bool gravity_enabled = false;
   bool friction_enabled = false;
 
-public: //XXX
   std::vector<Ball> balls;
   std::vector<Rect> rects;
   std::vector<Line> lines;
+  std::vector<Line> border_lines;
 
   Ball player;
   Ball mouse_pointer;

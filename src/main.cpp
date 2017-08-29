@@ -32,13 +32,13 @@ const int GL_MINOR {5};
 #include "maths_utils.hpp"
 
 
-std::stringstream TRACE;
+std::ostringstream TRACE;
 
-bool running = true;
+bool mainloop_running = true;
 
 
 
-void error_callback([[maybe_unused]] int error, const char* description)
+void glfw_error_callback([[maybe_unused]] int error, const char* description)
 {
   std::cout << "GLFW Error: " << description << std::endl;
 }
@@ -77,7 +77,7 @@ void main_game()
 
   std::cout << "GLFW Version: " << glfwGetVersionString() << std::endl;
   if (not glfwInit()) throw std::runtime_error("failed to init GLFW");
-  glfwSetErrorCallback(error_callback);
+  glfwSetErrorCallback(glfw_error_callback);
 
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, GL_MAJOR);
@@ -131,13 +131,13 @@ void main_game()
   Input input(window, game);
 
   // Loop until the user closes the window
-  while (running and game.running)
+  while (mainloop_running and game.running)
   {
 
     glfwPollEvents();
     if (glfwWindowShouldClose(window))
     {
-      running = false;
+      mainloop_running = false;
     }
 
     //Input and Update
@@ -175,7 +175,7 @@ void main_game()
       set_display_title(window, ss.str());
 
       //clear the trace
-      TRACE.str(std::string());
+      TRACE.str({});
       TRACE.clear();
     }
 

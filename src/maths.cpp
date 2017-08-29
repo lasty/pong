@@ -117,6 +117,13 @@ float dot(vec2 const &a, vec2 const &b)
 }
 
 
+float distance(vec2 const &v1, vec2 const &v2)
+{
+  vec2 diff = v2 - v1;
+  return sqrt(diff.x * diff.x + diff.y * diff.y);
+}
+
+
 float distance_squared(vec2 const &v1, vec2 const &v2)
 {
   vec2 diff = v2 - v1;
@@ -124,11 +131,30 @@ float distance_squared(vec2 const &v1, vec2 const &v2)
 }
 
 
-float distance(vec2 const &v1, vec2 const &v2)
+vec2 get_normal(vec2 const &p1, vec2 const &p2)
 {
-  vec2 diff = v2 - v1;
-  return sqrt(diff.x * diff.x + diff.y * diff.y);
+  float dx = p2.x - p1.x;
+  float dy = p2.y - p1.y;
+
+  vec2 normal { -dy, dx };
+  return normalize(normal);
 }
+
+
+vec2 normalize(vec2 const &v)
+{
+  return (v / (get_length(v)));
+}
+
+
+vec2 reflect(vec2 const &I, vec2 const &N)
+{
+  //const vec2 N = normalize(normal);
+
+  return I - N * dot(N, I) * 2.0f;
+}
+
+
 
 
 vec2 nearest_point_on_line(vec2 const &v, vec2 const &w, vec2 const &p)
