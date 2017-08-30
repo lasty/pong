@@ -146,6 +146,9 @@ void main_game()
     auto delta_time = time_now - time_last;
     time_last = time_now;
 
+    if (SWAP_INTERVAL > 1)
+    delta_time = 1.0f / 60.0f;
+
     game.PlayerInput(delta_time, input);
 
     game.Update(delta_time);

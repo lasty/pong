@@ -49,4 +49,13 @@ const float * gl_data(vec2 const &v);
 const float * gl_data(vec3 const &v);
 const float * gl_data(vec4 const &v);
 
+
+float RandomFloat();
+float RandomFloat(const float r1, const float r2);
+int RandomInt(int r1, int r2);
+vec4 RandomRGB();
+vec4 RandomRGBA();
+
+
+
 void TestMaths();

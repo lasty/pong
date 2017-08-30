@@ -3,17 +3,16 @@
 ## Todo List
 
 - Collision detection
+  - [TODO] Fix bugs with collision/reflection handling
   - line line collision (needed?)
   - line rect collision (needed?)
-  - [TODO] Bounding Box class
-  - [TODO] try making blocks out of lines, for circle line collision
   - force when collided
   - change collides_any etc to return a struct with the collision points or something
 - resize redraws border lines
 - Refactor and clean up code again  (move things to maths, collision routines out of game class)
 
 - Gameish
-  - Arrange blocks in grid formation for test level
+  - [DONE] Arrange blocks in grid formation for test level
   - Change player to paddle rect
   - Paddle follow mouse cursor X position
   - Fire straight up from paddle
@@ -31,6 +30,8 @@
 ## Done!
 
 
+  - [DONE] Bounding Box class
+  - [DONE] try making blocks out of lines, for circle line collision
   - [DONE] see if circle/line collision can be two sided
   - [DONE] Simple circle detection
   - [DONE] Rect point collisions

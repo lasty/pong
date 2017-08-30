@@ -1,13 +1,9 @@
 
 
 #include <vector>
+#include <map>
 
 #include "maths_types.hpp"
-
-
-using Position = vec2;
-using Velocity = vec2;
-using Colour = vec4;
 
 
 struct BoundingBox
@@ -17,34 +13,50 @@ struct BoundingBox
 };
 
 
-struct Block
-{
-  Position position;
-  Velocity velocity;
-  float width;
-  float height;
-  Colour colour;
-
-  BoundingBox bounds;
-};
-
-
 struct Ball
 {
   int radius = 20;
-  Position position;
-  Velocity velocity;
-  Colour colour;
+  vec2 position;
+  vec2 velocity;
+  vec4 colour;
   float rot = 0.0f;
 
   BoundingBox bounds;
 };
 
-struct Line
+
+struct BorderLine
 {
-  Position p1;
-  Position p2;
-  Colour colour;
+  BorderLine(const vec2 &p1, const vec2 &p2);
+
+  vec2 p1;
+  vec2 p2;
+
+  BoundingBox bounds;
+};
+
+
+using BlockGeometry = std::vector<BorderLine>;
+
+
+enum class BlockType
+{
+  none = 0,
+  paddle,
+
+  square, triangle_left, triangle_right,
+  rectangle, rect_triangle_left, rect_triangle_right
+};
+
+
+struct Block
+{
+  BlockType type = BlockType::none;
+
+  vec2 position;
+  vec4 colour;
+
+  BlockGeometry geometry;
 
   BoundingBox bounds;
 };
@@ -64,8 +76,9 @@ private:
 
   std::vector<Ball> balls;
   std::vector<Block> blocks;
-  std::vector<Line> lines;
-  std::vector<Line> border_lines;
+  std::vector<BorderLine> border_lines;
+
+  std::map<BlockType, BlockGeometry> block_shapes;
 
   Ball player;
   Ball mouse_pointer;
@@ -78,12 +91,15 @@ public:
 
   bool running = true;
 
-  Position GetCenterScreen() const;
-  Position RandomPosition() const;
+  vec2 GetCenterScreen() const;
+  vec2 RandomPosition() const;
+  vec2 RandomPositionBottom() const;
 
   Ball NewBall() const;
-  Block NewBlock() const;
-  Line NewLine() const;
+  Block NewBlock(int x, int y) const;
+
+  void SetupBlockGeometry();
+  const BlockGeometry & GetGeometry(BlockType bt) const;
 
   void NewObjects();
   void ToggleGravity();

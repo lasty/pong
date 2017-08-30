@@ -13,39 +13,13 @@
 //#include "maths_utils.hpp"
 
 
-const int num_balls = 10;
-const int num_blocks = 10;
+BoundingBox MakeBounds(const BorderLine & line);
 
-
-float RandomFloat()
+BorderLine::BorderLine(const vec2 &p1, const vec2 &p2)
+: p1(p1)
+, p2(p2)
 {
-  return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-}
-
-
-float RandomFloat(const float r1, const float r2)
-{
-  const float range = r2 - r1;
-  return (r1 + (RandomFloat() * range));
-}
-
-
-int RandomInt(int r1, int r2)
-{
-  const int range = r2 - r1;
-  return (r1 + (rand() % range));
-}
-
-
-Colour RandomRGB()
-{
-  return { RandomFloat(), RandomFloat(), RandomFloat(), 1.0f };
-}
-
-
-Colour RandomRGBA()
-{
-  return { RandomFloat(), RandomFloat(), RandomFloat(), RandomFloat() };
+  bounds = MakeBounds(*this);
 }
 
 
@@ -55,6 +29,7 @@ Game::Game(int width, int height)
 {
   srand (static_cast <unsigned> (time(0)));
 
+  SetupBlockGeometry();
   NewObjects();
 
   player = NewBall();
@@ -74,16 +49,23 @@ Game::Game(int width, int height)
 //Game::~Game() { }
 
 
-Position Game::GetCenterScreen() const
+vec2 Game::GetCenterScreen() const
 {
   return { width / 2.0f, height / 2.0f};
 }
 
 
-Position Game::RandomPosition() const
+vec2 Game::RandomPosition() const
 {
   float border = 50.0f;
   return { RandomFloat(border, width - border) , RandomFloat(border, height - border)};
+}
+
+
+vec2 Game::RandomPositionBottom() const
+{
+  float border = 50.0f;
+  return { RandomFloat(border, width - border) , RandomFloat(height - 2*border, height - border)};
 }
 
 
@@ -96,16 +78,29 @@ BoundingBox MakeBounds(const Ball & ball)
 }
 
 
-BoundingBox MakeBounds(const Block & block)
+BoundingBox MakeBounds(const Block &block)
 {
-  const vec2 tl {block.position};
-  const vec2 br {block.position.x + block.width, block.position.y + block.height};
+  vec2 tl = block.position;
+  vec2 br = block.position;
+
+  for (auto line : block.geometry)
+  {
+    for (auto point : {line.p1, line.p2})
+    {
+      tl.x = std::min(tl.x, point.x);
+      tl.y = std::min(tl.y, point.y);
+
+      br.x = std::max(br.x, point.x);
+      br.y = std::max(br.y, point.y);
+    }
+  }
 
   return {tl, br};
+
 }
 
 
-BoundingBox MakeBounds(const Line & line)
+BoundingBox MakeBounds(const BorderLine & line)
 {
   const float top = std::min(line.p1.y, line.p2.y);
   const float bottom = std::max(line.p1.y, line.p2.y);
@@ -122,7 +117,8 @@ Ball Game::NewBall() const
 {
   Ball b;
   //b.position = GetCenterScreen();
-  b.position = RandomPosition();
+  //b.position = RandomPosition();
+  b.position = RandomPositionBottom();
 
   const float speed = 100.0f;
   b.velocity = { RandomFloat(-speed, speed) , RandomFloat(-speed, speed)};
@@ -137,57 +133,86 @@ Ball Game::NewBall() const
 }
 
 
-Block Game::NewBlock() const
+BlockType RandomBlockType()
 {
-  Block r;
-  r.position = RandomPosition();
-
-  const float speed = 100.0f;
-  r.velocity = { RandomFloat(-speed, speed) , RandomFloat(-speed, speed)};
-
-  r.width = RandomInt(50, 100);
-  r.height = RandomInt(50, 100);
-
-  r.colour = RandomRGB();
-
-  r.bounds = MakeBounds(r);
-
-  return r;
+  const std::vector<BlockType> vec {
+    BlockType::square,
+    BlockType::triangle_left, BlockType::triangle_right,
+    BlockType::rectangle,
+    BlockType::rect_triangle_left, BlockType::rect_triangle_right
+  };
+  return vec.at(RandomInt(0, vec.size()));
 }
 
 
-Line Game::NewLine() const
+Block Game::NewBlock(int x, int y) const
 {
-  Line l;
+  Block b;
+  b.type = RandomBlockType();
+  b.position = { 50.0f + (110.0f * x) , 50.0f + (60.0f * y) };
+  b.colour = RandomRGB();
+  b.geometry = GetGeometry(b.type);
 
-  l.p1 = RandomPosition();
-  l.p2 = RandomPosition();
+  for (auto & line : b.geometry)
+  {
+    line.p1 += b.position;
+    line.p2 += b.position;
+    line.bounds = MakeBounds(line);
+  }
 
-  l.colour = RandomRGB();
+  b.bounds = MakeBounds(b);
 
-  l.bounds = MakeBounds(l);
+  return b;
+}
 
+
+BorderLine MakeLine(vec2 const &p1, vec2 const &p2)
+{
+  BorderLine l{p1, p2};
   return l;
 }
 
 
-Line MakeLine(vec2 const &p1, vec2 const &p2)
+void Game::SetupBlockGeometry()
 {
-  Line l;
-  l.p1 = p1;
-  l.p2 = p2;
-  l.colour = RandomRGB();
+  vec2 tl {0,0};
+  vec2 bl {0, 50};
+  vec2 tr {50, 0};
+  vec2 br {50, 50};
 
-  l.bounds = MakeBounds(l);
+  BlockGeometry sq { {tl, bl}, {bl, br}, {br, tr}, {tr, tl} };
+  block_shapes.emplace(BlockType::square, sq);
 
-  return l;
+  BlockGeometry tril { {tr, tl}, {tl, br}, {br, tr} };
+  block_shapes.emplace(BlockType::triangle_left, tril);
+
+  BlockGeometry trir { {tr, tl}, {tl, bl}, {bl, tr} };
+  block_shapes.emplace(BlockType::triangle_right, trir);
+
+  vec2 wtr {100, 0};
+  vec2 wbr {100, 50};
+
+  BlockGeometry rec { {tl, bl}, {bl, wbr}, {wbr, wtr}, {wtr, tl} };
+  block_shapes.emplace(BlockType::rectangle, rec);
+
+  block_shapes.emplace(BlockType::rect_triangle_left,
+    BlockGeometry{ {wtr, tl}, {tl, br}, {br, wbr}, {wbr, wtr} });
+
+  block_shapes.emplace(BlockType::rect_triangle_right,
+    BlockGeometry{ {wtr, tl}, {tl, bl}, {bl, br}, {br, wtr} });
+
 }
 
+
+const BlockGeometry & Game::GetGeometry(BlockType bt) const
+{
+  return block_shapes.at(bt);
+}
 
 void Game::NewObjects()
 {
   balls.clear();
-  for(int i=0; i<num_balls; i++)
+  for(int i=0; i<5; i++)
   {
     balls.push_back(NewBall());
   }
@@ -195,16 +220,13 @@ void Game::NewObjects()
 
 
   blocks.clear();
-  for(int i=0; i<num_blocks; i++)
+  for(int x=0; x<5; x++)
   {
-    blocks.push_back(NewBlock());
-  }
+    for (int y=0; y<3; y++)
+    {
+      blocks.push_back(NewBlock(x, y));
 
-
-  lines.clear();
-  for(int i=0; i<1; i++)
-  {
-    lines.push_back(NewLine());
+    }
   }
 
 
@@ -270,26 +292,6 @@ bool Collides(const Ball &b1, const vec2 &point)
 }
 
 
-bool Collides(const Ball &c, const Block &r)
-{
-  //TODO fix this
-
-  const vec2 block_center {r.position.x + r.width/2.0f , r.position.y + r.height/2.0f };
-  const vec2 circle_distance = vec_abs(c.position - block_center);
-
-  if ((circle_distance.x > (r.width/2.0f + c.radius))
-    or (circle_distance.y > (r.height/2.0f + c.radius))) return false;
-
-  if ((circle_distance.x <= (r.width/2.0f))
-    or (circle_distance.y <= (r.height/2.0f))) return true;
-
-  vec2 corner { r.width/2.0f, r.height/2.0f };
-
-  vec2 dist_to_corner = circle_distance - corner;
-
-  return (get_length(dist_to_corner) <= c.radius);
-}
-
 
 bool Collides(const Ball &b1, const Ball &b2)
 {
@@ -303,7 +305,7 @@ bool Collides(const Ball &b1, const Ball &b2)
 }
 
 
-bool Collides(const Ball &ball, Line const &line)
+bool Collides(const Ball &ball, BorderLine const &line)
 {
   vec2 collision_point = nearest_point_on_line(line.p1, line.p2, ball.position);
 
@@ -318,17 +320,23 @@ bool Collides(const Block &r, vec2 point)
   //TODO fix this, but is this needed?
   //TODO make BoundingBox collides with point instead?
 
+  BoundingBox pt { point, point };
+  return BoundingBoxCollides(r.bounds, pt);
+
+  /*
   return
     in_range(r.position.x, r.position.x + r.width, point.x)
     and
     in_range(r.position.y, r.position.y + r.height, point.y);
+  */
 }
 
 
 bool Collides(const Block &r1, const Block &r2)
 {
   //TODO does this make sense?
-  return false;
+
+  return BoundingBoxCollides(r1.bounds, r2.bounds);
 
   /*
   if (&r1 == &r2) return false;
@@ -345,14 +353,14 @@ bool Collides(const Block &r1, const Block &r2)
 }
 
 
-bool Collides([[maybe_unused]] const Block &block, [[maybe_unused]] const Line &line)
+bool Collides([[maybe_unused]] const Block &block, [[maybe_unused]] const BorderLine &line)
 {
   //TODO
   return false;
 }
 
 
-bool Collides(const Line &line, const vec2 &point)
+bool Collides(const BorderLine &line, const vec2 &point)
 {
   //XXX maybe useless?
 
@@ -364,7 +372,7 @@ bool Collides(const Line &line, const vec2 &point)
 }
 
 
-bool Collides([[maybe_unused]] const Line &line1, [[maybe_unused]] const Line &line2)
+bool Collides([[maybe_unused]] const BorderLine &line1, [[maybe_unused]] const BorderLine &line2)
 {
   if (&line1 == &line2) return false;
 
@@ -393,6 +401,14 @@ bool Collides_List(const OBJ1 &o, const LIST &other)
   return false;
 }
 
+
+bool Collides(const Ball &ball, const Block &block)
+{
+  if (not BoundingBoxCollides(ball.bounds, block.bounds)) return false;
+  return Collides_List(ball, block.geometry);
+}
+
+
 //Applies Collides() to lists
 template <typename OBJ1, typename LIST, typename VECTYPE = std::vector<const typename LIST::value_type *>>
 VECTYPE GetVec_Collides_List(const OBJ1 &o, const LIST &other)
@@ -407,6 +423,28 @@ VECTYPE GetVec_Collides_List(const OBJ1 &o, const LIST &other)
   return vec;
 }
 
+/*
+bool Collides_Rect_Circle(const Ball &c, const Rect &r)
+{
+  //Might be broken...
+
+  const vec2 block_center {r.position.x + r.width/2.0f , r.position.y + r.height/2.0f };
+  const vec2 circle_distance = vec_abs(c.position - block_center);
+
+  if ((circle_distance.x > (r.width/2.0f + c.radius))
+    or (circle_distance.y > (r.height/2.0f + c.radius))) return false;
+
+  if ((circle_distance.x <= (r.width/2.0f))
+    or (circle_distance.y <= (r.height/2.0f))) return true;
+
+  vec2 corner { r.width/2.0f, r.height/2.0f };
+
+  vec2 dist_to_corner = circle_distance - corner;
+
+  return (get_length(dist_to_corner) <= c.radius);
+}
+*/
+
 
 
 template <typename OBJ>
@@ -420,8 +458,7 @@ bool Game::Collides_Any(const OBJ &obj) const
   //Blocks
   if (Collides_List(obj, blocks)) return true;
 
-  //Lines
-  if (Collides_List(obj, lines)) return true;
+  //Border Lines
   if (Collides_List(obj, border_lines)) return true;
 
   return false;
@@ -433,6 +470,16 @@ template bool Game::Collides_Any<>(const Ball &obj) const;
 template bool Game::Collides_Any<>(const Block &obj) const;
 
 
+vec2 CalculateReflection(const Ball &b, const BorderLine &line)
+{
+  vec2 normal = get_normal(line.p1, line.p2);
+  // if (dot(normal, b.velocity) < 0 )
+    // normal = get_normal(line.p2, line.p1);
+
+  return reflect(b.velocity, normal);
+}
+
+
 Ball Game::UpdatePhysics(float dt, const Ball & b) const
 {
   Ball out = b;
@@ -442,34 +489,32 @@ Ball Game::UpdatePhysics(float dt, const Ball & b) const
   [[maybe_unused]] const float bounce = -0.8f;
   [[maybe_unused]] const float friction_amount = 1.0f;
 
-  //Lines
-  for (auto & vec : {lines, border_lines})
+
+  for (auto & block : blocks)
   {
-    auto line_list = GetVec_Collides_List(out, vec);
-    if (line_list.size())
+    if (BoundingBoxCollides(out.bounds, block.bounds))
     {
-      auto line = *line_list.front();
+      auto line_list = GetVec_Collides_List(out, block.geometry);
+      if (line_list.size())
+      {
+        auto line = *line_list.front();
 
-      //reflect bounce
-      vec2 normal = get_normal(line.p1, line.p2);
-
-      if (dot(normal, out.velocity) <= 0 )
-        normal = get_normal(line.p2, line.p1);
-
-      out.velocity = reflect(out.velocity, normal);
-
-
-      //back off position by radius
-      vec2 contact_pos = nearest_point_on_line(line.p1, line.p2, out.position);
-
-      out.position = contact_pos + (normal * (b.radius + 5));
-      out.position = b.position;
-
-      //vec2 towards_last = normalize(contact_pos - b.position);
-      //out.position = contact_pos + (towards_last * (b.radius + 5));
-
+        out.velocity = CalculateReflection(out, line);
+        out.position = b.position;
+      }
     }
   }
+
+  //
+  // auto line_list = GetVec_Collides_List(out, border_lines);
+  // if (line_list.size())
+  // {
+  //   auto line = *line_list.front();
+  //
+  //   out.velocity = CalculateReflection(out, line);
+  //   out.position = b.position;
+  // }
+
 
 /*
   //Simple boundary collision
@@ -541,7 +586,7 @@ void Game::Update(float dt)
   }
 
   //TODO maybe add sounds or particles when destroyed
-  remove_inplace(blocks, [=](auto &r){ return Collides_Any(r); } );
+  //remove_inplace(blocks, [=](auto &r){ return Collides_Any(r); } );
 
 
   //remove_inplace(balls, [=](auto &b){ return b.radius == 10 && Collides_Any(b); } );
@@ -600,7 +645,7 @@ void Game::PlayerInput(float dt, Input const &input)
   }
   else // WASD movement
   {
-    Velocity v{0.0f, 0.0f};
+    vec2 v{0.0f, 0.0f};
 
     if (move.up) v.y -= 1.0f;
     if (move.down) v.y += 1.0f;

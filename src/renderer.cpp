@@ -316,27 +316,29 @@ shape_def Renderer::GetRectShape(int w, int h)
 }
 
 
-void Renderer::RenderBlock(const Block & block, bool draw_outline)
+void Renderer::RenderBlock(const Block & block)
 {
   //TODO update this for blocks
+  RenderBounds(block.bounds);
 
-  glLineWidth(2.0f);
+  //const auto & vec = game.GetGeometry(block.type);
 
-  auto shape = GetRectShape(block.width, block.height);
-
-  basic_shader.SetOffset(block.position);
-  basic_shader.SetRotation(0.0f);
-  basic_shader.SetColour(block.colour.r, block.colour.g, block.colour.b, 0.3f);
-  basic_shader.SetZoom(1.0f);
-
-  DrawShape(GL_TRIANGLE_FAN, shape);
-
-
-  if (draw_outline)
+  for (auto line : block.geometry)
   {
-    basic_shader.SetColour(block.colour);
-    DrawShape(GL_LINE_LOOP, shape);
+    const auto p1 = line.p1;// + block.position;
+    const auto p2 = line.p2;// + block.position;
+
+    DynamicLine(p1, p2);
+
+    bool draw_normals = true;
+    if (draw_normals)
+    {
+      vec2 normal = get_normal(p1, p2);
+      vec2 center = (p1 + p2) / 2.0f;
+      DynamicLine(center, center + (normal * 4.0f));
+    }
   }
+
 }
 
 
@@ -383,14 +385,15 @@ void Renderer::DrawGameState(const Game & game)
     RenderBall(ball, collides);
   }
 
+  ClearDynamicVertexData();
 
   for(const auto &block : game.blocks)
   {
-      bool collides = game.Collides_Any(block);
+      //bool collides = game.Collides_Any(block);
 
       if (draw_bounds) RenderBounds(block.bounds, true);
 
-      RenderBlock(block, collides);
+      RenderBlock(block);
   }
 
 
@@ -403,9 +406,7 @@ void Renderer::DrawGameState(const Game & game)
   basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
 
 
-  ClearDynamicVertexData();
-
-  for (const auto &vec : {game.lines, game.border_lines})
+  for (const auto &vec : {game.border_lines})
   {
     for(const auto &line : vec)
     {

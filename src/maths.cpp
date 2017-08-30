@@ -203,6 +203,40 @@ const float * gl_data(vec4 const &v)
 }
 
 
+
+float RandomFloat()
+{
+  return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+}
+
+
+float RandomFloat(const float r1, const float r2)
+{
+  const float range = r2 - r1;
+  return (r1 + (RandomFloat() * range));
+}
+
+
+int RandomInt(int r1, int r2)
+{
+  const int range = r2 - r1;
+  return (r1 + (rand() % range));
+}
+
+
+vec4 RandomRGB()
+{
+  return { RandomFloat(), RandomFloat(), RandomFloat(), 1.0f };
+}
+
+
+vec4 RandomRGBA()
+{
+  return { RandomFloat(), RandomFloat(), RandomFloat(), RandomFloat() };
+}
+
+
+
 #ifdef TEST_MATHS
 
 #include "gl.hpp"

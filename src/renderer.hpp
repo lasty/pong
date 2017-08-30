@@ -80,7 +80,7 @@ public:
   void RenderArrow(const Ball & ball);
 
   shape_def GetRectShape(int w, int h);
-  void RenderBlock(const struct Block & block, bool draw_outline = false);
+  void RenderBlock(const struct Block & block);
   void RenderBounds(const struct BoundingBox & bounds, bool draw_outline = false);
 
 
