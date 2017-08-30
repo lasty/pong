@@ -14,7 +14,7 @@
 
 
 const int num_balls = 10;
-const int num_rects = 10;
+const int num_blocks = 10;
 
 
 float RandomFloat()
@@ -87,6 +87,37 @@ Position Game::RandomPosition() const
 }
 
 
+BoundingBox MakeBounds(const Ball & ball)
+{
+  const vec2 tl {ball.position.x - ball.radius, ball.position.y - ball.radius};
+  const vec2 br {ball.position.x + ball.radius, ball.position.y + ball.radius};
+
+  return {tl, br};
+}
+
+
+BoundingBox MakeBounds(const Block & block)
+{
+  const vec2 tl {block.position};
+  const vec2 br {block.position.x + block.width, block.position.y + block.height};
+
+  return {tl, br};
+}
+
+
+BoundingBox MakeBounds(const Line & line)
+{
+  const float top = std::min(line.p1.y, line.p2.y);
+  const float bottom = std::max(line.p1.y, line.p2.y);
+
+  const float left = std::min(line.p1.x, line.p2.x);
+  const float right = std::max(line.p1.x, line.p2.x);
+
+  return { {left, top} , {right, bottom} };
+}
+
+
+
 Ball Game::NewBall() const
 {
   Ball b;
@@ -100,13 +131,15 @@ Ball Game::NewBall() const
 
   b.colour = RandomRGB();
 
+  b.bounds = MakeBounds(b);
+
   return b;
 }
 
 
-Rect Game::NewRect() const
+Block Game::NewBlock() const
 {
-  Rect r;
+  Block r;
   r.position = RandomPosition();
 
   const float speed = 100.0f;
@@ -116,6 +149,8 @@ Rect Game::NewRect() const
   r.height = RandomInt(50, 100);
 
   r.colour = RandomRGB();
+
+  r.bounds = MakeBounds(r);
 
   return r;
 }
@@ -130,13 +165,22 @@ Line Game::NewLine() const
 
   l.colour = RandomRGB();
 
+  l.bounds = MakeBounds(l);
+
   return l;
 }
 
 
 Line MakeLine(vec2 const &p1, vec2 const &p2)
 {
-  return {p1, p2, RandomRGB()};
+  Line l;
+  l.p1 = p1;
+  l.p2 = p2;
+  l.colour = RandomRGB();
+
+  l.bounds = MakeBounds(l);
+
+  return l;
 }
 
 
@@ -150,12 +194,11 @@ void Game::NewObjects()
   //std::cout << "Generated " << balls.size() << " new balls." << std::endl;
 
 
-  rects.clear();
-  for(int i=0; i<num_rects; i++)
+  blocks.clear();
+  for(int i=0; i<num_blocks; i++)
   {
-    rects.push_back(NewRect());
+    blocks.push_back(NewBlock());
   }
-  //std::cout << "Generated " << rects.size() << " new rects." << std::endl;
 
 
   lines.clear();
@@ -204,6 +247,21 @@ void Game::Resize(int width, int height)
 }
 
 
+bool BoundingBoxCollides(const BoundingBox &a, const BoundingBox &b)
+{
+  if (&a == &b) return false;
+
+  return
+    (a.top_left.x < b.bottom_right.x)
+    and
+    (a.bottom_right.x > b.top_left.x)
+    and
+    (a.top_left.y < b.bottom_right.y)
+    and
+    (a.bottom_right.y > b.top_left.y);
+}
+
+
 bool Collides(const Ball &b1, const vec2 &point)
 {
   float dist = distance(b1.position, point);
@@ -212,10 +270,12 @@ bool Collides(const Ball &b1, const vec2 &point)
 }
 
 
-bool Collides(const Ball &c, const Rect &r)
+bool Collides(const Ball &c, const Block &r)
 {
-  const vec2 rect_center {r.position.x + r.width/2.0f , r.position.y + r.height/2.0f };
-  const vec2 circle_distance = vec_abs(c.position - rect_center);
+  //TODO fix this
+
+  const vec2 block_center {r.position.x + r.width/2.0f , r.position.y + r.height/2.0f };
+  const vec2 circle_distance = vec_abs(c.position - block_center);
 
   if ((circle_distance.x > (r.width/2.0f + c.radius))
     or (circle_distance.y > (r.height/2.0f + c.radius))) return false;
@@ -253,8 +313,11 @@ bool Collides(const Ball &ball, Line const &line)
 }
 
 
-bool Collides(const Rect &r, vec2 point)
+bool Collides(const Block &r, vec2 point)
 {
+  //TODO fix this, but is this needed?
+  //TODO make BoundingBox collides with point instead?
+
   return
     in_range(r.position.x, r.position.x + r.width, point.x)
     and
@@ -262,8 +325,12 @@ bool Collides(const Rect &r, vec2 point)
 }
 
 
-bool Collides(const Rect &r1, const Rect &r2)
+bool Collides(const Block &r1, const Block &r2)
 {
+  //TODO does this make sense?
+  return false;
+
+  /*
   if (&r1 == &r2) return false;
 
   return
@@ -274,10 +341,11 @@ bool Collides(const Rect &r1, const Rect &r2)
     (r1.position.y < r2.position.y + r2.height)
     and
     (r1.position.y + r1.height > r2.position.y);
+  */
 }
 
 
-bool Collides([[maybe_unused]] const Rect &rect, [[maybe_unused]] const Line &line)
+bool Collides([[maybe_unused]] const Block &block, [[maybe_unused]] const Line &line)
 {
   //TODO
   return false;
@@ -319,7 +387,7 @@ bool Collides_List(const OBJ1 &o, const LIST &other)
 {
   for(auto const &item : other)
   {
-    if (Collides(o, item))
+    if (BoundingBoxCollides(o.bounds, item.bounds) and Collides(o, item))
       return true;
   }
   return false;
@@ -333,8 +401,8 @@ VECTYPE GetVec_Collides_List(const OBJ1 &o, const LIST &other)
 
   for(auto const &item : other)
   {
-    if (Collides(o, item))
-    vec.push_back(&item);
+    if (BoundingBoxCollides(o.bounds, item.bounds) and Collides(o, item))
+      vec.push_back(&item);
   }
   return vec;
 }
@@ -349,8 +417,8 @@ bool Game::Collides_Any(const OBJ &obj) const
   //if (Collides(obj, mouse_pointer)) return true;
   //if (Collides(obj, player)) return true;
 
-  //Rects
-  if (Collides_List(obj, rects)) return true;
+  //Blocks
+  if (Collides_List(obj, blocks)) return true;
 
   //Lines
   if (Collides_List(obj, lines)) return true;
@@ -359,9 +427,10 @@ bool Game::Collides_Any(const OBJ &obj) const
   return false;
 }
 
+
 //Explicit template instantiation
 template bool Game::Collides_Any<>(const Ball &obj) const;
-template bool Game::Collides_Any<>(const Rect &obj) const;
+template bool Game::Collides_Any<>(const Block &obj) const;
 
 
 Ball Game::UpdatePhysics(float dt, const Ball & b) const
@@ -450,6 +519,7 @@ Ball Game::UpdatePhysics(float dt, const Ball & b) const
     }
   }
 
+  out.bounds = MakeBounds(out);
   return out;
 }
 
@@ -470,7 +540,8 @@ void Game::Update(float dt)
     b = UpdatePhysics(dt, b);
   }
 
-  remove_inplace(rects, [=](auto &r){ return Collides_Any(r); } );
+  //TODO maybe add sounds or particles when destroyed
+  remove_inplace(blocks, [=](auto &r){ return Collides_Any(r); } );
 
 
   //remove_inplace(balls, [=](auto &b){ return b.radius == 10 && Collides_Any(b); } );
@@ -480,7 +551,7 @@ void Game::Update(float dt)
 
 
   //XXX Debugging stuff
-  
+
   // if (lines.size())
   // {
   //   const auto & line = lines.front();
@@ -498,7 +569,8 @@ void Game::Update(float dt)
 
 void Game::PlayerInput(float dt, Input const &input)
 {
-  mouse_pointer.position = input.mouse ;
+  mouse_pointer.position = input.mouse;
+  mouse_pointer.bounds = MakeBounds(mouse_pointer);
 
   MovementInput move = input.player_move;
 

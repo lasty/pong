@@ -5,14 +5,15 @@
 - Collision detection
   - line line collision (needed?)
   - line rect collision (needed?)
-  - try making rects out of lines, for circle line collision
+  - [TODO] Bounding Box class
+  - [TODO] try making blocks out of lines, for circle line collision
   - force when collided
   - change collides_any etc to return a struct with the collision points or something
 - resize redraws border lines
 - Refactor and clean up code again  (move things to maths, collision routines out of game class)
 
 - Gameish
-  - Arrange rects in grid formation for test level
+  - Arrange blocks in grid formation for test level
   - Change player to paddle rect
   - Paddle follow mouse cursor X position
   - Fire straight up from paddle

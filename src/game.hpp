@@ -10,13 +10,22 @@ using Velocity = vec2;
 using Colour = vec4;
 
 
-struct Rect
+struct BoundingBox
+{
+  vec2 top_left;
+  vec2 bottom_right;
+};
+
+
+struct Block
 {
   Position position;
   Velocity velocity;
   float width;
   float height;
   Colour colour;
+
+  BoundingBox bounds;
 };
 
 
@@ -27,6 +36,8 @@ struct Ball
   Velocity velocity;
   Colour colour;
   float rot = 0.0f;
+
+  BoundingBox bounds;
 };
 
 struct Line
@@ -34,7 +45,10 @@ struct Line
   Position p1;
   Position p2;
   Colour colour;
+
+  BoundingBox bounds;
 };
+
 
 
 class Game
@@ -49,7 +63,7 @@ private:
   bool friction_enabled = false;
 
   std::vector<Ball> balls;
-  std::vector<Rect> rects;
+  std::vector<Block> blocks;
   std::vector<Line> lines;
   std::vector<Line> border_lines;
 
@@ -68,7 +82,7 @@ public:
   Position RandomPosition() const;
 
   Ball NewBall() const;
-  Rect NewRect() const;
+  Block NewBlock() const;
   Line NewLine() const;
 
   void NewObjects();

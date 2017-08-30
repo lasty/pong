@@ -263,6 +263,8 @@ void Renderer::FillCircle(int radius, float x, float y)
 
 void Renderer::RenderBall(const Ball & ball, bool draw_outline)
 {
+  glLineWidth(2.0f);
+
   const auto & radius = ball.radius;
 
   UseProgram(basic_shader.GetProgramId());
@@ -289,6 +291,8 @@ void Renderer::RenderBall(const Ball & ball, bool draw_outline)
 
 void Renderer::RenderArrow(const Ball & arrow)
 {
+  glLineWidth(2.0f);
+
   basic_shader.SetOffset(arrow.position.x, arrow.position.y);
   basic_shader.SetRotation(arrow.rot);
   basic_shader.SetColour(arrow.colour);
@@ -312,13 +316,17 @@ shape_def Renderer::GetRectShape(int w, int h)
 }
 
 
-void Renderer::RenderRect(const Rect & rect, bool draw_outline)
+void Renderer::RenderBlock(const Block & block, bool draw_outline)
 {
-  auto shape = GetRectShape(rect.width, rect.height);
+  //TODO update this for blocks
 
-  basic_shader.SetOffset(rect.position);
+  glLineWidth(2.0f);
+
+  auto shape = GetRectShape(block.width, block.height);
+
+  basic_shader.SetOffset(block.position);
   basic_shader.SetRotation(0.0f);
-  basic_shader.SetColour(rect.colour.r, rect.colour.g, rect.colour.b, 0.3f);
+  basic_shader.SetColour(block.colour.r, block.colour.g, block.colour.b, 0.3f);
   basic_shader.SetZoom(1.0f);
 
   DrawShape(GL_TRIANGLE_FAN, shape);
@@ -326,42 +334,71 @@ void Renderer::RenderRect(const Rect & rect, bool draw_outline)
 
   if (draw_outline)
   {
-    basic_shader.SetColour(rect.colour);
+    basic_shader.SetColour(block.colour);
+    DrawShape(GL_LINE_LOOP, shape);
+  }
+}
+
+
+void Renderer::RenderBounds(const BoundingBox & bounds, [[maybe_unused]] bool draw_outline)
+{
+  glLineWidth(1.0f);
+  const vec2 size = bounds.bottom_right - bounds.top_left;
+  auto shape = GetRectShape(size.x, size.y);
+
+  basic_shader.SetOffset(bounds.top_left);
+  basic_shader.SetRotation(0.0f);
+  basic_shader.SetColour(0.9f, 0.1f, 0.9f, 0.05f);
+  basic_shader.SetZoom(1.0f);
+
+  DrawShape(GL_TRIANGLE_FAN, shape);
+
+  if (draw_outline)
+  {
+    basic_shader.SetColour(0.9f, 0.1f, 0.9f, 0.9f);
     DrawShape(GL_LINE_LOOP, shape);
   }
 
-  // DrawCircle(5, rect.position.x, rect.position.y);
-  // FillCircle(5, rect.position.x + rect.width, rect.position.y + rect.height);
 }
+
 
 
 void Renderer::DrawGameState(const Game & game)
 {
   const bool draw_normals = false;
+  const bool draw_bounds = true;
 
   EnableBlend();
-  glLineWidth(2.0f);
 
   UseProgram(basic_shader.GetProgramId());
   UseVAO(vao_id);
+
 
   for(const auto &ball : game.balls)
   {
     bool collides = game.Collides_Any(ball);
 
+    if (draw_bounds) RenderBounds(ball.bounds, true);
+
     RenderBall(ball, collides);
   }
 
-  for(const auto &rect : game.rects)
-  {
-      bool collides = game.Collides_Any(rect);
 
-      RenderRect(rect, collides);
+  for(const auto &block : game.blocks)
+  {
+      bool collides = game.Collides_Any(block);
+
+      if (draw_bounds) RenderBounds(block.bounds, true);
+
+      RenderBlock(block, collides);
   }
 
+
   RenderArrow(game.player);
+  if (draw_bounds) RenderBounds(game.player.bounds, true);
 
   RenderBall(game.mouse_pointer, game.Collides_Any(game.mouse_pointer));
+  if (draw_bounds) RenderBounds(game.mouse_pointer.bounds, true);
 
   basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -373,6 +410,7 @@ void Renderer::DrawGameState(const Game & game)
     for(const auto &line : vec)
     {
       DynamicLine(line.p1, line.p2);
+      if (draw_bounds) RenderBounds(line.bounds, true);
 
       if (draw_normals)
       {
@@ -382,6 +420,7 @@ void Renderer::DrawGameState(const Game & game)
       }
     }
   }
+
 
   if (draw_normals)
   {
@@ -393,6 +432,10 @@ void Renderer::DrawGameState(const Game & game)
   }
 
   UpdateDynamicVertexData();
+
+  basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
+  glLineWidth(2.0f);
+
   DrawDynamic(GL_LINES);
 
 }
