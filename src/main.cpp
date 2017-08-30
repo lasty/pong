@@ -7,7 +7,7 @@
 // #define TEST_MATHS
 
 const int SWAP_INTERVAL {1};
-const bool DRAW_TEST_CASE = true;
+const bool DRAW_TEST_CASE = false;
 const int GL_MAJOR {4};
 const int GL_MINOR {5};
 
@@ -153,10 +153,13 @@ void main_game()
     if (SWAP_INTERVAL > 1)
     delta_time = 1.0f / 60.0f;
 
-    //XXX game.PlayerInput(delta_time, input);
 
-    //XXX game.Update(delta_time);
+    if (not DRAW_TEST_CASE)
+    {
+      game.PlayerInput(delta_time, input);
 
+      game.Update(delta_time);
+    }
 
     // FPS counter
     frame_count++;

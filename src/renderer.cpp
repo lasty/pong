@@ -451,14 +451,14 @@ void Renderer::DrawTestCase(Game &game, [[maybe_unused]] float seed, int step)
   Ball b;
   b.radius = 20;
   b.position = {100, 50};
-  b.velocity = {5, 40};
+  b.velocity = {0, 20};
   b.colour = {0.5, 0.5, 0.5, 1.0};
   b.rot = 0.0f;
   b.bounds = MakeBounds(b);
 
   BorderLine l;
-  l.p2 = {50, 100};
-  l.p1 = {300, 100};
+  l.p2 = {50, 115};
+  l.p1 = {300, 15};
   l.bounds = MakeBounds(l);
 
   //Game game { xxx.width, xxx.height };

@@ -471,8 +471,12 @@ template bool Game::Collides_Any<>(const Block &obj) const;
 vec2 CalculateReflection(const Ball &b, const BorderLine &line)
 {
   vec2 normal = get_normal(line.p1, line.p2);
-  // if (dot(normal, b.velocity) < 0 )
-    // normal = get_normal(line.p2, line.p1);
+
+  if (dot(normal, b.velocity) > 0 )  //if normal is wrong way
+  {
+    //return {0,0};
+    normal = get_normal(line.p2, line.p1);
+  }
 
   return reflect(b.velocity, normal);
 }
@@ -483,52 +487,81 @@ vec2 CalculateReflection(const Ball &b, const BorderLine &line)
 Ball Game::UpdatePhysics(float dt, const Ball & b) const
 {
   Ball out = b;
+  float orig_speed = get_length(b.velocity);
+
   out.position = b.position + (b.velocity * dt);
   out.bounds = MakeBounds(out);
+
 
   [[maybe_unused]] const float gravity = 300.0f;
   [[maybe_unused]] const float bounce = -0.8f;
   [[maybe_unused]] const float friction_amount = 1.0f;
 
-/* //XXX
+  //XXX
   for (auto & block : blocks)
   {
     if (BoundingBoxCollides(out.bounds, block.bounds))
     {
       auto line_list = GetVec_Collides_List(out, block.geometry);
-      if (line_list.size())
+      for (auto line_ptr : line_list)
       {
-        auto line = *line_list.front();
+        auto line = *line_ptr;
 
-        out.velocity = CalculateReflection(out, line);
+        // out.velocity = CalculateReflection(out, line);
+        // out.position = b.position;
+
+        //out.velocity = CalculateReflection(b, line);
+        vec2 ref = CalculateReflection(b, line);
+        vec2 force = ref - b.velocity;
+        out.velocity += force;
+
+        //Back up radius amount from line
+        try {
+          vec2 intersection = get_intersection(line.p1, line.p2, b.position, out.position);
+          vec2 back_dir = normalize(intersection - b.position);
+          out.position = intersection - back_dir * (b.radius+2);
+          throw "xxx";
+        }
+        catch (...) //get_intersecion throws when lines are parallel
+        {
+          out.position = b.position;
+        }
+
         out.position = b.position;
+
+        out.bounds = MakeBounds(out);
       }
     }
   }
-*/
+
+
 
   //TRACE << " STEP ";
-
-  if (Collides_List(b,border_lines)) TRACE << "LAST  ";
-  if (Collides_List(out,border_lines)) TRACE << "THIS  ";
+  // if (Collides_List(b,border_lines)) TRACE << "LAST  ";
+  // if (Collides_List(out,border_lines)) TRACE << "THIS  ";
 
 
   auto line_list = GetVec_Collides_List(out, border_lines);
-  if (line_list.size())
+  //if (line_list.size())
+  for (auto line_ptr : line_list)
   {
-    TRACE << "Collides with vec thing  ";
-    auto line = *line_list.front();
+    auto line = *line_ptr;
+    //auto line = *line_list.front();
 
-    out.colour = {1.0f, 0.1f, 0.1f, 1.0f}; // red
-    //out.velocity = out.velocity * -1;
-    out.velocity = CalculateReflection(b, line);
+    vec2 ref = CalculateReflection(b, line);
+
+    vec2 force = ref - b.velocity;
+
+    out.velocity += force;
+
+    //out.velocity = ref;
 
     //Back up radius amount from line
-
     try {
       vec2 intersection = get_intersection(line.p1, line.p2, b.position, out.position);
       vec2 back_dir = normalize(intersection - b.position);
-      out.position = intersection - back_dir * b.radius;
+      out.position = intersection - back_dir * (b.radius);
+      throw "xxx";
     }
     catch (...) //get_intersecion throws when lines are parallel
     {
@@ -591,6 +624,11 @@ Ball Game::UpdatePhysics(float dt, const Ball & b) const
   }
 */
 
+  if (get_length(out.velocity) != orig_speed)
+  {
+    out.velocity = normalize(out.velocity) * orig_speed;
+  }
+
   out.bounds = MakeBounds(out);
   return out;
 }
@@ -613,7 +651,7 @@ void Game::Update(float dt)
   }
 
   //TODO maybe add sounds or particles when destroyed
-  //remove_inplace(blocks, [=](auto &r){ return Collides_Any(r); } );
+  remove_inplace(blocks, [=](auto &r){ return Collides_Any(r); } );
 
 
   //remove_inplace(balls, [=](auto &b){ return b.radius == 10 && Collides_Any(b); } );
