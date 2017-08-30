@@ -57,6 +57,7 @@ void Input::SetupBinds()
   AddBind(GLFW_KEY_RIGHT, Control::move_right);
 
   AddBind(GLFW_MOUSE_BUTTON_LEFT, Control::shoot);
+  AddBind(GLFW_MOUSE_BUTTON_RIGHT, Control::shoot);
 
 }
 
@@ -118,6 +119,9 @@ Input * Input::GetThis(GLFWwindow *window)
   return input;
 }
 
+extern float test_case_seed;
+extern int test_case_step;
+
 
 void Input::key_callback(
   GLFWwindow* window, int key, [[maybe_unused]] int scancode,
@@ -149,6 +153,13 @@ void Input::mouse_button_callback(GLFWwindow* window, int button, int action, [[
   Control control = input->GetControl(button);
 
   input->HandleCommand(control, down);
+
+  if (down)
+  {
+    if (button == GLFW_MOUSE_BUTTON_LEFT) test_case_step ++;
+    if (button == GLFW_MOUSE_BUTTON_RIGHT and test_case_step > 0) test_case_step --;
+  }
+
 }
 
 

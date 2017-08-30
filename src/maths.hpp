@@ -41,6 +41,7 @@ vec2 normalize(vec2 const &v);
 vec2 reflect(vec2 const &incident, vec2 const &normal);
 
 vec2 nearest_point_on_line(vec2 const &v, vec2 const &w, vec2 const &p);
+vec2 get_intersection(vec2 ps1, vec2 pe1, vec2 ps2, vec2 pe2); //Throws
 
 bool in_range(float beg, float end, float p);
 
@@ -55,7 +56,6 @@ float RandomFloat(const float r1, const float r2);
 int RandomInt(int r1, int r2);
 vec4 RandomRGB();
 vec4 RandomRGBA();
-
 
 
 void TestMaths();

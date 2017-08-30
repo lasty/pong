@@ -180,6 +180,32 @@ vec2 nearest_point_on_line(vec2 const &v, vec2 const &w, vec2 const &p)
 }
 
 
+vec2 get_intersection(vec2 ps1, vec2 pe1, vec2 ps2, vec2 pe2)
+{
+  // Get A,B,C of first line - points : ps1 to pe1
+  float A1 = pe1.y-ps1.y;
+  float B1 = ps1.x-pe1.x;
+  float C1 = A1*ps1.x+B1*ps1.y;
+
+  // Get A,B,C of second line - points : ps2 to pe2
+  float A2 = pe2.y-ps2.y;
+  float B2 = ps2.x-pe2.x;
+  float C2 = A2*ps2.x+B2*ps2.y;
+
+  // Get delta and check if the lines are parallel
+  float delta = A1*B2 - A2*B1;
+  if(delta == 0)
+     throw std::runtime_error("Lines are parallel");
+
+  // now return the Vector2 intersection point
+  return {
+      (B2*C1 - B1*C2)/delta,
+      (A1*C2 - A2*C1)/delta
+  };
+}
+
+
+
 bool in_range(float beg, float end, float p)
 {
   return (p >= beg and p <= end);
@@ -237,11 +263,9 @@ vec4 RandomRGBA()
 
 
 
-#ifdef TEST_MATHS
 
-#include "gl.hpp"
 
-vec2 GetGLStyle(const GLfloat* data)
+vec2 GetGLStyle(const float* data)
 {
   using std::cout;
   using std::endl;
@@ -260,9 +284,9 @@ void TestMaths()
   cout.precision(2);
   cout << std::fixed;
 
-  cout << "Testing Maths()" << endl;
+  cout << "\n\n==== Testing Maths()\n" << endl;
 
-  //if(false)
+  if(false)
   {
     vec2 in { 3, 6 };
     cout << "in = " << in << endl;
@@ -338,7 +362,17 @@ void TestMaths()
     cout << "\n===\n" << endl;
   }
 
+
+  if (true)
+  {
+    vec2 zero {};
+    vec2 tri { 3, 4 };
+    cout << "tri = " << tri << endl;
+    cout << "get_length(tri) = " << get_length(tri) << endl;
+
+    cout << "\nzero = " << zero << endl;
+    cout << "distance(zero, tri) = " << distance(zero, tri) << endl;
+    cout << "distance_squared(zero, tri) = " << distance_squared(zero, tri) << endl;
+
+  }
 }
-
-
-#endif //TEST_MATHS

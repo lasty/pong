@@ -86,4 +86,7 @@ public:
 
   void DrawGameState(const class Game & game);
 
+  void DrawTestCase(class Game & game, float seed, int step);
+
+
 };

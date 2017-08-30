@@ -10,10 +10,8 @@
 #include "input.hpp"
 
 #include "maths.hpp"
-//#include "maths_utils.hpp"
+#include "maths_utils.hpp"
 
-
-BoundingBox MakeBounds(const BorderLine & line);
 
 BorderLine::BorderLine(const vec2 &p1, const vec2 &p2)
 : p1(p1)
@@ -480,16 +478,19 @@ vec2 CalculateReflection(const Ball &b, const BorderLine &line)
 }
 
 
+
+
 Ball Game::UpdatePhysics(float dt, const Ball & b) const
 {
   Ball out = b;
   out.position = b.position + (b.velocity * dt);
+  out.bounds = MakeBounds(out);
 
   [[maybe_unused]] const float gravity = 300.0f;
   [[maybe_unused]] const float bounce = -0.8f;
   [[maybe_unused]] const float friction_amount = 1.0f;
 
-
+/* //XXX
   for (auto & block : blocks)
   {
     if (BoundingBoxCollides(out.bounds, block.bounds))
@@ -504,16 +505,40 @@ Ball Game::UpdatePhysics(float dt, const Ball & b) const
       }
     }
   }
+*/
 
-  //
-  // auto line_list = GetVec_Collides_List(out, border_lines);
-  // if (line_list.size())
-  // {
-  //   auto line = *line_list.front();
-  //
-  //   out.velocity = CalculateReflection(out, line);
-  //   out.position = b.position;
-  // }
+  //TRACE << " STEP ";
+
+  if (Collides_List(b,border_lines)) TRACE << "LAST  ";
+  if (Collides_List(out,border_lines)) TRACE << "THIS  ";
+
+
+  auto line_list = GetVec_Collides_List(out, border_lines);
+  if (line_list.size())
+  {
+    TRACE << "Collides with vec thing  ";
+    auto line = *line_list.front();
+
+    out.colour = {1.0f, 0.1f, 0.1f, 1.0f}; // red
+    //out.velocity = out.velocity * -1;
+    out.velocity = CalculateReflection(b, line);
+
+    //Back up radius amount from line
+
+    try {
+      vec2 intersection = get_intersection(line.p1, line.p2, b.position, out.position);
+      vec2 back_dir = normalize(intersection - b.position);
+      out.position = intersection - back_dir * b.radius;
+    }
+    catch (...) //get_intersecion throws when lines are parallel
+    {
+      out.position = b.position;
+    }
+
+    out.bounds = MakeBounds(out);
+
+  }
+
 
 
 /*
@@ -544,6 +569,7 @@ Ball Game::UpdatePhysics(float dt, const Ball & b) const
 */
 
 
+/* //XXX
   if (gravity_enabled)
   {
     out.velocity.y += gravity * dt;
@@ -563,6 +589,7 @@ Ball Game::UpdatePhysics(float dt, const Ball & b) const
       out.velocity = {0.0f, 0.0f};
     }
   }
+*/
 
   out.bounds = MakeBounds(out);
   return out;

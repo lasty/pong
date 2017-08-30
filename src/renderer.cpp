@@ -367,7 +367,8 @@ void Renderer::RenderBounds(const BoundingBox & bounds, [[maybe_unused]] bool dr
 
 void Renderer::DrawGameState(const Game & game)
 {
-  const bool draw_normals = false;
+  const bool draw_normals = true;
+  const bool draw_velocity = true;
   const bool draw_bounds = true;
 
   EnableBlend();
@@ -423,14 +424,15 @@ void Renderer::DrawGameState(const Game & game)
   }
 
 
-  if (draw_normals)
+  if (draw_velocity)
   {
     for (const auto& ball : game.balls)
     {
       vec2 dir = (ball.velocity);
-      DynamicLine(ball.position, ball.position + dir * 0.5f);
+      DynamicLine(ball.position, ball.position + dir * 1.0f);
     }
   }
+
 
   UpdateDynamicVertexData();
 
@@ -438,5 +440,84 @@ void Renderer::DrawGameState(const Game & game)
   glLineWidth(2.0f);
 
   DrawDynamic(GL_LINES);
+
+}
+
+
+void Renderer::DrawTestCase(Game &game, [[maybe_unused]] float seed, int step)
+{
+  srand(2);
+
+  Ball b;
+  b.radius = 20;
+  b.position = {100, 50};
+  b.velocity = {5, 40};
+  b.colour = {0.5, 0.5, 0.5, 1.0};
+  b.rot = 0.0f;
+  b.bounds = MakeBounds(b);
+
+  BorderLine l;
+  l.p2 = {50, 100};
+  l.p1 = {300, 100};
+  l.bounds = MakeBounds(l);
+
+  //Game game { xxx.width, xxx.height };
+
+  game.blocks.clear();
+
+  game.border_lines.erase(game.border_lines.begin() + 1, game.border_lines.end());
+  game.border_lines.push_back(l);
+
+  game.balls.clear();
+  game.balls.push_back(b);
+
+  game.player.position = {-100, -100};
+  game.player.bounds = MakeBounds(game.player);
+
+  game.mouse_pointer.position = {-100, -100};
+  game.mouse_pointer.bounds = MakeBounds(game.mouse_pointer);
+
+
+  TRACE << "step " << step << "  ";
+
+  for (int i=0; i<step; i++)
+  {
+    float dt = 1.0f;
+    game.Update(dt);
+  }
+
+
+  DrawGameState(game);
+
+  /*
+  EnableBlend();
+  UseProgram(basic_shader.GetProgramId());
+  UseVAO(vao_id);
+  ClearDynamicVertexData();
+
+
+  RenderBall(b, true);
+
+
+
+
+
+  DynamicLine(l.p1, l.p2);
+
+  if (draw_normals)
+  {
+    vec2 normal = get_normal(l.p1, l.p2);
+    vec2 center = (l.p1 + l.p2) / 2.0f;
+    DynamicLine(center, center+ (normal * 20.0f));
+  }
+
+
+
+  UpdateDynamicVertexData();
+  basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
+  glLineWidth(2.0f);
+  DrawDynamic(GL_LINES);
+  */
+
 
 }

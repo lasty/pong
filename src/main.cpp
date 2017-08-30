@@ -2,11 +2,12 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <ctime>
 
-
-//#define TEST_MATHS
+// #define TEST_MATHS
 
 const int SWAP_INTERVAL {1};
+const bool DRAW_TEST_CASE = true;
 const int GL_MAJOR {4};
 const int GL_MINOR {5};
 
@@ -35,7 +36,8 @@ const int GL_MINOR {5};
 std::ostringstream TRACE;
 
 bool mainloop_running = true;
-
+float test_case_seed = time(0);
+int test_case_step = 0;
 
 
 void glfw_error_callback([[maybe_unused]] int error, const char* description)
@@ -57,6 +59,8 @@ void main_game()
 {
   int width = 640;
   int height = 480;
+
+
 
   std::cout << "Hello, world" << std::endl;
 
@@ -149,9 +153,9 @@ void main_game()
     if (SWAP_INTERVAL > 1)
     delta_time = 1.0f / 60.0f;
 
-    game.PlayerInput(delta_time, input);
+    //XXX game.PlayerInput(delta_time, input);
 
-    game.Update(delta_time);
+    //XXX game.Update(delta_time);
 
 
     // FPS counter
@@ -196,7 +200,16 @@ void main_game()
     glClearColor(0.1, 0.2, 0.3, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    renderer.DrawGameState(game);
+
+    if (DRAW_TEST_CASE)
+    {
+      renderer.DrawTestCase(game, test_case_seed, test_case_step);
+    }
+    else
+    {
+      renderer.DrawGameState(game);
+    }
+
 
     // Present framebuffer
 

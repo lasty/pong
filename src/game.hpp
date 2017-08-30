@@ -13,6 +13,7 @@ struct BoundingBox
 };
 
 
+
 struct Ball
 {
   int radius = 20;
@@ -27,6 +28,7 @@ struct Ball
 
 struct BorderLine
 {
+  BorderLine() = default;
   BorderLine(const vec2 &p1, const vec2 &p2);
 
   vec2 p1;
@@ -61,6 +63,10 @@ struct Block
   BoundingBox bounds;
 };
 
+
+BoundingBox MakeBounds(const Ball & ball);
+BoundingBox MakeBounds(const Block &block);
+BoundingBox MakeBounds(const BorderLine & line);
 
 
 class Game
