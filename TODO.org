@@ -3,11 +3,11 @@
 ## Todo List
 
 - Collision detection
-  - see if circle/line collision can be two sided
   - line line collision (needed?)
   - line rect collision (needed?)
   - try making rects out of lines, for circle line collision
   - force when collided
+  - change collides_any etc to return a struct with the collision points or something
 - resize redraws border lines
 - Refactor and clean up code again  (move things to maths, collision routines out of game class)
 
@@ -30,6 +30,7 @@
 ## Done!
 
 
+  - [DONE] see if circle/line collision can be two sided
   - [DONE] Simple circle detection
   - [DONE] Rect point collisions
   - [DONE] rect rect collisions

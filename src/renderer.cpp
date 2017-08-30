@@ -337,6 +337,8 @@ void Renderer::RenderRect(const Rect & rect, bool draw_outline)
 
 void Renderer::DrawGameState(const Game & game)
 {
+  const bool draw_normals = false;
+
   EnableBlend();
   glLineWidth(2.0f);
 
@@ -372,12 +374,21 @@ void Renderer::DrawGameState(const Game & game)
     {
       DynamicLine(line.p1, line.p2);
 
-      vec2 normal = get_normal(line.p1, line.p2);
+      if (draw_normals)
+      {
+        vec2 normal = get_normal(line.p1, line.p2);
+        vec2 center = (line.p1 + line.p2) / 2.0f;
+        DynamicLine(center, center+ (normal * 20.0f));
+      }
+    }
+  }
 
-      vec2 center = (line.p1 + line.p2) / 2.0f;
-
-      DynamicLine(center, center+ (normal * 20.0f));
-
+  if (draw_normals)
+  {
+    for (const auto& ball : game.balls)
+    {
+      vec2 dir = (ball.velocity);
+      DynamicLine(ball.position, ball.position + dir * 0.5f);
     }
   }
 

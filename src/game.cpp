@@ -10,6 +10,7 @@
 #include "input.hpp"
 
 #include "maths.hpp"
+//#include "maths_utils.hpp"
 
 
 const int num_balls = 10;
@@ -81,7 +82,8 @@ Position Game::GetCenterScreen() const
 
 Position Game::RandomPosition() const
 {
-  return { RandomFloat(0.0f, width) , RandomFloat(0.0f, height)};
+  float border = 50.0f;
+  return { RandomFloat(border, width - border) , RandomFloat(border, height - border)};
 }
 
 
@@ -157,7 +159,7 @@ void Game::NewObjects()
 
 
   lines.clear();
-  for(int i=0; i<2; i++)
+  for(int i=0; i<1; i++)
   {
     lines.push_back(NewLine());
   }
@@ -365,23 +367,26 @@ template bool Game::Collides_Any<>(const Rect &obj) const;
 Ball Game::UpdatePhysics(float dt, const Ball & b) const
 {
   Ball out = b;
-  out.position.x = b.position.x + b.velocity.x * dt;
-  out.position.y = b.position.y + b.velocity.y * dt;
+  out.position = b.position + (b.velocity * dt);
 
-  const float gravity = 300.0f;
-  const float bounce = -0.8f;
-  const float friction_amount = 1.0f;
+  [[maybe_unused]] const float gravity = 300.0f;
+  [[maybe_unused]] const float bounce = -0.8f;
+  [[maybe_unused]] const float friction_amount = 1.0f;
 
   //Lines
   for (auto & vec : {lines, border_lines})
   {
-    auto line_list = GetVec_Collides_List(b, vec);
+    auto line_list = GetVec_Collides_List(out, vec);
     if (line_list.size())
     {
       auto line = *line_list.front();
 
       //reflect bounce
       vec2 normal = get_normal(line.p1, line.p2);
+
+      if (dot(normal, out.velocity) <= 0 )
+        normal = get_normal(line.p2, line.p1);
+
       out.velocity = reflect(out.velocity, normal);
 
 
@@ -389,6 +394,8 @@ Ball Game::UpdatePhysics(float dt, const Ball & b) const
       vec2 contact_pos = nearest_point_on_line(line.p1, line.p2, out.position);
 
       out.position = contact_pos + (normal * (b.radius + 5));
+      out.position = b.position;
+
       //vec2 towards_last = normalize(contact_pos - b.position);
       //out.position = contact_pos + (towards_last * (b.radius + 5));
 
@@ -421,6 +428,7 @@ Ball Game::UpdatePhysics(float dt, const Ball & b) const
     out.velocity.y *= bounce;
   }
 */
+
 
   if (gravity_enabled)
   {
@@ -469,6 +477,22 @@ void Game::Update(float dt)
 
 
   //TODO update other objects?
+
+
+  //XXX Debugging stuff
+  
+  // if (lines.size())
+  // {
+  //   const auto & line = lines.front();
+  //   vec2 normal = get_normal(line.p1, line.p2);
+  //   vec2 dir = mouse_pointer.position - line.p1;
+  //
+  //   float dp = dot(normal, dir);
+  //
+  //   TRACE << "dot(normal, dir) = " << dp ;
+  // }
+
+
 }
 
 
