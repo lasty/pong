@@ -3,10 +3,15 @@
 ## Todo List
 
 - Collision detection
+  - [TODO] Clean up collision/physics code (repeated code a lot?)
   - [TODO] Fix bugs with collision/reflection handling
-  - line line collision (needed?)
-  - line rect collision (needed?)
-  - force when collided
+    - some balls still keep getting stuck on corners.
+      - try one line at a time?
+        - try closest line, or closest angle to normal?
+      - try backing off if still collided after next step?
+  - [DONE] force when collided
+  - [TODO] Work out a way to signal collision from balls to blocks
+    - event on collision ... start with just remove block
   - change collides_any etc to return a struct with the collision points or something
 - resize redraws border lines
 - Refactor and clean up code again  (move things to maths, collision routines out of game class)
@@ -25,6 +30,9 @@
 ## Todo Low Priority
 - [TODO] Watch more of those videos
 - [TODO] Investigate atom clang-format
+- Particles class
+- Do particles when block destroyed
+
 
 
 ## Done!

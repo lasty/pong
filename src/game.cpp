@@ -143,10 +143,12 @@ BlockType RandomBlockType()
 }
 
 
-Block Game::NewBlock(int x, int y) const
+Block Game::NewBlock(int x, int y, BlockType bt) const
 {
   Block b;
-  b.type = RandomBlockType();
+  b.type = bt;
+  //b.type = (bt == BlockType::none) ? RandomBlockType() : bt;
+
   b.position = { 50.0f + (110.0f * x) , 50.0f + (60.0f * y) };
   b.colour = RandomRGB();
   b.geometry = GetGeometry(b.type);
@@ -157,6 +159,31 @@ Block Game::NewBlock(int x, int y) const
     line.p2 += b.position;
     line.bounds = MakeBounds(line);
   }
+
+  b.bounds = MakeBounds(b);
+
+  return b;
+}
+
+
+Block NewWorldBorders(float border, int width, int height)
+{
+  Block b;
+  b.type = BlockType::world_border;
+  b.position = {0.0f, 0.0f};
+  b.colour = {1.0f, 1.0f, 1.0f, 1.0f};
+
+  b.geometry = {};
+
+  vec2 tl { border, border };
+  vec2 tr { width - border, border };
+  vec2 bl { border, height - border };
+  vec2 br { width - border, height - border };
+
+  b.geometry.push_back({tl, tr});
+  b.geometry.push_back({tr, br});
+  b.geometry.push_back({br, bl});
+  b.geometry.push_back({bl, tl});
 
   b.bounds = MakeBounds(b);
 
@@ -178,26 +205,26 @@ void Game::SetupBlockGeometry()
   vec2 tr {50, 0};
   vec2 br {50, 50};
 
-  BlockGeometry sq { {tl, bl}, {bl, br}, {br, tr}, {tr, tl} };
-  block_shapes.emplace(BlockType::square, sq);
+  block_shapes.emplace(BlockType::square,
+    BlockGeometry { {tl, bl}, {bl, br}, {br, tr}, {tr, tl} });
 
-  BlockGeometry tril { {tr, tl}, {tl, br}, {br, tr} };
-  block_shapes.emplace(BlockType::triangle_left, tril);
+  block_shapes.emplace(BlockType::triangle_left,
+    BlockGeometry { {tr, tl}, {tl, br}, {br, tr} });
 
-  BlockGeometry trir { {tr, tl}, {tl, bl}, {bl, tr} };
-  block_shapes.emplace(BlockType::triangle_right, trir);
+  block_shapes.emplace(BlockType::triangle_right,
+    BlockGeometry { {tr, tl}, {tl, bl}, {bl, tr} });
 
   vec2 wtr {100, 0};
   vec2 wbr {100, 50};
 
-  BlockGeometry rec { {tl, bl}, {bl, wbr}, {wbr, wtr}, {wtr, tl} };
-  block_shapes.emplace(BlockType::rectangle, rec);
+  block_shapes.emplace(BlockType::rectangle,
+    BlockGeometry { {tl, bl}, {bl, wbr}, {wbr, wtr}, {wtr, tl} });
 
   block_shapes.emplace(BlockType::rect_triangle_left,
-    BlockGeometry{ {wtr, tl}, {tl, br}, {br, wbr}, {wbr, wtr} });
+    BlockGeometry { {wtr, tl}, {tl, br}, {br, wbr}, {wbr, wtr} });
 
   block_shapes.emplace(BlockType::rect_triangle_right,
-    BlockGeometry{ {wtr, tl}, {tl, bl}, {bl, br}, {br, wtr} });
+    BlockGeometry { {wtr, tl}, {tl, bl}, {bl, br}, {br, wtr} });
 
 }
 
@@ -206,6 +233,7 @@ const BlockGeometry & Game::GetGeometry(BlockType bt) const
 {
   return block_shapes.at(bt);
 }
+
 
 void Game::NewObjects()
 {
@@ -222,24 +250,13 @@ void Game::NewObjects()
   {
     for (int y=0; y<3; y++)
     {
-      blocks.push_back(NewBlock(x, y));
-
+      blocks.push_back(NewBlock(x, y, RandomBlockType()));
     }
   }
 
 
   border_lines.clear();
-
-  float b = 5.0f;
-  vec2 tl { b, b };
-  vec2 tr { width - b, b };
-  vec2 bl { b, height - b };
-  vec2 br { width - b, height - b };
-
-  border_lines.push_back(MakeLine(tl, tr));
-  border_lines.push_back(MakeLine(tr, br));
-  border_lines.push_back(MakeLine(br, bl));
-  border_lines.push_back(MakeLine(bl, tl));
+  border_lines.push_back(NewWorldBorders(5, width, height));
 
 }
 
@@ -282,30 +299,9 @@ bool BoundingBoxCollides(const BoundingBox &a, const BoundingBox &b)
 }
 
 
-bool Collides(const Ball &b1, const vec2 &point)
-{
-  float dist = distance(b1.position, point);
-
-  return (dist <= b1.radius);
-}
-
-
-
-bool Collides(const Ball &b1, const Ball &b2)
-{
-  if (&b1 == &b2) return false;
-
-  float radii = b1.radius + b2.radius;
-
-  float dist = get_length(b2.position - b1.position);
-
-  return (dist <= radii);
-}
-
-
 bool Collides(const Ball &ball, BorderLine const &line)
 {
-  vec2 collision_point = nearest_point_on_line(line.p1, line.p2, ball.position);
+  vec2 collision_point = nearest_point_on_line_segment(line.p1, line.p2, ball.position);
 
   float dist = distance(collision_point, ball.position);
 
@@ -313,80 +309,7 @@ bool Collides(const Ball &ball, BorderLine const &line)
 }
 
 
-bool Collides(const Block &r, vec2 point)
-{
-  //TODO fix this, but is this needed?
-  //TODO make BoundingBox collides with point instead?
-
-  BoundingBox pt { point, point };
-  return BoundingBoxCollides(r.bounds, pt);
-
-  /*
-  return
-    in_range(r.position.x, r.position.x + r.width, point.x)
-    and
-    in_range(r.position.y, r.position.y + r.height, point.y);
-  */
-}
-
-
-bool Collides(const Block &r1, const Block &r2)
-{
-  //TODO does this make sense?
-
-  return BoundingBoxCollides(r1.bounds, r2.bounds);
-
-  /*
-  if (&r1 == &r2) return false;
-
-  return
-    (r1.position.x < r2.position.x + r2.width)
-    and
-    (r1.position.x + r1.width > r2.position.x)
-    and
-    (r1.position.y < r2.position.y + r2.height)
-    and
-    (r1.position.y + r1.height > r2.position.y);
-  */
-}
-
-
-bool Collides([[maybe_unused]] const Block &block, [[maybe_unused]] const BorderLine &line)
-{
-  //TODO
-  return false;
-}
-
-
-bool Collides(const BorderLine &line, const vec2 &point)
-{
-  //XXX maybe useless?
-
-  vec2 nearest = nearest_point_on_line(line.p1, line.p2, point);
-
-  float dist = distance(nearest, point);
-
-  return (dist < 1.0f);
-}
-
-
-bool Collides([[maybe_unused]] const BorderLine &line1, [[maybe_unused]] const BorderLine &line2)
-{
-  if (&line1 == &line2) return false;
-
-  //TODO
-  return false;
-}
-
-
-//Try swapping the order of the arguments
-template <typename OBJ1, typename OBJ2>
-inline bool Collides(const OBJ1 &o1, const OBJ2 &o2)
-{
-  return Collides(o2, o1);
-}
-
-
+/*
 //Applies Collides() to lists
 template <typename OBJ1, typename LIST>
 bool Collides_List(const OBJ1 &o, const LIST &other)
@@ -398,61 +321,50 @@ bool Collides_List(const OBJ1 &o, const LIST &other)
   }
   return false;
 }
+*/
 
 
 bool Collides(const Ball &ball, const Block &block)
 {
   if (not BoundingBoxCollides(ball.bounds, block.bounds)) return false;
-  return Collides_List(ball, block.geometry);
-}
 
-
-//Applies Collides() to lists
-template <typename OBJ1, typename LIST, typename VECTYPE = std::vector<const typename LIST::value_type *>>
-VECTYPE GetVec_Collides_List(const OBJ1 &o, const LIST &other)
-{
-  VECTYPE vec;
-
-  for(auto const &item : other)
+  for(auto const &line : block.geometry)
   {
-    if (BoundingBoxCollides(o.bounds, item.bounds) and Collides(o, item))
-      vec.push_back(&item);
+    if (Collides(ball, line)) return true;
   }
-  return vec;
+  return false;
 }
+
+
+std::vector<Collision> Game::GetAllCollisions(Ball &old_ball, Ball &ball)
+{
+  std::vector<Collision> vec_out;
+
+  for (auto vec : { &blocks, &border_lines })
+  {
+    for (Block & block : *vec)
+    {
+      if (Collides(ball, block))
+      {
+        std::vector<BorderLine> collided_lines;
+        for(auto & line : block.geometry)
+        {
+          if (Collides(ball, line)) collided_lines.push_back(line);
+        }
+
+        vec_out.push_back( Collision{ball, block, collided_lines, old_ball.position, old_ball.velocity} );
+      }
+    }
+  }
+
+  return vec_out;
+
+}
+
 
 /*
-bool Collides_Rect_Circle(const Ball &c, const Rect &r)
+bool Game::Collides_Any(const Ball &obj) const
 {
-  //Might be broken...
-
-  const vec2 block_center {r.position.x + r.width/2.0f , r.position.y + r.height/2.0f };
-  const vec2 circle_distance = vec_abs(c.position - block_center);
-
-  if ((circle_distance.x > (r.width/2.0f + c.radius))
-    or (circle_distance.y > (r.height/2.0f + c.radius))) return false;
-
-  if ((circle_distance.x <= (r.width/2.0f))
-    or (circle_distance.y <= (r.height/2.0f))) return true;
-
-  vec2 corner { r.width/2.0f, r.height/2.0f };
-
-  vec2 dist_to_corner = circle_distance - corner;
-
-  return (get_length(dist_to_corner) <= c.radius);
-}
-*/
-
-
-
-template <typename OBJ>
-bool Game::Collides_Any(const OBJ &obj) const
-{
-  //Balls
-  if (Collides_List(obj, balls)) return true;
-  //if (Collides(obj, mouse_pointer)) return true;
-  //if (Collides(obj, player)) return true;
-
   //Blocks
   if (Collides_List(obj, blocks)) return true;
 
@@ -461,12 +373,7 @@ bool Game::Collides_Any(const OBJ &obj) const
 
   return false;
 }
-
-
-//Explicit template instantiation
-template bool Game::Collides_Any<>(const Ball &obj) const;
-template bool Game::Collides_Any<>(const Block &obj) const;
-
+*/
 
 vec2 CalculateReflection(const Ball &b, const BorderLine &line)
 {
@@ -483,13 +390,12 @@ vec2 CalculateReflection(const Ball &b, const BorderLine &line)
 
 
 
-
-Ball Game::UpdatePhysics(float dt, const Ball & b) const
+Ball Game::UpdatePhysics(float dt, Ball & old_ball)
 {
-  Ball out = b;
-  float orig_speed = get_length(b.velocity);
+  Ball out = old_ball;
+  float orig_speed = get_length(old_ball.velocity);
 
-  out.position = b.position + (b.velocity * dt);
+  out.position = old_ball.position + (old_ball.velocity * dt);
   out.bounds = MakeBounds(out);
 
 
@@ -497,109 +403,117 @@ Ball Game::UpdatePhysics(float dt, const Ball & b) const
   [[maybe_unused]] const float bounce = -0.8f;
   [[maybe_unused]] const float friction_amount = 1.0f;
 
-  //XXX
-  for (auto & block : blocks)
+
+  auto collisions = GetAllCollisions(old_ball, out);
+
+  std::vector<BorderLine> collision_lines;
+
+  vec2 normal_acc = {};
+  int num_normals = 0;
+
+  for (auto & coll : collisions)
   {
-    if (BoundingBoxCollides(out.bounds, block.bounds))
+    for (auto & line : coll.lines)
     {
-      auto line_list = GetVec_Collides_List(out, block.geometry);
-      for (auto line_ptr : line_list)
+      collision_lines.push_back(line);
+      vec2 normal = get_normal(line.p1, line.p2);
+
+      vec2 contact_point = nearest_point_on_line_segment(line.p1, line.p2, old_ball.position);
+      vec2 contact_angle = normalize(old_ball.position - contact_point);
+      contact_angle = old_ball.velocity * -1.0f;
+      float line_dot = dot(normalize(normal), normalize(contact_angle));
+
+      if (line_dot > 0)
       {
-        auto line = *line_ptr;
-
-        // out.velocity = CalculateReflection(out, line);
-        // out.position = b.position;
-
-        //out.velocity = CalculateReflection(b, line);
-        vec2 ref = CalculateReflection(b, line);
-        vec2 force = ref - b.velocity;
-        out.velocity += force;
-
-        //Back up radius amount from line
-        try {
-          vec2 intersection = get_intersection(line.p1, line.p2, b.position, out.position);
-          vec2 back_dir = normalize(intersection - b.position);
-          out.position = intersection - back_dir * (b.radius+2);
-          throw "xxx";
-        }
-        catch (...) //get_intersecion throws when lines are parallel
-        {
-          out.position = b.position;
-        }
-
-        out.position = b.position;
-
-        out.bounds = MakeBounds(out);
+        normal_acc += normal;
+        num_normals++;
       }
     }
   }
 
+  //TODO
+  // Filter list to be lines facing the ball
+  // Average normals of filtered list
+  // Apply bounce
+
+
+  if (num_normals)
+  {
+
+  // if (collision_lines.size())
+  // {
+  //   TRACE << "coll: " << collision_lines.size() << "  ";
+  //   auto best_line = collision_lines.front();
+  //   float best_dot = -1.0f;
+
+
+    // for (auto horiz_line : collision_lines)
+    // {
+    //   // BorderLine horiz_line = collision_lines.front();
+    //
+    //   vec2 contact_horiz = nearest_point_on_line_segment(horiz_line.p1, horiz_line.p2, old_ball.position);
+    //   //
+    //   // TRACE << "distance -  horiz: " << distance(old_ball.position, contact_horiz)
+    //   //   << "  diag: " << distance(old_ball.position, contact_diag) << "  ";
+    //
+    //   vec2 horiz_normal = get_normal(horiz_line.p1, horiz_line.p2);
+    //   // vec2 diag_normal = get_normal(diag_line.p1, diag_line.p2);
+    //   vec2 horiz_tangent = normalize(old_ball.position - contact_horiz);
+    //   // vec2 diag_tangent = normalize(old_ball.position - contact_diag);
+    //
+    //   TRACE << "line: " << horiz_normal << "  " << horiz_tangent << "  ";
+    //   // TRACE << "diag : " << diag_normal << "  " << diag_tangent << "  ";
+    //
+    //   float horiz_dot = dot(normalize(horiz_normal), normalize(horiz_tangent));
+    //   // float diag_dot = dot(normalize(diag_normal), normalize(diag_tangent));
+    //
+    //   TRACE << " dot: " << horiz_dot << "  ";
+    //   // TRACE << "diag_dot: " << diag_dot << "  ";
+    //
+    //   if (horiz_dot > best_dot)
+    //   {
+    //     best_dot = horiz_dot;
+    //     best_line = horiz_line;
+    //   }
+    // }
+
+
+    vec2 normal_avg = normal_acc / float(num_normals);
+
+    //vec2 refl = CalculateReflection(old_ball, best_line);
+    vec2 refl = reflect(normalize(old_ball.velocity), normalize(normal_avg));
+
+    //vec2 force = refl - old_ball.velocity;
+    //out.velocity = force;
+
+    out.velocity = normalize(refl) * orig_speed;
+
+
+        // //Back up radius amount from line
+        // try {
+        //   vec2 intersection = get_intersection(line.p1, line.p2, old_ball.position, out.position);
+        //   vec2 back_dir = normalize(intersection - old_ball.position);
+        //   out.position = intersection - back_dir * (old_ball.radius+2);
+        //   throw "xxx";
+        // }
+        // catch (...) //get_intersecion throws when lines are parallel
+        // {
+        //   out.position = old_ball.position;
+        // }
+
+    out.position = old_ball.position;
+    out.bounds = MakeBounds(out);
+
+    //out.velocity = normalize(out.velocity) * orig_speed;
+
+
+
+  }
 
 
   //TRACE << " STEP ";
   // if (Collides_List(b,border_lines)) TRACE << "LAST  ";
   // if (Collides_List(out,border_lines)) TRACE << "THIS  ";
-
-
-  auto line_list = GetVec_Collides_List(out, border_lines);
-  //if (line_list.size())
-  for (auto line_ptr : line_list)
-  {
-    auto line = *line_ptr;
-    //auto line = *line_list.front();
-
-    vec2 ref = CalculateReflection(b, line);
-
-    vec2 force = ref - b.velocity;
-
-    out.velocity += force;
-
-    //out.velocity = ref;
-
-    //Back up radius amount from line
-    try {
-      vec2 intersection = get_intersection(line.p1, line.p2, b.position, out.position);
-      vec2 back_dir = normalize(intersection - b.position);
-      out.position = intersection - back_dir * (b.radius);
-      throw "xxx";
-    }
-    catch (...) //get_intersecion throws when lines are parallel
-    {
-      out.position = b.position;
-    }
-
-    out.bounds = MakeBounds(out);
-
-  }
-
-
-
-/*
-  //Simple boundary collision
-  if (out.position.x < b.radius)
-  {
-    out.position.x = b.radius;
-    out.velocity.x *= bounce;
-  }
-
-  if (out.position.x > (width - b.radius))
-  {
-    out.position.x = (width - b.radius);
-    out.velocity.x *= bounce;
-  }
-
-  if (out.position.y < b.radius)
-  {
-    out.position.y = b.radius;
-    out.velocity.y *= bounce;
-  }
-
-  if (out.position.y > (height - b.radius))
-  {
-    out.position.y = (height - b.radius);
-    out.velocity.y *= bounce;
-  }
-*/
 
 
 /* //XXX
@@ -624,10 +538,7 @@ Ball Game::UpdatePhysics(float dt, const Ball & b) const
   }
 */
 
-  if (get_length(out.velocity) != orig_speed)
-  {
-    out.velocity = normalize(out.velocity) * orig_speed;
-  }
+
 
   out.bounds = MakeBounds(out);
   return out;
@@ -651,7 +562,7 @@ void Game::Update(float dt)
   }
 
   //TODO maybe add sounds or particles when destroyed
-  remove_inplace(blocks, [=](auto &r){ return Collides_Any(r); } );
+  //remove_inplace(blocks, [=](auto &r){ return Collides_Any(r); } );
 
 
   //remove_inplace(balls, [=](auto &b){ return b.radius == 10 && Collides_Any(b); } );
@@ -766,7 +677,7 @@ void Game::Shoot()
   Ball b = NewBall();
 
   b.position = player.position;
-  b.velocity = angle_to_vec2(player.rot, 1000.0f);
+  b.velocity = angle_to_vec2(player.rot, 100.0f);
   b.position += b.velocity * 0.03f;
 
   b.colour.r = RandomFloat(0.5f, 1.0f);

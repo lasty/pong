@@ -156,8 +156,29 @@ vec2 reflect(vec2 const &I, vec2 const &N)
 
 
 
-
 vec2 nearest_point_on_line(vec2 const &v, vec2 const &w, vec2 const &p)
+{
+  const float line_length = distance_squared(v, w);  // i.e. |w-v|^2 -  avoid a sqrt
+
+  // v == w case
+  if (line_length == 0.0) return v;
+  //return distance(p, v);
+
+
+  // Consider the line extending the segment, parameterized as v + t (w - v).
+  // We find projection of point p onto the line.
+  // It falls where t = [(p-v) . (w-v)] / |w-v|^2
+  // We clamp t from [0,1] to handle points outside the segment vw.
+  float t = dot(p - v, w - v) / line_length;
+  //t = std::max(0.0f, std::min(1.0f, t));
+
+  const vec2 projection = v + (w - v) * t;  // Projection falls on the segment
+
+  return projection;
+  //return distance(p, projection);
+}
+
+vec2 nearest_point_on_line_segment(vec2 const &v, vec2 const &w, vec2 const &p)
 {
   const float line_length = distance_squared(v, w);  // i.e. |w-v|^2 -  avoid a sqrt
 

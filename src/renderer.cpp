@@ -379,11 +379,11 @@ void Renderer::DrawGameState(const Game & game)
 
   for(const auto &ball : game.balls)
   {
-    bool collides = game.Collides_Any(ball);
+    // bool collides = game.Collides_Any(ball);
 
     if (draw_bounds) RenderBounds(ball.bounds, true);
 
-    RenderBall(ball, collides);
+    RenderBall(ball, true); //collides);
   }
 
   ClearDynamicVertexData();
@@ -401,7 +401,7 @@ void Renderer::DrawGameState(const Game & game)
   RenderArrow(game.player);
   if (draw_bounds) RenderBounds(game.player.bounds, true);
 
-  RenderBall(game.mouse_pointer, game.Collides_Any(game.mouse_pointer));
+  RenderBall(game.mouse_pointer, true);//game.Collides_Any(game.mouse_pointer));
   if (draw_bounds) RenderBounds(game.mouse_pointer.bounds, true);
 
   basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
@@ -409,16 +409,19 @@ void Renderer::DrawGameState(const Game & game)
 
   for (const auto &vec : {game.border_lines})
   {
-    for(const auto &line : vec)
+    for(const auto &block : vec)
     {
-      DynamicLine(line.p1, line.p2);
-      if (draw_bounds) RenderBounds(line.bounds, true);
-
-      if (draw_normals)
+      for(const auto &line : block.geometry)
       {
-        vec2 normal = get_normal(line.p1, line.p2);
-        vec2 center = (line.p1 + line.p2) / 2.0f;
-        DynamicLine(center, center+ (normal * 20.0f));
+        DynamicLine(line.p1, line.p2);
+        if (draw_bounds) RenderBounds(line.bounds, true);
+
+        if (draw_normals)
+        {
+          vec2 normal = get_normal(line.p1, line.p2);
+          vec2 center = (line.p1 + line.p2) / 2.0f;
+          DynamicLine(center, center+ (normal * 20.0f));
+        }
       }
     }
   }
@@ -449,9 +452,9 @@ void Renderer::DrawTestCase(Game &game, [[maybe_unused]] float seed, int step)
   srand(2);
 
   Ball b;
-  b.radius = 20;
-  b.position = {100, 50};
-  b.velocity = {0, 20};
+  b.radius = 30;
+  b.position = {40, 95};
+  b.velocity = {30, 21};
   b.colour = {0.5, 0.5, 0.5, 1.0};
   b.rot = 0.0f;
   b.bounds = MakeBounds(b);
@@ -465,8 +468,10 @@ void Renderer::DrawTestCase(Game &game, [[maybe_unused]] float seed, int step)
 
   game.blocks.clear();
 
-  game.border_lines.erase(game.border_lines.begin() + 1, game.border_lines.end());
-  game.border_lines.push_back(l);
+  game.blocks.push_back(game.NewBlock(1, 2, BlockType::rect_triangle_left));
+
+  //game.border_lines.erase(game.border_lines.begin() + 1, game.border_lines.end());
+  //game.border_lines.push_back(l);
 
   game.balls.clear();
   game.balls.push_back(b);
@@ -487,7 +492,52 @@ void Renderer::DrawTestCase(Game &game, [[maybe_unused]] float seed, int step)
   }
 
 
+
   DrawGameState(game);
+
+
+
+  vec2 ofs { 400.0f, 300.0f };
+
+  //outside triangle
+  //auto l1 = BorderLine( {100.0f, 0.0f}, {0.0f, 0.0f});
+  //auto l2 = BorderLine( {0.0f, 0.0f}, {50.0f, 50.0f});
+
+
+  //outside square
+  // auto l1 = BorderLine( {100.0f, 0.0f}, {0.0f, 0.0f});
+  // auto l2 = BorderLine( {0.0f, 0.0f}, {0.0f, 100.0f});
+
+  //inside square
+  auto l1 = BorderLine( {0.0f, -100.0f}, {0.0f, 0.0f});
+  auto l2 = BorderLine( {0.0f, 0.0f}, {-100.0f, 0.0f});
+
+
+  auto n1 = get_normal(l1.p1, l1.p2);
+  auto n2 = get_normal(l2.p1, l2.p2);
+
+  auto ln1 = BorderLine( {0.0f,0.0f} , n1 * 10.0f);
+  auto ln2 = BorderLine( {0.0f,0.0f} , n2 * 10.0f);
+
+  auto avgnorm = normalize((n1 + n2) / 2.0f);
+
+  vec2 ofs2 { -20.0f, -20.0f };
+  auto avgnorm_l = BorderLine( ofs2, ofs2 + (avgnorm * 10.0f) );
+
+  for(const auto &line : {l1, l2, ln1, ln2, avgnorm_l})
+  {
+    DynamicLine(line.p1 + ofs, line.p2 + ofs);
+
+    if (distance(line.p1, line.p2) > 50) //(draw_normals)
+    {
+      vec2 normal = get_normal(line.p1, line.p2);
+      vec2 center = (line.p1 + line.p2) / 2.0f;
+      DynamicLine(center + ofs, center + (normal * 20.0f) + ofs);
+    }
+  }
+
+  UpdateDynamicVertexData();
+  DrawDynamic(GL_LINES);
 
   /*
   EnableBlend();

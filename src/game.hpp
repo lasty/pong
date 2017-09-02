@@ -45,6 +45,7 @@ enum class BlockType
 {
   none = 0,
   paddle,
+  world_border,
 
   square, triangle_left, triangle_right,
   rectangle, rect_triangle_left, rect_triangle_right
@@ -61,6 +62,20 @@ struct Block
   BlockGeometry geometry;
 
   BoundingBox bounds;
+};
+
+
+struct Collision
+{
+  //vec2 contact_point;
+
+  Ball &ball;
+  Block &block;
+
+  std::vector<BorderLine> lines;
+
+  vec2 ball_previous_position;
+  vec2 ball_vel;
 };
 
 
@@ -82,7 +97,7 @@ private:
 
   std::vector<Ball> balls;
   std::vector<Block> blocks;
-  std::vector<BorderLine> border_lines;
+  std::vector<Block> border_lines;
 
   std::map<BlockType, BlockGeometry> block_shapes;
 
@@ -102,7 +117,7 @@ public:
   vec2 RandomPositionBottom() const;
 
   Ball NewBall() const;
-  Block NewBlock(int x, int y) const;
+  Block NewBlock(int x, int y, BlockType bt) const;
 
   void SetupBlockGeometry();
   const BlockGeometry & GetGeometry(BlockType bt) const;
@@ -113,10 +128,9 @@ public:
 
   void Resize(int width, int height);
 
-  template <typename OBJ>
-  bool Collides_Any(const OBJ &obj) const;
+  std::vector<Collision> GetAllCollisions(Ball &old_ball, Ball &ball);
 
-  Ball UpdatePhysics(float dt, const Ball & b) const;
+  Ball UpdatePhysics(float dt, Ball & b);
 
   void Update(float dt);
 
