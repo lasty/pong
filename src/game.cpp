@@ -336,6 +336,12 @@ bool Collides(const Ball &ball, const Block &block)
 }
 
 
+void Game::OnHitBlock([[maybe_unused]] Ball &ball, Block &block)
+{
+  block.alive = false;
+}
+
+
 std::vector<Collision> Game::GetAllCollisions(Ball &old_ball, Ball &ball)
 {
   std::vector<Collision> vec_out;
@@ -358,34 +364,51 @@ std::vector<Collision> Game::GetAllCollisions(Ball &old_ball, Ball &ball)
   }
 
   return vec_out;
-
 }
 
 
-/*
-bool Game::Collides_Any(const Ball &obj) const
+bool Game::CalculateBallCollision(const Ball & old_ball, vec2 &out_normal_vec, std::vector<Block*> &out_hit_blocks)
 {
-  //Blocks
-  if (Collides_List(obj, blocks)) return true;
+  vec2 normal_acc = {};
+  int num_normals = 0;
+  out_hit_blocks.clear();
 
-  //Border Lines
-  if (Collides_List(obj, border_lines)) return true;
-
-  return false;
-}
-*/
-
-vec2 CalculateReflection(const Ball &b, const BorderLine &line)
-{
-  vec2 normal = get_normal(line.p1, line.p2);
-
-  if (dot(normal, b.velocity) > 0 )  //if normal is wrong way
+  for (auto vec : { &blocks, &border_lines })
   {
-    //return {0,0};
-    normal = get_normal(line.p2, line.p1);
+    for (Block & block : *vec)
+    {
+      if (not BoundingBoxCollides(old_ball.bounds, block.bounds)) continue;
+
+      for(auto & line : block.geometry)
+      {
+        if (Collides(old_ball, line))
+        {
+          vec2 line_normal = get_normal(line.p1, line.p2);
+
+          vec2 contact_point = nearest_point_on_line_segment(line.p1, line.p2, old_ball.position);
+          vec2 contact_angle = normalize(old_ball.position - contact_point);
+          contact_angle = old_ball.velocity * -1.0f;
+          float line_dot = dot(normalize(line_normal), normalize(contact_angle));
+
+          if (line_dot > 0)
+          {
+            normal_acc += line_normal;
+            num_normals++;
+
+            out_hit_blocks.push_back(&block);
+          }
+        }
+      }
+    }
   }
 
-  return reflect(b.velocity, normal);
+  if (num_normals)
+  {
+    out_normal_vec = normal_acc / float(num_normals);
+    return true;
+  }
+
+  return false;
 }
 
 
@@ -399,148 +422,24 @@ Ball Game::UpdatePhysics(float dt, Ball & old_ball)
   out.bounds = MakeBounds(out);
 
 
-  [[maybe_unused]] const float gravity = 300.0f;
-  [[maybe_unused]] const float bounce = -0.8f;
-  [[maybe_unused]] const float friction_amount = 1.0f;
 
-
-  auto collisions = GetAllCollisions(old_ball, out);
-
-  std::vector<BorderLine> collision_lines;
-
-  vec2 normal_acc = {};
-  int num_normals = 0;
-
-  for (auto & coll : collisions)
+  std::vector<Block*> hit_blocks {};
+  vec2 normal_avg {};
+  if (CalculateBallCollision(old_ball, normal_avg, hit_blocks))
   {
-    for (auto & line : coll.lines)
-    {
-      collision_lines.push_back(line);
-      vec2 normal = get_normal(line.p1, line.p2);
-
-      vec2 contact_point = nearest_point_on_line_segment(line.p1, line.p2, old_ball.position);
-      vec2 contact_angle = normalize(old_ball.position - contact_point);
-      contact_angle = old_ball.velocity * -1.0f;
-      float line_dot = dot(normalize(normal), normalize(contact_angle));
-
-      if (line_dot > 0)
-      {
-        normal_acc += normal;
-        num_normals++;
-      }
-    }
-  }
-
-  //TODO
-  // Filter list to be lines facing the ball
-  // Average normals of filtered list
-  // Apply bounce
-
-
-  if (num_normals)
-  {
-
-  // if (collision_lines.size())
-  // {
-  //   TRACE << "coll: " << collision_lines.size() << "  ";
-  //   auto best_line = collision_lines.front();
-  //   float best_dot = -1.0f;
-
-
-    // for (auto horiz_line : collision_lines)
-    // {
-    //   // BorderLine horiz_line = collision_lines.front();
-    //
-    //   vec2 contact_horiz = nearest_point_on_line_segment(horiz_line.p1, horiz_line.p2, old_ball.position);
-    //   //
-    //   // TRACE << "distance -  horiz: " << distance(old_ball.position, contact_horiz)
-    //   //   << "  diag: " << distance(old_ball.position, contact_diag) << "  ";
-    //
-    //   vec2 horiz_normal = get_normal(horiz_line.p1, horiz_line.p2);
-    //   // vec2 diag_normal = get_normal(diag_line.p1, diag_line.p2);
-    //   vec2 horiz_tangent = normalize(old_ball.position - contact_horiz);
-    //   // vec2 diag_tangent = normalize(old_ball.position - contact_diag);
-    //
-    //   TRACE << "line: " << horiz_normal << "  " << horiz_tangent << "  ";
-    //   // TRACE << "diag : " << diag_normal << "  " << diag_tangent << "  ";
-    //
-    //   float horiz_dot = dot(normalize(horiz_normal), normalize(horiz_tangent));
-    //   // float diag_dot = dot(normalize(diag_normal), normalize(diag_tangent));
-    //
-    //   TRACE << " dot: " << horiz_dot << "  ";
-    //   // TRACE << "diag_dot: " << diag_dot << "  ";
-    //
-    //   if (horiz_dot > best_dot)
-    //   {
-    //     best_dot = horiz_dot;
-    //     best_line = horiz_line;
-    //   }
-    // }
-
-
-    vec2 normal_avg = normal_acc / float(num_normals);
-
-    //vec2 refl = CalculateReflection(old_ball, best_line);
     vec2 refl = reflect(normalize(old_ball.velocity), normalize(normal_avg));
-
-    //vec2 force = refl - old_ball.velocity;
-    //out.velocity = force;
 
     out.velocity = normalize(refl) * orig_speed;
 
-
-        // //Back up radius amount from line
-        // try {
-        //   vec2 intersection = get_intersection(line.p1, line.p2, old_ball.position, out.position);
-        //   vec2 back_dir = normalize(intersection - old_ball.position);
-        //   out.position = intersection - back_dir * (old_ball.radius+2);
-        //   throw "xxx";
-        // }
-        // catch (...) //get_intersecion throws when lines are parallel
-        // {
-        //   out.position = old_ball.position;
-        // }
+    for(Block * block : hit_blocks)
+    {
+      OnHitBlock(old_ball, *block);
+    }
 
     out.position = old_ball.position;
     out.bounds = MakeBounds(out);
-
-    //out.velocity = normalize(out.velocity) * orig_speed;
-
-
-
   }
 
-
-  //TRACE << " STEP ";
-  // if (Collides_List(b,border_lines)) TRACE << "LAST  ";
-  // if (Collides_List(out,border_lines)) TRACE << "THIS  ";
-
-
-/* //XXX
-  if (gravity_enabled)
-  {
-    out.velocity.y += gravity * dt;
-  }
-
-  if (friction_enabled)
-  {
-    float angle = get_angle(out.velocity);
-    vec2 friction = angle_to_vec2(angle, friction_amount);
-
-    if (get_length(out.velocity) > get_length(friction))
-    {
-      out.velocity -= friction;
-    }
-    else
-    {
-      out.velocity = {0.0f, 0.0f};
-    }
-  }
-*/
-
-
-
-  out.bounds = MakeBounds(out);
   return out;
 }
 
@@ -561,29 +460,17 @@ void Game::Update(float dt)
     b = UpdatePhysics(dt, b);
   }
 
-  //TODO maybe add sounds or particles when destroyed
-  //remove_inplace(blocks, [=](auto &r){ return Collides_Any(r); } );
+
+  for([[maybe_unused]] Block &b : blocks)
+  {
+    //TODO maybe add sounds or particles when destroyed
+  }
+
+
+  remove_inplace(blocks, [=](auto &b){ return not b.alive; } );
 
 
   //remove_inplace(balls, [=](auto &b){ return b.radius == 10 && Collides_Any(b); } );
-
-
-  //TODO update other objects?
-
-
-  //XXX Debugging stuff
-
-  // if (lines.size())
-  // {
-  //   const auto & line = lines.front();
-  //   vec2 normal = get_normal(line.p1, line.p2);
-  //   vec2 dir = mouse_pointer.position - line.p1;
-  //
-  //   float dp = dot(normal, dir);
-  //
-  //   TRACE << "dot(normal, dir) = " << dp ;
-  // }
-
 
 }
 

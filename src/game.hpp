@@ -55,6 +55,7 @@ enum class BlockType
 struct Block
 {
   BlockType type = BlockType::none;
+  bool alive = true;
 
   vec2 position;
   vec4 colour;
@@ -129,6 +130,10 @@ public:
   void Resize(int width, int height);
 
   std::vector<Collision> GetAllCollisions(Ball &old_ball, Ball &ball);
+
+  void OnHitBlock(Ball &ball, Block &block);
+
+  bool CalculateBallCollision(const Ball & old_ball, vec2 &normal_vec, std::vector<Block*> &out_hit_blocks);
 
   Ball UpdatePhysics(float dt, Ball & b);
 
