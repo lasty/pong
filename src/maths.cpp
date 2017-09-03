@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 
-
+#include "maths_collisions.hpp"
 #include "maths_utils.hpp"
 
 
@@ -226,12 +226,10 @@ vec2 get_intersection(vec2 ps1, vec2 pe1, vec2 ps2, vec2 pe2)
 }
 
 
-
 bool in_range(float beg, float end, float p)
 {
   return (p >= beg and p <= end);
 }
-
 
 
 const float * gl_data(vec2 const &v)
@@ -283,7 +281,64 @@ vec4 RandomRGBA()
 }
 
 
+bool BoundingBoxCollides(const BoundingBox &a, const BoundingBox &b)
+{
+  if (&a == &b) return false;
 
+  return
+    (a.top_left.x < b.bottom_right.x)
+    and
+    (a.bottom_right.x > b.top_left.x)
+    and
+    (a.top_left.y < b.bottom_right.y)
+    and
+    (a.bottom_right.y > b.top_left.y);
+}
+
+
+bool Collides(const Ball &ball, Line const &line)
+{
+  vec2 collision_point = nearest_point_on_line_segment(line.p1, line.p2, ball.position);
+
+  float dist = distance(collision_point, ball.position);
+
+  return (dist < ball.radius);
+}
+
+
+bool Collides(const Ball &ball, const Block &block)
+{
+  if (not BoundingBoxCollides(ball.bounds, block.bounds)) return false;
+
+  for(auto const &line : block.geometry)
+  {
+    if (Collides(ball, line)) return true;
+  }
+  return false;
+}
+
+
+bool Collides(const Ball &b1, const vec2 &point)
+{
+  float dist = distance(b1.position, point);
+
+  return (dist <= b1.radius);
+}
+
+
+bool Collides(const Ball &b1, const Ball &b2)
+{
+  if (&b1 == &b2) return false;
+
+  float radii = b1.radius + b2.radius;
+
+  float dist = get_length(b2.position - b1.position);
+
+  return (dist <= radii);
+}
+
+
+//// Testing stuff
 
 
 vec2 GetGLStyle(const float* data)

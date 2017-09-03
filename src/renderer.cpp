@@ -414,7 +414,7 @@ void Renderer::DrawGameState(const Game & game)
       for(const auto &line : block.geometry)
       {
         DynamicLine(line.p1, line.p2);
-        if (draw_bounds) RenderBounds(line.bounds, true);
+        // if (draw_bounds) RenderBounds(line.bounds, true);
 
         if (draw_normals)
         {
@@ -447,6 +447,9 @@ void Renderer::DrawGameState(const Game & game)
 }
 
 
+BoundingBox MakeBounds(const Ball & ball);
+BoundingBox MakeBounds(const Block &block);
+
 void Renderer::DrawTestCase(Game &game, [[maybe_unused]] float seed, int step)
 {
   srand(2);
@@ -459,10 +462,10 @@ void Renderer::DrawTestCase(Game &game, [[maybe_unused]] float seed, int step)
   b.rot = 0.0f;
   b.bounds = MakeBounds(b);
 
-  BorderLine l;
+  Line l;
   l.p2 = {50, 115};
   l.p1 = {300, 15};
-  l.bounds = MakeBounds(l);
+  // l.bounds = MakeBounds(l);
 
   //Game game { xxx.width, xxx.height };
 
@@ -492,37 +495,35 @@ void Renderer::DrawTestCase(Game &game, [[maybe_unused]] float seed, int step)
   }
 
 
-
   DrawGameState(game);
-
 
 
   vec2 ofs { 400.0f, 300.0f };
 
   //outside triangle
-  //auto l1 = BorderLine( {100.0f, 0.0f}, {0.0f, 0.0f});
-  //auto l2 = BorderLine( {0.0f, 0.0f}, {50.0f, 50.0f});
+  //auto l1 = Line{ {100.0f, 0.0f}, {0.0f, 0.0f}};
+  //auto l2 = Line{ {0.0f, 0.0f}, {50.0f, 50.0f}};
 
 
   //outside square
-  // auto l1 = BorderLine( {100.0f, 0.0f}, {0.0f, 0.0f});
-  // auto l2 = BorderLine( {0.0f, 0.0f}, {0.0f, 100.0f});
+  // auto l1 = Line{ {100.0f, 0.0f}, {0.0f, 0.0f}};
+  // auto l2 = Line{ {0.0f, 0.0f}, {0.0f, 100.0f}};
 
   //inside square
-  auto l1 = BorderLine( {0.0f, -100.0f}, {0.0f, 0.0f});
-  auto l2 = BorderLine( {0.0f, 0.0f}, {-100.0f, 0.0f});
+  auto l1 = Line{{0.0f, -100.0f}, {0.0f, 0.0f}};
+  auto l2 = Line{{0.0f, 0.0f}, {-100.0f, 0.0f}};
 
 
   auto n1 = get_normal(l1.p1, l1.p2);
   auto n2 = get_normal(l2.p1, l2.p2);
 
-  auto ln1 = BorderLine( {0.0f,0.0f} , n1 * 10.0f);
-  auto ln2 = BorderLine( {0.0f,0.0f} , n2 * 10.0f);
+  auto ln1 = Line{ {0.0f,0.0f} , n1 * 10.0f};
+  auto ln2 = Line{ {0.0f,0.0f} , n2 * 10.0f};
 
   auto avgnorm = normalize((n1 + n2) / 2.0f);
 
   vec2 ofs2 { -20.0f, -20.0f };
-  auto avgnorm_l = BorderLine( ofs2, ofs2 + (avgnorm * 10.0f) );
+  auto avgnorm_l = Line{ ofs2, ofs2 + (avgnorm * 10.0f) };
 
   for(const auto &line : {l1, l2, ln1, ln2, avgnorm_l})
   {

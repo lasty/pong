@@ -1,4 +1,4 @@
-
+#pragma once
 
 #include <vector>
 #include <map>
@@ -13,7 +13,6 @@ struct BoundingBox
 };
 
 
-
 struct Ball
 {
   int radius = 20;
@@ -26,19 +25,11 @@ struct Ball
 };
 
 
-struct BorderLine
+struct Line
 {
-  BorderLine() = default;
-  BorderLine(const vec2 &p1, const vec2 &p2);
-
   vec2 p1;
   vec2 p2;
-
-  BoundingBox bounds;
 };
-
-
-using BlockGeometry = std::vector<BorderLine>;
 
 
 enum class BlockType
@@ -52,8 +43,11 @@ enum class BlockType
 };
 
 
+using BlockGeometry = std::vector<Line>;
+
 struct Block
 {
+
   BlockType type = BlockType::none;
   bool alive = true;
 
@@ -65,24 +59,6 @@ struct Block
   BoundingBox bounds;
 };
 
-
-struct Collision
-{
-  //vec2 contact_point;
-
-  Ball &ball;
-  Block &block;
-
-  std::vector<BorderLine> lines;
-
-  vec2 ball_previous_position;
-  vec2 ball_vel;
-};
-
-
-BoundingBox MakeBounds(const Ball & ball);
-BoundingBox MakeBounds(const Block &block);
-BoundingBox MakeBounds(const BorderLine & line);
 
 
 class Game
@@ -129,12 +105,9 @@ public:
 
   void Resize(int width, int height);
 
-  std::vector<Collision> GetAllCollisions(Ball &old_ball, Ball &ball);
-
   void OnHitBlock(Ball &ball, Block &block);
 
   bool CalculateBallCollision(const Ball & old_ball, vec2 &normal_vec, std::vector<Block*> &out_hit_blocks);
-
   Ball UpdatePhysics(float dt, Ball & b);
 
   void Update(float dt);

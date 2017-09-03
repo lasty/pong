@@ -10,15 +10,9 @@
 #include "input.hpp"
 
 #include "maths.hpp"
+#include "maths_collisions.hpp"
 #include "maths_utils.hpp"
 
-
-BorderLine::BorderLine(const vec2 &p1, const vec2 &p2)
-: p1(p1)
-, p2(p2)
-{
-  bounds = MakeBounds(*this);
-}
 
 
 Game::Game(int width, int height)
@@ -94,21 +88,7 @@ BoundingBox MakeBounds(const Block &block)
   }
 
   return {tl, br};
-
 }
-
-
-BoundingBox MakeBounds(const BorderLine & line)
-{
-  const float top = std::min(line.p1.y, line.p2.y);
-  const float bottom = std::max(line.p1.y, line.p2.y);
-
-  const float left = std::min(line.p1.x, line.p2.x);
-  const float right = std::max(line.p1.x, line.p2.x);
-
-  return { {left, top} , {right, bottom} };
-}
-
 
 
 Ball Game::NewBall() const
@@ -147,7 +127,6 @@ Block Game::NewBlock(int x, int y, BlockType bt) const
 {
   Block b;
   b.type = bt;
-  //b.type = (bt == BlockType::none) ? RandomBlockType() : bt;
 
   b.position = { 50.0f + (110.0f * x) , 50.0f + (60.0f * y) };
   b.colour = RandomRGB();
@@ -157,7 +136,6 @@ Block Game::NewBlock(int x, int y, BlockType bt) const
   {
     line.p1 += b.position;
     line.p2 += b.position;
-    line.bounds = MakeBounds(line);
   }
 
   b.bounds = MakeBounds(b);
@@ -188,13 +166,6 @@ Block NewWorldBorders(float border, int width, int height)
   b.bounds = MakeBounds(b);
 
   return b;
-}
-
-
-BorderLine MakeLine(vec2 const &p1, vec2 const &p2)
-{
-  BorderLine l{p1, p2};
-  return l;
 }
 
 
@@ -265,7 +236,7 @@ void Game::ToggleGravity()
 {
   gravity_enabled = not gravity_enabled;
 
-  std::cout << "Gravity " << (gravity_enabled ? "on" : "off") << std::endl;
+  // std::cout << "Gravity " << (gravity_enabled ? "on" : "off") << std::endl;
 }
 
 
@@ -273,7 +244,7 @@ void Game::ToggleFriction()
 {
   friction_enabled = not friction_enabled;
 
-  std::cout << "Friction " << (friction_enabled ? "on" : "off") << std::endl;
+  // std::cout << "Friction " << (friction_enabled ? "on" : "off") << std::endl;
 }
 
 
@@ -281,89 +252,16 @@ void Game::Resize(int width, int height)
 {
   this->width = width;
   this->height = height;
-}
 
 
-bool BoundingBoxCollides(const BoundingBox &a, const BoundingBox &b)
-{
-  if (&a == &b) return false;
-
-  return
-    (a.top_left.x < b.bottom_right.x)
-    and
-    (a.bottom_right.x > b.top_left.x)
-    and
-    (a.top_left.y < b.bottom_right.y)
-    and
-    (a.bottom_right.y > b.top_left.y);
-}
-
-
-bool Collides(const Ball &ball, BorderLine const &line)
-{
-  vec2 collision_point = nearest_point_on_line_segment(line.p1, line.p2, ball.position);
-
-  float dist = distance(collision_point, ball.position);
-
-  return (dist < ball.radius);
-}
-
-
-/*
-//Applies Collides() to lists
-template <typename OBJ1, typename LIST>
-bool Collides_List(const OBJ1 &o, const LIST &other)
-{
-  for(auto const &item : other)
-  {
-    if (BoundingBoxCollides(o.bounds, item.bounds) and Collides(o, item))
-      return true;
-  }
-  return false;
-}
-*/
-
-
-bool Collides(const Ball &ball, const Block &block)
-{
-  if (not BoundingBoxCollides(ball.bounds, block.bounds)) return false;
-
-  for(auto const &line : block.geometry)
-  {
-    if (Collides(ball, line)) return true;
-  }
-  return false;
+  border_lines.clear();
+  border_lines.push_back(NewWorldBorders(5, width, height));
 }
 
 
 void Game::OnHitBlock([[maybe_unused]] Ball &ball, Block &block)
 {
   block.alive = false;
-}
-
-
-std::vector<Collision> Game::GetAllCollisions(Ball &old_ball, Ball &ball)
-{
-  std::vector<Collision> vec_out;
-
-  for (auto vec : { &blocks, &border_lines })
-  {
-    for (Block & block : *vec)
-    {
-      if (Collides(ball, block))
-      {
-        std::vector<BorderLine> collided_lines;
-        for(auto & line : block.geometry)
-        {
-          if (Collides(ball, line)) collided_lines.push_back(line);
-        }
-
-        vec_out.push_back( Collision{ball, block, collided_lines, old_ball.position, old_ball.velocity} );
-      }
-    }
-  }
-
-  return vec_out;
 }
 
 
@@ -412,7 +310,6 @@ bool Game::CalculateBallCollision(const Ball & old_ball, vec2 &out_normal_vec, s
 }
 
 
-
 Ball Game::UpdatePhysics(float dt, Ball & old_ball)
 {
   Ball out = old_ball;
@@ -420,7 +317,6 @@ Ball Game::UpdatePhysics(float dt, Ball & old_ball)
 
   out.position = old_ball.position + (old_ball.velocity * dt);
   out.bounds = MakeBounds(out);
-
 
 
   std::vector<Block*> hit_blocks {};
@@ -471,7 +367,6 @@ void Game::Update(float dt)
 
 
   //remove_inplace(balls, [=](auto &b){ return b.radius == 10 && Collides_Any(b); } );
-
 }
 
 
@@ -551,11 +446,6 @@ void Game::PlayerInput(float dt, Input const &input)
 
   player = UpdatePhysics(dt, player);
 
-
-  // TRACE
-  //   << " player " << player.position
-  //   << "  " <<  "angle is " << degrees(player.rot) << "deg";
-
 }
 
 
@@ -564,7 +454,7 @@ void Game::Shoot()
   Ball b = NewBall();
 
   b.position = player.position;
-  b.velocity = angle_to_vec2(player.rot, 100.0f);
+  b.velocity = angle_to_vec2(player.rot, 300.0f);
   b.position += b.velocity * 0.03f;
 
   b.colour.r = RandomFloat(0.5f, 1.0f);
