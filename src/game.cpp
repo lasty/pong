@@ -26,10 +26,8 @@ Game::Game(int width, int height, Sound &sound)
   SetupBlockGeometry();
   NewObjects();
 
-  player = NewBall();
-  player.radius = 20;
+  player = NewBlock(5, 5, BlockType::paddle);
   player.colour = {1.0f, 1.0f, 1.0f, 1.0f};
-  player.velocity = {0.0f, 0.0f};
 
 
   mouse_pointer.radius = 20;
@@ -199,6 +197,14 @@ void Game::SetupBlockGeometry()
   block_shapes.emplace(BlockType::rect_triangle_right,
     BlockGeometry { {wtr, tl}, {tl, bl}, {bl, br}, {br, wtr} });
 
+
+  vec2 ptl {0,0};
+  vec2 ptr {100,0};
+  vec2 pbl {0, 50};
+  vec2 pbr {100, 50};
+
+  block_shapes.emplace(BlockType::paddle,
+    BlockGeometry { {ptl, pbl}, {pbl, pbr}, {pbr, ptr}, {ptr, ptl} });
 }
 
 
@@ -279,15 +285,35 @@ void Game::OnHitBlock([[maybe_unused]] Ball &ball, Block &block)
 }
 
 
+struct BlockIterator
+{
+  Block * i1;
+  Block * i2;
+
+  BlockIterator(std::vector<Block> &vec)
+  : i1(vec.data())
+  , i2(vec.data() + vec.size())
+  {}
+
+  BlockIterator(Block &single)
+  : i1(&single)
+  , i2(i1+1)
+  {}
+
+  Block * begin() { return i1; }
+  Block * end() { return i2; }
+};
+
+
 bool Game::CalculateBallCollision(const Ball & old_ball, vec2 &out_normal_vec, std::vector<Block*> &out_hit_blocks)
 {
   vec2 normal_acc = {};
   int num_normals = 0;
   out_hit_blocks.clear();
 
-  for (auto vec : { &blocks, &border_lines })
+  for (auto vec : { BlockIterator(blocks), BlockIterator(border_lines), BlockIterator(player) })
   {
-    for (Block & block : *vec)
+    for (Block & block : vec)
     {
       if (not BoundingBoxCollides(old_ball.bounds, block.bounds)) continue;
 
@@ -384,82 +410,35 @@ void Game::Update(float dt)
 }
 
 
-void Game::PlayerInput(float dt, Input const &input)
+void Game::UpdatePlayer(const vec2 &position)
+{
+  player.position = position;
+  player.geometry = GetGeometry(BlockType::paddle);
+
+
+  for (auto & line : player.geometry)
+  {
+    line.p1 += position;
+    line.p2 += position;
+  }
+
+  player.bounds = MakeBounds(player);
+}
+
+
+void Game::PlayerInput([[maybe_unused]] float dt, Input const &input)
 {
   mouse_pointer.position = input.mouse;
   mouse_pointer.bounds = MakeBounds(mouse_pointer);
 
-  MovementInput move = input.player_move;
+  [[maybe_unused]] MovementInput move = input.player_move;
 
-  bool MOUSE_rotation = true;
-  bool THRUST_movement = false;
+  player.position.x = mouse_pointer.position.x;
+  player.position.y = mouse_pointer.position.y; //height - 50;
 
-  if (THRUST_movement)
-  {
-    const float thrust = 10.0f;
+  UpdatePlayer(player.position);
 
-    if (move.up or move.down)
-    {
-      float angle = player.rot;
-
-      vec2 v = angle_to_vec2(angle, thrust);
-
-      if (move.up)
-      {
-         player.velocity += v;
-      }
-      if (move.down)
-      {
-        player.velocity -= v;
-      }
-    }
-
-  }
-  else // WASD movement
-  {
-    vec2 v{0.0f, 0.0f};
-
-    if (move.up) v.y -= 1.0f;
-    if (move.down) v.y += 1.0f;
-    if (move.left) v.x -= 1.0f;
-    if (move.right) v.x += 1.0f;
-
-    float speed = 300.0f;
-    v.x *= dt * speed;
-    v.y *= dt * speed;
-
-    player.velocity += v;
-
-    player = UpdatePhysics(dt, player);
-
-  }
-
-
-  if (MOUSE_rotation)
-  {
-    vec2 angle_to_mouse = mouse_pointer.position - player.position;
-
-    float a = get_angle(angle_to_mouse);
-    player.rot = a;
-  }
-  else // left/right rotation
-  {
-    const float rot_speed = TWO_PI * 1.0f;
-
-    if (move.left)
-    {
-      player.rot -= rot_speed * dt;
-    }
-
-    if (move.right)
-    {
-      player.rot += rot_speed * dt;
-    }
-  }
-
-
-  player = UpdatePhysics(dt, player);
-
+  //player = UpdatePhysics(dt, player);
 }
 
 
@@ -468,8 +447,10 @@ void Game::Shoot()
   Ball b = NewBall();
 
   b.position = player.position;
-  b.velocity = angle_to_vec2(player.rot, 300.0f);
-  b.position += b.velocity * 0.03f;
+  b.velocity = {0.0f, -300.0f};
+
+  b.position.x += 50.0f;
+  b.position.y -= 11.0f;
 
   b.colour.r = RandomFloat(0.5f, 1.0f);
   b.colour.g = RandomFloat(0.5f, 1.0f);

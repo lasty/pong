@@ -79,7 +79,7 @@ private:
 
   std::map<BlockType, BlockGeometry> block_shapes;
 
-  Ball player;
+  Block player;
   Ball mouse_pointer;
 
 
@@ -113,6 +113,7 @@ public:
 
   void Update(float dt);
 
+  void UpdatePlayer(const vec2 &position);
   void PlayerInput(float dt, const class Input & input);
 
   void Shoot();

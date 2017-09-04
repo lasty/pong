@@ -398,7 +398,7 @@ void Renderer::DrawGameState(const Game & game)
   }
 
 
-  RenderArrow(game.player);
+  RenderBlock(game.player);
   if (draw_bounds) RenderBounds(game.player.bounds, true);
 
   RenderBall(game.mouse_pointer, true);//game.Collides_Any(game.mouse_pointer));

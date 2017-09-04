@@ -2,9 +2,9 @@
 
 ## Todo List
 - command/key to enable debug lines
-- Change player to paddle rect
-- Paddle follow mouse cursor X position
-- Fire up from paddle
+- [DONE] Change player to paddle rect
+- [DONE] Paddle follow mouse cursor X position
+- [DONE] Fire up from paddle
   - Get velocity from last (few?) frames, add to ball initial velocity
 
 
