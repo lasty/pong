@@ -15,6 +15,13 @@
   - Remove ball from bottom of screen
     - Rework simple collision checks for out of bounds balls
 
+- Sounds
+  - [DONE] work out sdl_mixer
+  - [DONE] generate sounds
+  - [DONE] import sound samples into some kind of collection class
+  - [DONE] work out a good way to play sounds from game class
+  - Free sound chunks
+
 
 ## Todo Low Priority
 - [TODO] Watch more of those videos

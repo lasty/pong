@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "input.hpp"
+#include "sound.hpp"
 
 #include "maths.hpp"
 #include "maths_collisions.hpp"
@@ -15,9 +16,10 @@
 
 
 
-Game::Game(int width, int height)
+Game::Game(int width, int height, Sound &sound)
 :width(width)
 ,height(height)
+,sound(sound)
 {
   srand (static_cast <unsigned> (time(0)));
 
@@ -262,6 +264,12 @@ void Game::Resize(int width, int height)
 void Game::OnHitBlock([[maybe_unused]] Ball &ball, Block &block)
 {
   block.alive = false;
+
+  if (block.type == BlockType::world_border)
+    sound.PlaySound("bounce");
+  else
+    sound.PlaySound("bounce_hit");
+
 }
 
 
@@ -463,4 +471,6 @@ void Game::Shoot()
   b.radius = 10.0f;
 
   balls.push_back(b);
+
+  sound.PlaySound("paddle_bounce");
 }

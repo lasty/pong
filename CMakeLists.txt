@@ -30,12 +30,13 @@ add_executable(pong WIN32
   src/maths.cpp
   src/renderer.cpp
   src/shader.cpp
+  src/sound.cpp
 )
 
 target_compile_features(pong PRIVATE cxx_std_14)
 
 target_link_libraries(pong PRIVATE
-  ${MINGW32} SDL2::main SDL2::SDL2
+  ${MINGW32} SDL2::main SDL2::SDL2 SDL2::mixer
   GLFW::GLFW
   GLEW::GLEW OpenGL::GL)
 

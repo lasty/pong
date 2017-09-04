@@ -68,6 +68,7 @@ private:
 
   int width = 0;
   int height = 0;
+  class Sound &sound;
 
   bool gravity_enabled = false;
   bool friction_enabled = false;
@@ -84,7 +85,7 @@ private:
 
 public:
 
-  Game(int width, int height);
+  Game(int width, int height, Sound &sound);
   //~Game();
 
   bool running = true;

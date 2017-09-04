@@ -12,13 +12,8 @@ const int GL_MAJOR {4};
 const int GL_MINOR {5};
 
 
-//XXX just use SDL for sound/images
-//#define USE_SDL true
-
-#ifdef USE_SDL
-  #include <SDL.h>
-  //#undef main
-#endif
+#include <SDL.h>
+#undef main
 
 
 #include "gl.hpp"
@@ -31,6 +26,7 @@ const int GL_MINOR {5};
 #include "renderer.hpp"
 #include "maths.hpp"
 #include "maths_utils.hpp"
+#include "sound.hpp"
 
 
 std::ostringstream TRACE;
@@ -64,20 +60,19 @@ void main_game()
 
   std::cout << "Hello, world" << std::endl;
 
-  #ifdef USE_SDL
-    SDL_version linked;
-    SDL_version compiled;
+  SDL_version linked;
+  SDL_version compiled;
 
-    SDL_VERSION(&compiled);
-    SDL_GetVersion(&linked);
+  SDL_VERSION(&compiled);
+  SDL_GetVersion(&linked);
 
-    std::cout << "SDL Version: "
-      << "(compiled with " << (int)compiled.major << "." << (int)compiled.minor << "." << (int)compiled.patch << ")"
-      << "  (linked with " << (int)linked.major << "." << (int)linked.minor << "." << (int)linked.patch << ")"
-      << std::endl;
+  std::cout << "SDL Version: "
+    << "(compiled with " << (int)compiled.major << "." << (int)compiled.minor << "." << (int)compiled.patch << ")"
+    << "  (linked with " << (int)linked.major << "." << (int)linked.minor << "." << (int)linked.patch << ")"
+    << std::endl;
 
-    SDL_Init(SDL_INIT_NONE);
-  #endif
+  SDL_Init(SDL_INIT_AUDIO);
+
 
   std::cout << "GLFW Version: " << glfwGetVersionString() << std::endl;
   if (not glfwInit()) throw std::runtime_error("failed to init GLFW");
@@ -128,9 +123,10 @@ void main_game()
 
 
   Renderer renderer;
+  Sound sound;
 
   glfwGetFramebufferSize(window, &width, &height);
-  Game game{width, height};
+  Game game{width, height, sound};
 
   Input input(window, game);
 
@@ -223,9 +219,10 @@ void main_game()
 
   //Clean up
 
-  #ifdef USE_SDL
-    SDL_Quit();
-  #endif
+  sound.Quit();
+
+  SDL_Quit();
+
 
   input.RemoveCallbacks(window);
 
