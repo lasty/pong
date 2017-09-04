@@ -23,7 +23,8 @@ private:
 
 public:
 
-  void PlaySound(const std::string &what);
+  int PlaySound(const std::string &what);
+  int PlaySound(const std::string &what, float balance);
 
   void Quit();
 

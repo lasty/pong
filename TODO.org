@@ -2,25 +2,19 @@
 
 ## Todo List
 - command/key to enable debug lines
-- [DONE] resize redraws border lines
-- [DONE] Refactor and clean up code again  (move things to maths, collision routines out of game class)
+- Change player to paddle rect
+- Paddle follow mouse cursor X position
+- Fire up from paddle
+  - Get velocity from last (few?) frames, add to ball initial velocity
+
 
 - Gameish
-  - [DONE] Arrange blocks in grid formation for test level
-  - Change player to paddle rect
-  - Paddle follow mouse cursor X position
-  - Fire straight up from paddle
-  - Eventually deflect on paddle
 
   - Remove ball from bottom of screen
     - Rework simple collision checks for out of bounds balls
-
-- Sounds
-  - [DONE] work out sdl_mixer
-  - [DONE] generate sounds
-  - [DONE] import sound samples into some kind of collection class
-  - [DONE] work out a good way to play sounds from game class
-  - Free sound chunks
+  - Win/Lose conditions
+  - New level
+  - Level load/save/editor ?
 
 
 ## Todo Low Priority
@@ -28,6 +22,7 @@
 - [TODO] Investigate atom clang-format
 - Particles class
 - Do particles when block destroyed
+- Maybe add more varieties in sound
 
 
 

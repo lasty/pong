@@ -24,7 +24,7 @@ Sound::Sound()
 
   LoadSoundLibrary();
 
-  Mix_AllocateChannels(16);
+  Mix_AllocateChannels(32);
 
 }
 
@@ -64,7 +64,8 @@ void Sound::LoadSoundLibrary()
 
 #include <iostream>
 
-void Sound::PlaySound(const std::string &what)
+
+int Sound::PlaySound(const std::string &what)
 {
   int chan = Mix_PlayChannel(-1, sounds.at(what), 0);
 
@@ -73,8 +74,24 @@ void Sound::PlaySound(const std::string &what)
     std::cout << "PlaySound(" << what << ") returned " << chan
       << "  [" << Mix_GetError() << "]" << std::endl;
   }
+  return chan;
 }
 
+
+int Sound::PlaySound(const std::string &what, float balance)
+{
+  int chan = PlaySound(what);
+
+  if (chan != -1)
+  {
+    int left = (1.0f - balance) * 127 + 96;
+    int right = balance * 127 + 96;
+
+    Mix_SetPanning(chan, left, right);
+  }
+
+  return chan;
+}
 
 
 void Sound::Quit()
@@ -82,6 +99,13 @@ void Sound::Quit()
   Mix_HaltChannel(-1);
 
   Mix_CloseAudio();
+
+  for(auto pair : sounds)
+  {
+    Mix_FreeChunk(pair.second);
+  }
+  sounds.clear();
+
   //This is what the docs say to shutdown...
   while(Mix_Init(0)) Mix_Quit();
 }

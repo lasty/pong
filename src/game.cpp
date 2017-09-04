@@ -211,7 +211,7 @@ const BlockGeometry & Game::GetGeometry(BlockType bt) const
 void Game::NewObjects()
 {
   balls.clear();
-  for(int i=0; i<5; i++)
+  for(int i=0; i<1; i++)
   {
     balls.push_back(NewBall());
   }
@@ -265,10 +265,16 @@ void Game::OnHitBlock([[maybe_unused]] Ball &ball, Block &block)
 {
   block.alive = false;
 
+  float balance = (ball.position.x / width);
+
   if (block.type == BlockType::world_border)
-    sound.PlaySound("bounce");
+  {
+    sound.PlaySound("bounce", balance);
+  }
   else
-    sound.PlaySound("bounce_hit");
+  {
+    sound.PlaySound("bounce_hit", balance);
+  }
 
 }
 
@@ -472,5 +478,5 @@ void Game::Shoot()
 
   balls.push_back(b);
 
-  sound.PlaySound("paddle_bounce");
+  sound.PlaySound("paddle_bounce", player.position.x / width);
 }
