@@ -17,44 +17,34 @@
 
 
 Game::Game(int width, int height, Sound &sound)
-:width(width)
-,height(height)
-,sound(sound)
+:sound(sound)
 {
   srand (static_cast <unsigned> (time(0)));
 
   SetupBlockGeometry();
-  NewObjects();
 
-  player = NewBlock(5, 5, BlockType::paddle);
-  player.colour = {1.0f, 1.0f, 1.0f, 1.0f};
-
-
-  mouse_pointer.radius = 20;
-  mouse_pointer.position = GetCenterScreen();
-  mouse_pointer.colour = {1.0f, 1.0f, 0.8f, 1.0f};
-  mouse_pointer.velocity = {0.0f, 0.0f};
-
+  state = NewGame(width, height);
 }
 
 
 //Game::~Game() { }
 
+bool Game::IsRunning() const { return state.running; }
 
-vec2 Game::GetCenterScreen() const
+
+vec2 GetCenter(int width, int height)
 {
   return { width / 2.0f, height / 2.0f};
 }
 
 
-vec2 Game::RandomPosition() const
+vec2 RandomPosition(int width, int height, float border = 50.0f)
 {
-  float border = 50.0f;
   return { RandomFloat(border, width - border) , RandomFloat(border, height - border)};
 }
 
 
-vec2 Game::RandomPositionBottom() const
+vec2 RandomPositionBottom(int width, int height)
 {
   float border = 50.0f;
   return { RandomFloat(border, width - border) , RandomFloat(height - 2*border, height - border)};
@@ -91,26 +81,6 @@ BoundingBox MakeBounds(const Block &block)
 }
 
 
-Ball Game::NewBall() const
-{
-  Ball b;
-  //b.position = GetCenterScreen();
-  //b.position = RandomPosition();
-  b.position = RandomPositionBottom();
-
-  const float speed = 100.0f;
-  b.velocity = { RandomFloat(-speed, speed) , RandomFloat(-speed, speed)};
-
-  b.radius = RandomInt(5, 50);
-
-  b.colour = RandomRGB();
-
-  b.bounds = MakeBounds(b);
-
-  return b;
-}
-
-
 BlockType RandomBlockType()
 {
   const std::vector<BlockType> vec {
@@ -120,27 +90,6 @@ BlockType RandomBlockType()
     BlockType::rect_triangle_left, BlockType::rect_triangle_right
   };
   return vec.at(RandomInt(0, vec.size()));
-}
-
-
-Block Game::NewBlock(int x, int y, BlockType bt) const
-{
-  Block b;
-  b.type = bt;
-
-  b.position = { 50.0f + (110.0f * x) , 50.0f + (60.0f * y) };
-  b.colour = RandomRGB();
-  b.geometry = GetGeometry(b.type);
-
-  for (auto & line : b.geometry)
-  {
-    line.p1 += b.position;
-    line.p2 += b.position;
-  }
-
-  b.bounds = MakeBounds(b);
-
-  return b;
 }
 
 
@@ -214,56 +163,109 @@ const BlockGeometry & Game::GetGeometry(BlockType bt) const
 }
 
 
-void Game::NewObjects()
+Ball Game::NewBall(int width, int height) const
 {
-  balls.clear();
+  Ball b;
+  b.position = RandomPositionBottom(width, height);
+
+  const float speed = 100.0f;
+  b.velocity = { RandomFloat(-speed, speed) , RandomFloat(-speed, speed)};
+
+  b.radius = RandomInt(5, 50);
+
+  b.colour = RandomRGB();
+
+  b.bounds = MakeBounds(b);
+
+  return b;
+}
+
+
+Block Game::NewBlock(int x, int y, BlockType bt) const
+{
+  Block b;
+  b.type = bt;
+
+  b.position = { 50.0f + (110.0f * x) , 50.0f + (60.0f * y) };
+  b.colour = RandomRGB();
+  b.geometry = GetGeometry(b.type);
+
+  for (auto & line : b.geometry)
+  {
+    line.p1 += b.position;
+    line.p2 += b.position;
+  }
+
+  b.bounds = MakeBounds(b);
+
+  return b;
+}
+
+
+GameState Game::NewGame(int width, int height) const
+{
+  GameState state;
+
+  state.width = width;
+  state.height = height;
+
+  state.player = MakePlayer({width / 2.0f, height - 50.0f});
+
+  state.mouse_pointer.radius = 20;
+  state.mouse_pointer.position = GetCenter(width, height);
+  state.mouse_pointer.colour = {1.0f, 1.0f, 0.8f, 1.0f};
+  state.mouse_pointer.velocity = {0.0f, 0.0f};
+
+  // state.balls.clear();
   for(int i=0; i<1; i++)
   {
-    balls.push_back(NewBall());
+    state.balls.push_back(NewBall(width, height));
   }
-  //std::cout << "Generated " << balls.size() << " new balls." << std::endl;
 
-
-  blocks.clear();
+  // state.blocks.clear();
   for(int x=0; x<5; x++)
   {
     for (int y=0; y<3; y++)
     {
-      blocks.push_back(NewBlock(x, y, RandomBlockType()));
+      state.blocks.push_back(NewBlock(x, y, RandomBlockType()));
     }
   }
 
+  // state.border_lines.clear();
+  state.border_lines.push_back(NewWorldBorders(5, width, height));
 
-  border_lines.clear();
-  border_lines.push_back(NewWorldBorders(5, width, height));
-
+  return state;
 }
 
 
-void Game::ToggleGravity()
+Block Game::MakePlayer(const vec2 &position) const
 {
-  gravity_enabled = not gravity_enabled;
+  Block player = NewBlock(5, 5, BlockType::paddle);
+  player.colour = {1.0f, 1.0f, 1.0f, 1.0f};
 
-  // std::cout << "Gravity " << (gravity_enabled ? "on" : "off") << std::endl;
-}
+  player.position = position;
+  player.geometry = GetGeometry(BlockType::paddle);
 
+  for (auto & line : player.geometry)
+  {
+    line.p1 += position;
+    line.p2 += position;
+  }
 
-void Game::ToggleFriction()
-{
-  friction_enabled = not friction_enabled;
+  player.bounds = MakeBounds(state.player);
 
-  // std::cout << "Friction " << (friction_enabled ? "on" : "off") << std::endl;
+  return player;
 }
 
 
 void Game::Resize(int width, int height)
 {
-  this->width = width;
-  this->height = height;
+  state.width = width;
+  state.height = height;
 
 
-  border_lines.clear();
-  border_lines.push_back(NewWorldBorders(5, width, height));
+  state.border_lines.clear();
+  state.border_lines.push_back(NewWorldBorders(5, state.width, state.height));
 }
 
 
@@ -271,7 +273,7 @@ void Game::OnHitBlock([[maybe_unused]] Ball &ball, Block &block)
 {
   block.alive = false;
 
-  float balance = (ball.position.x / width);
+  float balance = (ball.position.x / state.width);
 
   if (block.type == BlockType::world_border)
   {
@@ -311,7 +313,7 @@ bool Game::CalculateBallCollision(const Ball & old_ball, vec2 &out_normal_vec, s
   int num_normals = 0;
   out_hit_blocks.clear();
 
-  for (auto vec : { BlockIterator(blocks), BlockIterator(border_lines), BlockIterator(player) })
+  for (auto vec : { BlockIterator(state.blocks), BlockIterator(state.border_lines), BlockIterator(state.player) })
   {
     for (Block & block : vec)
     {
@@ -391,62 +393,92 @@ void remove_inplace(CONT &container, const PRED &pred)
 
 void Game::Update(float dt)
 {
-  for(Ball &b : balls)
+  for(Ball &b : state.balls)
   {
     b = UpdatePhysics(dt, b);
   }
 
 
-  for([[maybe_unused]] Block &b : blocks)
+  for([[maybe_unused]] Block &b : state.blocks)
   {
     //TODO maybe add sounds or particles when destroyed
   }
 
 
-  remove_inplace(blocks, [=](auto &b){ return not b.alive; } );
+  remove_inplace(state.blocks, [=](auto &b){ return not b.alive; } );
 
 
   //remove_inplace(balls, [=](auto &b){ return b.radius == 10 && Collides_Any(b); } );
 }
 
 
-void Game::UpdatePlayer(const vec2 &position)
+GameState Game::ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream) const
 {
-  player.position = position;
-  player.geometry = GetGeometry(BlockType::paddle);
+  GameState out = state;
 
-
-  for (auto & line : player.geometry)
+  for(auto & intent : intent_stream)
   {
-    line.p1 += position;
-    line.p2 += position;
+    switch(intent.type)
+    {
+      case IntentType::quit:
+        out.running = false;
+      break;
+
+      case IntentType::toggle_debug:
+        out.debug_enabled = not out.debug_enabled;
+      break;
+
+      case IntentType::new_balls:
+        out = NewGame(state.width, state.height);
+      break;
+
+      case IntentType::time_passed:
+        //TODO
+      break;
+
+      case IntentType::player_input:
+        switch (intent.player_input)
+        {
+          case PlayerInput::move_left:
+          break;
+          case PlayerInput::move_right:
+          break;
+
+          case PlayerInput::mouse_position:
+            out.mouse_pointer.position = intent.position;
+            out.player = MakePlayer({intent.position.x, out.player.position.y});
+          break;
+
+          case PlayerInput::shoot:
+            if (intent.down)
+            {
+              out.balls.push_back(Shoot(state.player.position));
+
+              sound.PlaySound("paddle_bounce", state.player.position.x / state.width);
+            }
+          break;
+
+        }
+      break;
+    }
+
   }
 
-  player.bounds = MakeBounds(player);
+  return out;
 }
 
 
-void Game::PlayerInput([[maybe_unused]] float dt, Input const &input)
+void Game::ProcessIntents(const std::vector<struct Intent> &intent_stream)
 {
-  mouse_pointer.position = input.mouse;
-  mouse_pointer.bounds = MakeBounds(mouse_pointer);
-
-  [[maybe_unused]] MovementInput move = input.player_move;
-
-  player.position.x = mouse_pointer.position.x;
-  player.position.y = mouse_pointer.position.y; //height - 50;
-
-  UpdatePlayer(player.position);
-
-  //player = UpdatePhysics(dt, player);
+  state = ProcessIntents(state, intent_stream);
 }
 
 
-void Game::Shoot()
+Ball Game::Shoot(const vec2 &position) const
 {
-  Ball b = NewBall();
+  Ball b = NewBall(0, 0);
 
-  b.position = player.position;
+  b.position = position;
   b.velocity = {0.0f, -300.0f};
 
   b.position.x += 50.0f;
@@ -457,7 +489,5 @@ void Game::Shoot()
   b.colour.b = RandomFloat(0.5f, 1.0f);
   b.radius = 10.0f;
 
-  balls.push_back(b);
-
-  sound.PlaySound("paddle_bounce", player.position.x / width);
+  return b;
 }

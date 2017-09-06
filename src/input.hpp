@@ -2,27 +2,54 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 #include "maths_types.hpp"
 
 
-enum class Control
-{
-  none,
-  toggle_grav,
-  toggle_friction,
-  new_balls,
-  quit,
 
-  move_up,
+enum class PlayerInput
+{
   move_left,
   move_right,
-  move_down,
-
+  mouse_position,
   shoot
 };
 
 
+enum class IntentType
+{
+  quit,
+  toggle_debug,
+  new_balls,
+  time_passed,
+  player_input
+};
+
+
+
+
+struct Intent
+{
+  IntentType type;
+
+  union
+  {
+    PlayerInput player_input = PlayerInput::move_left;
+    float delta_time;
+  };
+
+  union
+  {
+    vec2 position;
+    bool down;
+  };
+
+};
+
+
+
+//move to game state?
 struct MovementInput
 {
   bool up = false;
@@ -32,30 +59,35 @@ struct MovementInput
 };
 
 
-struct GLFWwindow;
-
 
 class Input
 {
 private:
-  std::map<int, Control> bind_list;
+  std::map<int, IntentType> intent_bind_list;
+  std::map<int, PlayerInput> player_input_bind_list;
 
-  class Game &game;
+  std::vector<Intent> intent_stream;
+
+  // class Game &game;
 
 public:
-  MovementInput player_move;
-  vec2 mouse;
+  // MovementInput player_move;
+  // vec2 mouse;
 
 public:
-  Input(GLFWwindow *window, class Game &game);
+  Input(struct GLFWwindow *window);//, class Game &game);
 
-  void AddBind(int key, Control control);
+  void AddBind(int key, IntentType control);
+  void AddBind(int key, PlayerInput control);
 
-  Control GetControl(int key) const;
+  // IntentType GetIntent(int key) const;
 
   void SetupBinds();
 
-  void HandleCommand(Control control, bool down);
+  std::vector<Intent> GetIntentStream();
+
+
+  // void HandleCommand(IntentType control, bool down);
 
   static Input * GetThis(GLFWwindow *window);
   static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);

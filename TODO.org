@@ -1,20 +1,26 @@
 
 
 ## Todo List
-- command/key to enable debug lines
-- [DONE] Change player to paddle rect
-- [DONE] Paddle follow mouse cursor X position
+- [TODO] command/key to enable debug lines
+- setup delta time timer in a new class/func (maybe in input?)
 - [DONE] Fire up from paddle
   - Get velocity from last (few?) frames, add to ball initial velocity
 
 
-- Gameish
-
+# Gameish
   - Remove ball from bottom of screen
     - Rework simple collision checks for out of bounds balls
   - Win/Lose conditions
   - New level
   - Level load/save/editor ?
+
+
+# Refactor
+- [DONE] Read/watch: unidirectional user interface architecture
+- [TODO] Try to implement Model/View/Intent style system
+  - [DONE] Input class should return an intent
+  - [TODO] Game/Update should be pure, take an intent, output new state
+  - [TODO] Render takes game state
 
 
 ## Todo Low Priority
@@ -28,6 +34,8 @@
 
 ## Done!
 
+- [DONE] Change player to paddle rect
+- [DONE] Paddle follow mouse cursor X position
 
 
 ## Other Ideas

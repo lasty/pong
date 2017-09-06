@@ -59,50 +59,51 @@ struct Block
   BoundingBox bounds;
 };
 
-
-
-class Game
+struct GameState
 {
-private:
-  friend class Renderer;
-
+  bool running = true;
   int width = 0;
   int height = 0;
-  class Sound &sound;
 
-  bool gravity_enabled = false;
-  bool friction_enabled = false;
+  bool debug_enabled = false;
 
   std::vector<Ball> balls;
   std::vector<Block> blocks;
   std::vector<Block> border_lines;
 
-  std::map<BlockType, BlockGeometry> block_shapes;
-
   Block player;
   Ball mouse_pointer;
+};
 
+
+class Game
+{
+private:
+  class Sound &sound;
+
+  std::map<BlockType, BlockGeometry> block_shapes;
+
+  friend class Renderer;
+  GameState state;
 
 public:
 
   Game(int width, int height, Sound &sound);
   //~Game();
 
-  bool running = true;
+  bool IsRunning() const;
 
-  vec2 GetCenterScreen() const;
-  vec2 RandomPosition() const;
-  vec2 RandomPositionBottom() const;
-
-  Ball NewBall() const;
-  Block NewBlock(int x, int y, BlockType bt) const;
+  // vec2 GetCenterScreen() const;
+  // vec2 RandomPosition() const;
+  // vec2 RandomPositionBottom() const;
 
   void SetupBlockGeometry();
   const BlockGeometry & GetGeometry(BlockType bt) const;
 
-  void NewObjects();
-  void ToggleGravity();
-  void ToggleFriction();
+  Ball NewBall(int width, int height) const;
+  Block NewBlock(int x, int y, BlockType bt) const;
+  GameState NewGame(int width, int height) const;
+  Block MakePlayer(const vec2 &position) const;
 
   void Resize(int width, int height);
 
@@ -113,9 +114,9 @@ public:
 
   void Update(float dt);
 
-  void UpdatePlayer(const vec2 &position);
-  void PlayerInput(float dt, const class Input & input);
+  GameState ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream) const;
+  void ProcessIntents(const std::vector<struct Intent> &intent_stream);
 
-  void Shoot();
+  Ball Shoot(const vec2 & position) const;
 
 };

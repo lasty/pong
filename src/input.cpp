@@ -9,8 +9,8 @@
 #include "game.hpp"
 
 
-Input::Input(GLFWwindow *window, Game &game)
-:game(game)
+Input::Input(GLFWwindow *window)//, Game &game)
+//:game(game)
 {
   SetupCallbacks(window);
 
@@ -18,50 +18,49 @@ Input::Input(GLFWwindow *window, Game &game)
 }
 
 
-void Input::AddBind(int key, Control control)
+void Input::AddBind(int key, IntentType control)
 {
-  bind_list[key] = control;
+  intent_bind_list[key] = control;
+}
+
+void Input::AddBind(int key, PlayerInput control)
+{
+  player_input_bind_list[key] = control;
 }
 
 
-
-Control Input::GetControl(int key) const
-{
-  const auto & it = bind_list.find(key);
-  if (it != bind_list.end()) return (*it).second;
-  return Control::none;
-}
+// Control Input::GetControl(int key) const
+// {
+//   const auto & it = bind_list.find(key);
+//   if (it != bind_list.end()) return (*it).second;
+//   return Control::none;
+// }
 
 
 void Input::SetupBinds()
 {
-  AddBind(GLFW_KEY_ESCAPE, Control::quit);
-  AddBind(GLFW_KEY_Q, Control::quit);
+  AddBind(GLFW_KEY_ESCAPE, IntentType::quit);
+  AddBind(GLFW_KEY_Q, IntentType::quit);
 
-  AddBind(GLFW_KEY_SPACE, Control::new_balls);
-  AddBind(GLFW_KEY_N, Control::new_balls);
+  AddBind(GLFW_KEY_SPACE, IntentType::new_balls);
+  AddBind(GLFW_KEY_N, IntentType::new_balls);
 
-  AddBind(GLFW_KEY_G, Control::toggle_grav);
-  AddBind(GLFW_KEY_F, Control::toggle_friction);
+  AddBind(GLFW_KEY_G, IntentType::toggle_debug);
+  AddBind(GLFW_KEY_F1, IntentType::toggle_debug);
 
-  AddBind(GLFW_KEY_W, Control::move_up);
-  AddBind(GLFW_KEY_UP, Control::move_up);
+  AddBind(GLFW_KEY_A, PlayerInput::move_left);
+  AddBind(GLFW_KEY_LEFT, PlayerInput::move_left);
 
-  AddBind(GLFW_KEY_S, Control::move_down);
-  AddBind(GLFW_KEY_DOWN, Control::move_down);
+  AddBind(GLFW_KEY_D, PlayerInput::move_right);
+  AddBind(GLFW_KEY_RIGHT, PlayerInput::move_right);
 
-  AddBind(GLFW_KEY_A, Control::move_left);
-  AddBind(GLFW_KEY_LEFT, Control::move_left);
-
-  AddBind(GLFW_KEY_D, Control::move_right);
-  AddBind(GLFW_KEY_RIGHT, Control::move_right);
-
-  AddBind(GLFW_MOUSE_BUTTON_LEFT, Control::shoot);
-  AddBind(GLFW_MOUSE_BUTTON_RIGHT, Control::shoot);
-
+  AddBind(GLFW_MOUSE_BUTTON_LEFT, PlayerInput::shoot);
+  AddBind(GLFW_MOUSE_BUTTON_RIGHT, PlayerInput::shoot);
 }
 
 
+//TODO move to game update
+/*
 void Input::HandleCommand(Control control, bool down)
 {
 
@@ -108,6 +107,7 @@ void Input::HandleCommand(Control control, bool down)
     break;
   }
 }
+*/
 
 
 Input * Input::GetThis(GLFWwindow *window)
@@ -119,29 +119,61 @@ Input * Input::GetThis(GLFWwindow *window)
   return input;
 }
 
+
+//TODO refactor test cases
 extern float test_case_seed;
 extern int test_case_step;
 
 
 void Input::key_callback(
   GLFWwindow* window, int key, [[maybe_unused]] int scancode,
-  [[maybe_unused]] int action, [[maybe_unused]] int mods)
+  int action, [[maybe_unused]] int mods)
 {
   Input* input = Input::GetThis(window);
 
-  bool down = (action == GLFW_PRESS);  //  : (action == GLFW_RELEASE) ? false
+  //TODO synchronus updates to intent_stream?
 
-  Control control = input->GetControl(key);
+  auto it = input->intent_bind_list.find(key);
+  if (it != input->intent_bind_list.end())
+  {
+    Intent i;
+    i.type = it->second;
 
-  input->HandleCommand(control, down);
+    if (action == GLFW_PRESS)
+      input->intent_stream.push_back(i);
+  }
+
+
+  auto it2 = input->player_input_bind_list.find(key);
+  if (it2 != input->player_input_bind_list.end())
+  {
+    Intent i{IntentType::player_input, {}, {}};
+    i.player_input = it2->second;
+    i.down = (action == GLFW_PRESS);
+
+    input->intent_stream.push_back(i);
+  }
+
 }
 
 
-void Input::cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+std::vector<Intent> Input::GetIntentStream()
+{
+  auto out = intent_stream;
+  intent_stream.clear();
+  return out;
+}
+
+
+void Input::cursor_position_callback(GLFWwindow* window, double xpos, [[maybe_unused]] double ypos)
 {
   Input* input = Input::GetThis(window);
 
-  input->mouse = { float(xpos), float(ypos) };
+
+  Intent i{IntentType::player_input, PlayerInput::mouse_position, {}};
+  i.position = vec2 { float(xpos), float(ypos) };
+
+  input->intent_stream.push_back(i);
 }
 
 
@@ -149,12 +181,19 @@ void Input::mouse_button_callback(GLFWwindow* window, int button, int action, [[
 {
   Input* input = Input::GetThis(window);
 
-  bool down = (action == GLFW_PRESS);
-  Control control = input->GetControl(button);
+  auto it2 = input->player_input_bind_list.find(button);
+  if (it2 != input->player_input_bind_list.end())
+  {
+    Intent i;
+    i.type = IntentType::player_input;
+    i.player_input = it2->second;
+    i.down = (action == GLFW_PRESS);
 
-  input->HandleCommand(control, down);
+    input->intent_stream.push_back(i);
+  }
 
-  if (down)
+  //TODO refactor test cases
+  if (action == GLFW_PRESS)
   {
     if (button == GLFW_MOUSE_BUTTON_LEFT) test_case_step ++;
     if (button == GLFW_MOUSE_BUTTON_RIGHT and test_case_step > 0) test_case_step --;

@@ -128,10 +128,10 @@ void main_game()
   glfwGetFramebufferSize(window, &width, &height);
   Game game{width, height, sound};
 
-  Input input(window, game);
+  Input input(window);
 
   // Loop until the user closes the window
-  while (mainloop_running and game.running)
+  while (mainloop_running and game.IsRunning())
   {
 
     glfwPollEvents();
@@ -152,7 +152,11 @@ void main_game()
 
     if (not DRAW_TEST_CASE)
     {
-      game.PlayerInput(delta_time, input);
+      auto intent_stream = input.GetIntentStream();
+
+      //game.PlayerInput(delta_time, input);
+
+      game.ProcessIntents(intent_stream);
 
       game.Update(delta_time);
     }

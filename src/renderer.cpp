@@ -367,9 +367,11 @@ void Renderer::RenderBounds(const BoundingBox & bounds, [[maybe_unused]] bool dr
 
 void Renderer::DrawGameState(const Game & game)
 {
-  const bool draw_normals = true;
-  const bool draw_velocity = true;
-  const bool draw_bounds = true;
+  const auto & state = game.state;
+
+  const bool draw_normals = state.debug_enabled;
+  const bool draw_velocity = state.debug_enabled;
+  const bool draw_bounds = state.debug_enabled;
 
   EnableBlend();
 
@@ -377,37 +379,33 @@ void Renderer::DrawGameState(const Game & game)
   UseVAO(vao_id);
 
 
-  for(const auto &ball : game.balls)
+  for(const auto &ball : state.balls)
   {
-    // bool collides = game.Collides_Any(ball);
-
     if (draw_bounds) RenderBounds(ball.bounds, true);
 
-    RenderBall(ball, true); //collides);
+    RenderBall(ball, true);
   }
 
   ClearDynamicVertexData();
 
-  for(const auto &block : game.blocks)
+  for(const auto &block : state.blocks)
   {
-      //bool collides = game.Collides_Any(block);
-
       if (draw_bounds) RenderBounds(block.bounds, true);
 
       RenderBlock(block);
   }
 
 
-  RenderBlock(game.player);
-  if (draw_bounds) RenderBounds(game.player.bounds, true);
+  RenderBlock(state.player);
+  if (draw_bounds) RenderBounds(state.player.bounds, true);
 
-  RenderBall(game.mouse_pointer, true);//game.Collides_Any(game.mouse_pointer));
-  if (draw_bounds) RenderBounds(game.mouse_pointer.bounds, true);
+  RenderBall(state.mouse_pointer, true);
+  if (draw_bounds) RenderBounds(state.mouse_pointer.bounds, true);
 
   basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
 
 
-  for (const auto &vec : {game.border_lines})
+  for (const auto &vec : {state.border_lines})
   {
     for(const auto &block : vec)
     {
@@ -429,7 +427,7 @@ void Renderer::DrawGameState(const Game & game)
 
   if (draw_velocity)
   {
-    for (const auto& ball : game.balls)
+    for (const auto& ball : state.balls)
     {
       vec2 dir = (ball.velocity);
       DynamicLine(ball.position, ball.position + dir * 1.0f);
@@ -447,6 +445,7 @@ void Renderer::DrawGameState(const Game & game)
 }
 
 
+/*
 BoundingBox MakeBounds(const Ball & ball);
 BoundingBox MakeBounds(const Block &block);
 
@@ -539,36 +538,5 @@ void Renderer::DrawTestCase(Game &game, [[maybe_unused]] float seed, int step)
 
   UpdateDynamicVertexData();
   DrawDynamic(GL_LINES);
-
-  /*
-  EnableBlend();
-  UseProgram(basic_shader.GetProgramId());
-  UseVAO(vao_id);
-  ClearDynamicVertexData();
-
-
-  RenderBall(b, true);
-
-
-
-
-
-  DynamicLine(l.p1, l.p2);
-
-  if (draw_normals)
-  {
-    vec2 normal = get_normal(l.p1, l.p2);
-    vec2 center = (l.p1 + l.p2) / 2.0f;
-    DynamicLine(center, center+ (normal * 20.0f));
-  }
-
-
-
-  UpdateDynamicVertexData();
-  basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
-  glLineWidth(2.0f);
-  DrawDynamic(GL_LINES);
-  */
-
-
 }
+*/
