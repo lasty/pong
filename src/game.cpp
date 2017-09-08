@@ -16,20 +16,14 @@
 
 
 
-Game::Game(int width, int height, Sound &sound)
+Game::Game(Sound &sound)
 :sound(sound)
 {
   srand (static_cast <unsigned> (time(0)));
 
   SetupBlockGeometry();
-
-  state = NewGame(width, height);
 }
 
-
-//Game::~Game() { }
-
-bool Game::IsRunning() const { return state.running; }
 
 
 vec2 GetCenter(int width, int height)
@@ -252,13 +246,14 @@ Block Game::MakePlayer(const vec2 &position) const
     line.p2 += position;
   }
 
-  player.bounds = MakeBounds(state.player);
+  player.bounds = MakeBounds(player);
 
   return player;
 }
 
 
-void Game::Resize(int width, int height)
+
+void Game::Resize(GameState &state, int width, int height)
 {
   state.width = width;
   state.height = height;
@@ -269,7 +264,7 @@ void Game::Resize(int width, int height)
 }
 
 
-void Game::OnHitBlock([[maybe_unused]] Ball &ball, Block &block)
+void Game::OnHitBlock(const GameState &state, Ball &ball, Block &block) const
 {
   block.alive = false;
 
@@ -307,7 +302,7 @@ struct BlockIterator
 };
 
 
-bool Game::CalculateBallCollision(const Ball & old_ball, vec2 &out_normal_vec, std::vector<Block*> &out_hit_blocks)
+bool Game::CalculateBallCollision(GameState &state, const Ball & old_ball, vec2 &out_normal_vec, std::vector<Block*> &out_hit_blocks) const
 {
   vec2 normal_acc = {};
   int num_normals = 0;
@@ -352,7 +347,7 @@ bool Game::CalculateBallCollision(const Ball & old_ball, vec2 &out_normal_vec, s
 }
 
 
-Ball Game::UpdatePhysics(float dt, Ball & old_ball)
+Ball Game::UpdatePhysics(GameState &state, float dt, Ball & old_ball) const
 {
   Ball out = old_ball;
   float orig_speed = get_length(old_ball.velocity);
@@ -363,7 +358,7 @@ Ball Game::UpdatePhysics(float dt, Ball & old_ball)
 
   std::vector<Block*> hit_blocks {};
   vec2 normal_avg {};
-  if (CalculateBallCollision(old_ball, normal_avg, hit_blocks))
+  if (CalculateBallCollision(state, old_ball, normal_avg, hit_blocks))
   {
     vec2 refl = reflect(normalize(old_ball.velocity), normalize(normal_avg));
 
@@ -371,7 +366,7 @@ Ball Game::UpdatePhysics(float dt, Ball & old_ball)
 
     for(Block * block : hit_blocks)
     {
-      OnHitBlock(old_ball, *block);
+      OnHitBlock(state, old_ball, *block);
     }
 
     out.position = old_ball.position;
@@ -391,28 +386,7 @@ void remove_inplace(CONT &container, const PRED &pred)
 }
 
 
-void Game::Update(float dt)
-{
-  for(Ball &b : state.balls)
-  {
-    b = UpdatePhysics(dt, b);
-  }
-
-
-  for([[maybe_unused]] Block &b : state.blocks)
-  {
-    //TODO maybe add sounds or particles when destroyed
-  }
-
-
-  remove_inplace(state.blocks, [=](auto &b){ return not b.alive; } );
-
-
-  //remove_inplace(balls, [=](auto &b){ return b.radius == 10 && Collides_Any(b); } );
-}
-
-
-GameState Game::ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream) const
+GameState Game::ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream, float dt) const
 {
   GameState out = state;
 
@@ -464,14 +438,28 @@ GameState Game::ProcessIntents(const GameState &state, const std::vector<struct 
 
   }
 
+
+  //Now update the state with a time step
+
+  for(Ball &b : out.balls)
+  {
+    b = UpdatePhysics(out, dt, b);
+  }
+
+
+
+  for([[maybe_unused]] Block &b : out.blocks)
+  {
+    //TODO maybe add sounds or particles when destroyed
+  }
+
+  remove_inplace(out.blocks, [=](auto &b){ return not b.alive; } );
+
+
   return out;
 }
 
 
-void Game::ProcessIntents(const std::vector<struct Intent> &intent_stream)
-{
-  state = ProcessIntents(state, intent_stream);
-}
 
 
 Ball Game::Shoot(const vec2 &position) const

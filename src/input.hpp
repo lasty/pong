@@ -68,12 +68,6 @@ private:
 
   std::vector<Intent> intent_stream;
 
-  // class Game &game;
-
-public:
-  // MovementInput player_move;
-  // vec2 mouse;
-
 public:
   Input(struct GLFWwindow *window);//, class Game &game);
 

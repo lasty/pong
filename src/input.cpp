@@ -59,57 +59,6 @@ void Input::SetupBinds()
 }
 
 
-//TODO move to game update
-/*
-void Input::HandleCommand(Control control, bool down)
-{
-
-  switch (control)
-  {
-    case Control::none :
-      std::cout << "enqueued control none, somehow" << std::endl;
-    break;
-
-    case Control::quit :
-      if (down) game.running = false;
-    break;
-
-    case Control::new_balls :
-      if (down) game.NewObjects();
-    break;
-
-    case Control::toggle_grav :
-      if (down) game.ToggleGravity();
-    break;
-
-    case Control::toggle_friction :
-      if (down) game.ToggleFriction();
-    break;
-
-    case Control::move_up :
-      player_move.up = down;  //OK confusing name
-    break;
-
-    case Control::move_down :
-      player_move.down = down;
-    break;
-
-    case Control::move_left :
-      player_move.left = down;
-    break;
-
-    case Control::move_right :
-      player_move.right = down;
-    break;
-
-    case Control::shoot:
-      if (down) game.Shoot();
-    break;
-  }
-}
-*/
-
-
 Input * Input::GetThis(GLFWwindow *window)
 {
   Input* input = static_cast<Input*>(glfwGetWindowUserPointer(window));
@@ -118,11 +67,6 @@ Input * Input::GetThis(GLFWwindow *window)
 
   return input;
 }
-
-
-//TODO refactor test cases
-extern float test_case_seed;
-extern int test_case_step;
 
 
 void Input::key_callback(
@@ -191,14 +135,6 @@ void Input::mouse_button_callback(GLFWwindow* window, int button, int action, [[
 
     input->intent_stream.push_back(i);
   }
-
-  //TODO refactor test cases
-  if (action == GLFW_PRESS)
-  {
-    if (button == GLFW_MOUSE_BUTTON_LEFT) test_case_step ++;
-    if (button == GLFW_MOUSE_BUTTON_RIGHT and test_case_step > 0) test_case_step --;
-  }
-
 }
 
 

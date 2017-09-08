@@ -365,10 +365,8 @@ void Renderer::RenderBounds(const BoundingBox & bounds, [[maybe_unused]] bool dr
 
 
 
-void Renderer::DrawGameState(const Game & game)
+void Renderer::DrawGameState(const class GameState & state)
 {
-  const auto & state = game.state;
-
   const bool draw_normals = state.debug_enabled;
   const bool draw_velocity = state.debug_enabled;
   const bool draw_bounds = state.debug_enabled;
@@ -441,102 +439,4 @@ void Renderer::DrawGameState(const Game & game)
   glLineWidth(2.0f);
 
   DrawDynamic(GL_LINES);
-
 }
-
-
-/*
-BoundingBox MakeBounds(const Ball & ball);
-BoundingBox MakeBounds(const Block &block);
-
-void Renderer::DrawTestCase(Game &game, [[maybe_unused]] float seed, int step)
-{
-  srand(2);
-
-  Ball b;
-  b.radius = 30;
-  b.position = {40, 95};
-  b.velocity = {30, 21};
-  b.colour = {0.5, 0.5, 0.5, 1.0};
-  b.rot = 0.0f;
-  b.bounds = MakeBounds(b);
-
-  Line l;
-  l.p2 = {50, 115};
-  l.p1 = {300, 15};
-  // l.bounds = MakeBounds(l);
-
-  //Game game { xxx.width, xxx.height };
-
-  game.blocks.clear();
-
-  game.blocks.push_back(game.NewBlock(1, 2, BlockType::rect_triangle_left));
-
-  //game.border_lines.erase(game.border_lines.begin() + 1, game.border_lines.end());
-  //game.border_lines.push_back(l);
-
-  game.balls.clear();
-  game.balls.push_back(b);
-
-  game.player.position = {-100, -100};
-  game.player.bounds = MakeBounds(game.player);
-
-  game.mouse_pointer.position = {-100, -100};
-  game.mouse_pointer.bounds = MakeBounds(game.mouse_pointer);
-
-
-  TRACE << "step " << step << "  ";
-
-  for (int i=0; i<step; i++)
-  {
-    float dt = 1.0f;
-    game.Update(dt);
-  }
-
-
-  DrawGameState(game);
-
-
-  vec2 ofs { 400.0f, 300.0f };
-
-  //outside triangle
-  //auto l1 = Line{ {100.0f, 0.0f}, {0.0f, 0.0f}};
-  //auto l2 = Line{ {0.0f, 0.0f}, {50.0f, 50.0f}};
-
-
-  //outside square
-  // auto l1 = Line{ {100.0f, 0.0f}, {0.0f, 0.0f}};
-  // auto l2 = Line{ {0.0f, 0.0f}, {0.0f, 100.0f}};
-
-  //inside square
-  auto l1 = Line{{0.0f, -100.0f}, {0.0f, 0.0f}};
-  auto l2 = Line{{0.0f, 0.0f}, {-100.0f, 0.0f}};
-
-
-  auto n1 = get_normal(l1.p1, l1.p2);
-  auto n2 = get_normal(l2.p1, l2.p2);
-
-  auto ln1 = Line{ {0.0f,0.0f} , n1 * 10.0f};
-  auto ln2 = Line{ {0.0f,0.0f} , n2 * 10.0f};
-
-  auto avgnorm = normalize((n1 + n2) / 2.0f);
-
-  vec2 ofs2 { -20.0f, -20.0f };
-  auto avgnorm_l = Line{ ofs2, ofs2 + (avgnorm * 10.0f) };
-
-  for(const auto &line : {l1, l2, ln1, ln2, avgnorm_l})
-  {
-    DynamicLine(line.p1 + ofs, line.p2 + ofs);
-
-    if (distance(line.p1, line.p2) > 50) //(draw_normals)
-    {
-      vec2 normal = get_normal(line.p1, line.p2);
-      vec2 center = (line.p1 + line.p2) / 2.0f;
-      DynamicLine(center + ofs, center + (normal * 20.0f) + ofs);
-    }
-  }
-
-  UpdateDynamicVertexData();
-  DrawDynamic(GL_LINES);
-}
-*/

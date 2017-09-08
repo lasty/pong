@@ -59,6 +59,7 @@ struct Block
   BoundingBox bounds;
 };
 
+
 struct GameState
 {
   bool running = true;
@@ -83,13 +84,9 @@ private:
 
   std::map<BlockType, BlockGeometry> block_shapes;
 
-  friend class Renderer;
-  GameState state;
-
 public:
 
-  Game(int width, int height, Sound &sound);
-  //~Game();
+  Game(Sound &sound);
 
   bool IsRunning() const;
 
@@ -105,17 +102,14 @@ public:
   GameState NewGame(int width, int height) const;
   Block MakePlayer(const vec2 &position) const;
 
-  void Resize(int width, int height);
+  void Resize(GameState & state, int width, int height);
 
-  void OnHitBlock(Ball &ball, Block &block);
+  void OnHitBlock(const GameState &state, Ball &ball, Block &block) const;
 
-  bool CalculateBallCollision(const Ball & old_ball, vec2 &normal_vec, std::vector<Block*> &out_hit_blocks);
-  Ball UpdatePhysics(float dt, Ball & b);
+  bool CalculateBallCollision(GameState &state, const Ball & old_ball, vec2 &normal_vec, std::vector<Block*> &out_hit_blocks) const;
+  Ball UpdatePhysics(GameState &state, float dt, Ball & b) const;
 
-  void Update(float dt);
-
-  GameState ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream) const;
-  void ProcessIntents(const std::vector<struct Intent> &intent_stream);
+  GameState ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream, float dt) const;
 
   Ball Shoot(const vec2 & position) const;
 

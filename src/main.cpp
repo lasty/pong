@@ -7,7 +7,6 @@
 // #define TEST_MATHS
 
 const int SWAP_INTERVAL {1};
-const bool DRAW_TEST_CASE = false;
 const int GL_MAJOR {4};
 const int GL_MINOR {5};
 
@@ -31,9 +30,6 @@ const int GL_MINOR {5};
 
 std::ostringstream TRACE;
 
-bool mainloop_running = true;
-float test_case_seed = time(0);
-int test_case_step = 0;
 
 
 void glfw_error_callback([[maybe_unused]] int error, const char* description)
@@ -126,19 +122,15 @@ void main_game()
   Sound sound;
 
   glfwGetFramebufferSize(window, &width, &height);
-  Game game{width, height, sound};
+  Game game{sound};
+  GameState gamestate = game.NewGame(width, height);
 
   Input input(window);
 
   // Loop until the user closes the window
-  while (mainloop_running and game.IsRunning())
+  while ((not glfwWindowShouldClose(window)) and gamestate.running)
   {
-
     glfwPollEvents();
-    if (glfwWindowShouldClose(window))
-    {
-      mainloop_running = false;
-    }
 
     //Input and Update
 
@@ -150,16 +142,8 @@ void main_game()
     delta_time = 1.0f / 60.0f;
 
 
-    if (not DRAW_TEST_CASE)
-    {
-      auto intent_stream = input.GetIntentStream();
+    gamestate = game.ProcessIntents(gamestate, input.GetIntentStream(), delta_time);
 
-      //game.PlayerInput(delta_time, input);
-
-      game.ProcessIntents(intent_stream);
-
-      game.Update(delta_time);
-    }
 
     // FPS counter
     frame_count++;
@@ -194,7 +178,7 @@ void main_game()
 
     glfwGetFramebufferSize(window, &width, &height);
     renderer.Resize(width, height);
-    game.Resize(width, height);
+    game.Resize(gamestate, width, height);
     //float ratio = width / (float) height;
 
 
@@ -204,18 +188,10 @@ void main_game()
     glClear(GL_COLOR_BUFFER_BIT);
 
 
-    if (DRAW_TEST_CASE)
-    {
-      renderer.DrawTestCase(game, test_case_seed, test_case_step);
-    }
-    else
-    {
-      renderer.DrawGameState(game);
-    }
+    renderer.DrawGameState(gamestate);
 
 
     // Present framebuffer
-
     glfwSwapBuffers(window);
 
   }  // end main loop
