@@ -316,13 +316,8 @@ shape_def Renderer::GetRectShape(int w, int h)
 }
 
 
-void Renderer::RenderBlock(const Block & block)
+void Renderer::RenderBlock(const Block & block, bool draw_normals)
 {
-  //TODO update this for blocks
-  RenderBounds(block.bounds);
-
-  //const auto & vec = game.GetGeometry(block.type);
-
   for (auto line : block.geometry)
   {
     const auto p1 = line.p1;// + block.position;
@@ -330,7 +325,6 @@ void Renderer::RenderBlock(const Block & block)
 
     DynamicLine(p1, p2);
 
-    bool draw_normals = true;
     if (draw_normals)
     {
       vec2 normal = get_normal(p1, p2);
@@ -338,11 +332,10 @@ void Renderer::RenderBlock(const Block & block)
       DynamicLine(center, center + (normal * 4.0f));
     }
   }
-
 }
 
 
-void Renderer::RenderBounds(const BoundingBox & bounds, [[maybe_unused]] bool draw_outline)
+void Renderer::RenderBounds(const BoundingBox & bounds)
 {
   glLineWidth(1.0f);
   const vec2 size = bounds.bottom_right - bounds.top_left;
@@ -355,6 +348,7 @@ void Renderer::RenderBounds(const BoundingBox & bounds, [[maybe_unused]] bool dr
 
   DrawShape(GL_TRIANGLE_FAN, shape);
 
+  bool draw_outline = true;
   if (draw_outline)
   {
     basic_shader.SetColour(0.9f, 0.1f, 0.9f, 0.9f);
@@ -365,13 +359,14 @@ void Renderer::RenderBounds(const BoundingBox & bounds, [[maybe_unused]] bool dr
 
 
 
-void Renderer::DrawGameState(const class GameState & state)
+void Renderer::DrawGameState(const GameState & state)
 {
   const bool draw_normals = state.debug_enabled;
   const bool draw_velocity = state.debug_enabled;
   const bool draw_bounds = state.debug_enabled;
 
   EnableBlend();
+  ClearDynamicVertexData();
 
   UseProgram(basic_shader.GetProgramId());
   UseVAO(vao_id);
@@ -379,26 +374,24 @@ void Renderer::DrawGameState(const class GameState & state)
 
   for(const auto &ball : state.balls)
   {
-    if (draw_bounds) RenderBounds(ball.bounds, true);
+    if (draw_bounds) RenderBounds(ball.bounds);
 
     RenderBall(ball, true);
   }
 
-  ClearDynamicVertexData();
-
   for(const auto &block : state.blocks)
   {
-      if (draw_bounds) RenderBounds(block.bounds, true);
+      if (draw_bounds) RenderBounds(block.bounds);
 
-      RenderBlock(block);
+      RenderBlock(block, draw_normals);
   }
 
 
-  RenderBlock(state.player);
-  if (draw_bounds) RenderBounds(state.player.bounds, true);
+  RenderBlock(state.player, draw_normals);
+  if (draw_bounds) RenderBounds(state.player.bounds);
 
   RenderBall(state.mouse_pointer, true);
-  if (draw_bounds) RenderBounds(state.mouse_pointer.bounds, true);
+  if (draw_bounds) RenderBounds(state.mouse_pointer.bounds);
 
   basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -410,7 +403,6 @@ void Renderer::DrawGameState(const class GameState & state)
       for(const auto &line : block.geometry)
       {
         DynamicLine(line.p1, line.p2);
-        // if (draw_bounds) RenderBounds(line.bounds, true);
 
         if (draw_normals)
         {

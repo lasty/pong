@@ -143,8 +143,8 @@ void Game::SetupBlockGeometry()
 
   vec2 ptl {0,0};
   vec2 ptr {100,0};
-  vec2 pbl {0, 50};
-  vec2 pbr {100, 50};
+  vec2 pbl {0, 40};
+  vec2 pbr {100, 40};
 
   block_shapes.emplace(BlockType::paddle,
     BlockGeometry { {ptl, pbl}, {pbl, pbr}, {pbr, ptr}, {ptr, ptl} });
@@ -253,14 +253,17 @@ Block Game::MakePlayer(const vec2 &position) const
 
 
 
-void Game::Resize(GameState &state, int width, int height)
+GameState Game::Resize(const GameState &state, int width, int height) const
 {
-  state.width = width;
-  state.height = height;
+  GameState out = state;
 
+  out.width = width;
+  out.height = height;
 
-  state.border_lines.clear();
-  state.border_lines.push_back(NewWorldBorders(5, state.width, state.height));
+  out.border_lines.clear();
+  out.border_lines.push_back(NewWorldBorders(5, width, height));
+
+  return out;
 }
 
 
@@ -386,7 +389,8 @@ void remove_inplace(CONT &container, const PRED &pred)
 }
 
 
-GameState Game::ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream, float dt) const
+GameState Game::ProcessIntents(const GameState &state,
+  const std::vector<struct Intent> &intent_stream) const
 {
   GameState out = state;
 
@@ -435,17 +439,19 @@ GameState Game::ProcessIntents(const GameState &state, const std::vector<struct 
         }
       break;
     }
-
   }
 
+  return out;
+}
 
-  //Now update the state with a time step
+GameState Game::Simulate(const GameState &state, float dt) const
+{
+  GameState out = state;
 
   for(Ball &b : out.balls)
   {
     b = UpdatePhysics(out, dt, b);
   }
-
 
 
   for([[maybe_unused]] Block &b : out.blocks)
@@ -458,7 +464,6 @@ GameState Game::ProcessIntents(const GameState &state, const std::vector<struct 
 
   return out;
 }
-
 
 
 

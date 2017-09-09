@@ -88,28 +88,23 @@ public:
 
   Game(Sound &sound);
 
-  bool IsRunning() const;
-
-  // vec2 GetCenterScreen() const;
-  // vec2 RandomPosition() const;
-  // vec2 RandomPositionBottom() const;
-
   void SetupBlockGeometry();
   const BlockGeometry & GetGeometry(BlockType bt) const;
 
   Ball NewBall(int width, int height) const;
   Block NewBlock(int x, int y, BlockType bt) const;
-  GameState NewGame(int width, int height) const;
   Block MakePlayer(const vec2 &position) const;
+  GameState NewGame(int width, int height) const;
 
-  void Resize(GameState & state, int width, int height);
+  GameState Resize(const GameState & state, int width, int height) const;
 
   void OnHitBlock(const GameState &state, Ball &ball, Block &block) const;
 
   bool CalculateBallCollision(GameState &state, const Ball & old_ball, vec2 &normal_vec, std::vector<Block*> &out_hit_blocks) const;
   Ball UpdatePhysics(GameState &state, float dt, Ball & b) const;
 
-  GameState ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream, float dt) const;
+  GameState ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream) const;
+  GameState Simulate(const GameState &state, float dt) const;
 
   Ball Shoot(const vec2 & position) const;
 

@@ -1,7 +1,7 @@
 
 
 ## Todo List
-- [TODO] command/key to enable debug lines
+- [DONE] command/key to enable debug lines
 - setup delta time timer in a new class/func (maybe in input?)
 - [DONE] Fire up from paddle
   - Get velocity from last (few?) frames, add to ball initial velocity
@@ -19,8 +19,8 @@
 - [DONE] Read/watch: unidirectional user interface architecture
 - [TODO] Try to implement Model/View/Intent style system
   - [DONE] Input class should return an intent
-  - [TODO] Game/Update should be pure, take an intent, output new state
-  - [TODO] Render takes game state
+  - [DONE] Game/Update should be pure, take an intent, output new state
+  - [DONE] Render takes game state
 
 
 ## Todo Low Priority

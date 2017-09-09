@@ -142,7 +142,10 @@ void main_game()
     delta_time = 1.0f / 60.0f;
 
 
-    gamestate = game.ProcessIntents(gamestate, input.GetIntentStream(), delta_time);
+    gamestate = game.ProcessIntents(gamestate, input.GetIntentStream());
+
+
+    gamestate = game.Simulate(gamestate, delta_time);
 
 
     // FPS counter
@@ -175,15 +178,16 @@ void main_game()
 
 
     //Check framebuffer size
-
     glfwGetFramebufferSize(window, &width, &height);
-    renderer.Resize(width, height);
-    game.Resize(gamestate, width, height);
-    //float ratio = width / (float) height;
-
+    if (not (width == gamestate.width and height == gamestate.height))
+    {
+      renderer.Resize(width, height);
+      gamestate = game.Resize(gamestate, width, height);
+      //float ratio = width / (float) height;
+      glViewport(0, 0, width, height);
+    }
 
     // Render
-    glViewport(0, 0, width, height);
     glClearColor(0.1, 0.2, 0.3, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
