@@ -2,7 +2,7 @@
 
 ## Todo List
 - [DONE] command/key to enable debug lines
-- setup delta time timer in a new class/func (maybe in input?)
+- [DONE] setup delta time timer in a new class/func (maybe in input?)
 - [DONE] Fire up from paddle
   - Get velocity from last (few?) frames, add to ball initial velocity
 

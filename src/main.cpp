@@ -46,15 +46,71 @@ void set_display_title(GLFWwindow* window, const std::string &str)
 }
 
 
+class Timer
+{
+private:
+  int frame_count = 0;
+  int last_fps = 0;
+  float frame_last_time = 1.0f;
+  float time_last = 0.0f;
+
+public:
+  Timer()
+  {
+    time_last = glfwGetTime();
+    frame_last_time = time_last + 1.0f;
+  }
+
+  float Update()
+  {
+      float time_now = glfwGetTime();
+      float delta_time = time_now - time_last;
+      time_last = time_now;
+
+      if (SWAP_INTERVAL > 1)
+      delta_time = 1.0f / 60.0f;
+
+      frame_count++;
+
+      if (time_now >= frame_last_time)
+      {
+        last_fps = frame_count;
+        frame_last_time += 1.0f;
+        frame_count = 0;
+      }
+
+      return delta_time;
+  }
+
+  int FPS() const { return last_fps; }
+};
+
+
+void SetTitle(GLFWwindow *window, const Timer &timer, const std::string &msg)
+{
+  std::stringstream ss;  ss << std::fixed;  ss.precision(2);
+  TRACE << std::fixed;  TRACE.precision(2);
+
+  ss << "FPS: " << timer.FPS() <<  "  ";//seconds: " << frame_timer;
+
+  ss << "   " << msg;
+
+  set_display_title(window, ss.str());
+}
+
+
+void ClearTrace(std::ostringstream &TRACE)
+{
+  TRACE.str({});
+  TRACE.clear();
+}
+
 
 void main_game()
 {
-  int width = 640;
-  int height = 480;
-
-
-
   std::cout << "Hello, world" << std::endl;
+
+  SDL_Init(SDL_INIT_AUDIO);
 
   SDL_version linked;
   SDL_version compiled;
@@ -67,8 +123,6 @@ void main_game()
     << "  (linked with " << (int)linked.major << "." << (int)linked.minor << "." << (int)linked.patch << ")"
     << std::endl;
 
-  SDL_Init(SDL_INIT_AUDIO);
-
 
   std::cout << "GLFW Version: " << glfwGetVersionString() << std::endl;
   if (not glfwInit()) throw std::runtime_error("failed to init GLFW");
@@ -78,17 +132,15 @@ void main_game()
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, GL_MAJOR);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, GL_MINOR);
 
-  // Create a windowed mode window and its OpenGL context
 
-
+  int width = 640;
+  int height = 480;
   GLFWwindow* window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
 
   if (not window)
   {
     throw std::runtime_error("failed to create window");
   }
-
-  // Make the window's context current
 
   glfwMakeContextCurrent(window);
 
@@ -110,71 +162,32 @@ void main_game()
 
   glfwSwapInterval(SWAP_INTERVAL);
 
-
-  int frame_count = 0;
-  int last_fps = 0;
-  float frame_timer = glfwGetTime();
-  float frame_last_time = frame_timer + 1.0f;
-  float time_last = glfwGetTime();
-
-
   Renderer renderer;
   Sound sound;
+  Timer timer;
 
   glfwGetFramebufferSize(window, &width, &height);
+
   Game game{sound};
   GameState gamestate = game.NewGame(width, height);
 
   Input input(window);
 
-  // Loop until the user closes the window
+  // Main Loop
   while ((not glfwWindowShouldClose(window)) and gamestate.running)
   {
     glfwPollEvents();
 
-    //Input and Update
-
-    auto time_now = glfwGetTime();
-    auto delta_time = time_now - time_last;
-    time_last = time_now;
-
-    if (SWAP_INTERVAL > 1)
-    delta_time = 1.0f / 60.0f;
+    float delta_time = timer.Update();
 
 
     gamestate = game.ProcessIntents(gamestate, input.GetIntentStream());
 
-
     gamestate = game.Simulate(gamestate, delta_time);
 
 
-    // FPS counter
-    frame_count++;
-    frame_timer = glfwGetTime();
-
-
-    if (frame_timer >= frame_last_time)
-    {
-      last_fps = frame_count;
-      frame_last_time += 1.0f;
-      frame_count = 0;
-    }
-
-    //Set title
-    {
-      std::stringstream ss;  ss << std::fixed;  ss.precision(2);
-      TRACE << std::fixed;  TRACE.precision(2);
-
-      ss << "FPS: " << last_fps <<  "  ";//seconds: " << frame_timer;
-
-      ss << "   " << TRACE.str();
-
-      set_display_title(window, ss.str());
-
-      //clear the trace
-      TRACE.str({});
-      TRACE.clear();
-    }
+    SetTitle(window, timer, TRACE.str());
+    ClearTrace(TRACE);
 
 
     //Check framebuffer size
@@ -191,23 +204,16 @@ void main_game()
     glClearColor(0.1, 0.2, 0.3, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
-
     renderer.DrawGameState(gamestate);
 
-
-    // Present framebuffer
     glfwSwapBuffers(window);
 
   }  // end main loop
 
 
   //Clean up
-
   sound.Quit();
-
   SDL_Quit();
-
-
   input.RemoveCallbacks(window);
 
   glfwDestroyWindow(window);
