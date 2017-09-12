@@ -147,10 +147,10 @@ void Game::SetupBlockGeometry()
     BlockGeometry { {wtr, tl}, {tl, bl}, {bl, br}, {br, wtr} });
 
 
-  vec2 ptl {0,0};
-  vec2 ptr {100,0};
-  vec2 pbl {0, 40};
-  vec2 pbr {100, 40};
+  vec2 ptl {-50,0};
+  vec2 ptr {50,0};
+  vec2 pbl {-50, 40};
+  vec2 pbr {50, 40};
 
   block_shapes.emplace(BlockType::paddle,
     BlockGeometry { {ptl, pbl}, {pbl, pbr}, {pbr, ptr}, {ptr, ptl} });
@@ -211,10 +211,7 @@ GameState Game::NewGame(int width, int height) const
 
   state.player = MakePlayer({width / 2.0f, height - 50.0f});
 
-  state.mouse_pointer.radius = 20;
-  state.mouse_pointer.position = GetCenter(width, height);
-  state.mouse_pointer.colour = {1.0f, 1.0f, 0.8f, 1.0f};
-  state.mouse_pointer.velocity = {0.0f, 0.0f};
+  state.mouse_pointer = GetCenter(width, height);
 
   // state.balls.clear();
   for(int i=0; i<1; i++)
@@ -237,25 +234,72 @@ GameState Game::NewGame(int width, int height) const
 }
 
 
-Block Game::MakePlayer(const vec2 &position) const
+Paddle Game::MakePlayer(const vec2 &position) const
 {
-  Block player = NewBlock(5, 5, BlockType::paddle);
-  player.colour = {1.0f, 1.0f, 1.0f, 1.0f};
+  Block block = NewBlock(5, 5, BlockType::paddle);
+  block.colour = {1.0f, 1.0f, 1.0f, 1.0f};
 
-  player.position = position;
-  player.geometry = GetGeometry(BlockType::paddle);
+  block.position = position;
+  block.geometry = GetGeometry(BlockType::paddle);
 
-  for (auto & line : player.geometry)
+  for (auto & line : block.geometry)
   {
     line.p1 += position;
     line.p2 += position;
   }
 
-  player.bounds = MakeBounds(player);
+  block.bounds = MakeBounds(block);
+
+  Paddle player;
+
+  player.block = block;
+  player.alive = true;
+  player.sticky_ball = true;
+  player.avg_velocity = std::vector<float>(10, position.x);
 
   return player;
 }
 
+
+Paddle Game::UpdatePlayer(const Paddle &old, const vec2 &position) const
+{
+  Paddle player = old;
+  player.block.position.x = position.x;
+
+  player.block.geometry = GetGeometry(BlockType::paddle);
+
+  for (auto & line : player.block.geometry)
+  {
+    line.p1 += player.block.position;
+    line.p2 += player.block.position;
+  }
+
+  player.block.bounds = MakeBounds(player.block);
+
+  return player;
+}
+
+
+void UpdatePaddleVelocity(Paddle &player)
+{
+  player.avg_velocity.push_back(player.block.position.x);
+
+  player.avg_velocity.erase(player.avg_velocity.begin());
+}
+
+
+float GetPaddleVelocity(const Paddle &player)
+{
+  float vels = 0.0f;
+  for (unsigned i=1; i<player.avg_velocity.size(); i++)
+  {
+    vels += (player.avg_velocity[i] - player.avg_velocity[i-1]);
+  }
+
+  float avg = vels / float(player.avg_velocity.size() - 1);
+
+  return avg;
+}
 
 
 GameState Game::Resize(const GameState &state, int width, int height) const
@@ -320,7 +364,7 @@ bool Game::CalculateBallCollision(GameState &state, const Ball & old_ball, vec2 
   int num_normals = 0;
   out_hit_blocks.clear();
 
-  for (auto vec : { BlockIterator(state.blocks), BlockIterator(state.border_lines), BlockIterator(state.player) })
+  for (auto vec : { BlockIterator(state.blocks), BlockIterator(state.border_lines), BlockIterator(state.player.block) })
   {
     for (Block & block : vec)
     {
@@ -432,16 +476,19 @@ GameState Game::ProcessIntents(const GameState &state,
           break;
 
           case PlayerInput::mouse_position:
-            out.mouse_pointer.position = intent.position;
-            out.player = MakePlayer({intent.position.x, out.player.position.y});
+            out.mouse_pointer = intent.position;
+
+            out.player = UpdatePlayer(out.player, intent.position);
           break;
 
           case PlayerInput::shoot:
             if (intent.down)
             {
-              out.balls.push_back(Shoot(state.player.position));
+              auto b = Shoot(state.player.block.position);
+              b.velocity.x += GetPaddleVelocity(state.player) * 30.0f;
+              out.balls.push_back(b);
 
-              sound.PlaySound("paddle_bounce", state.player.position.x / state.width);
+              sound.PlaySound("paddle_bounce", state.player.block.position.x / state.width);
             }
           break;
 
@@ -462,10 +509,12 @@ GameState Game::Simulate(const GameState &state, float dt) const
     b = UpdatePhysics(out, dt, b);
   }
 
-
   remove_inplace(out.blocks, [=](auto &b){ return not b.alive; } );
   remove_inplace(out.balls, [=](auto &b){ return not b.alive; } );
 
+  UpdatePaddleVelocity(out.player);
+
+  TRACE << "avg_vel: " << GetPaddleVelocity(out.player) << "  ";
 
   TRACE << "blocks: " << out.blocks.size() << " balls:" << out.balls.size() << "  ";
 
@@ -473,16 +522,12 @@ GameState Game::Simulate(const GameState &state, float dt) const
 }
 
 
-
 Ball Game::Shoot(const vec2 &position) const
 {
   Ball b = NewBall(0, 0);
 
-  b.position = position;
+  b.position = position + vec2{0.0f, -11.0f};
   b.velocity = {0.0f, -300.0f};
-
-  b.position.x += 50.0f;
-  b.position.y -= 11.0f;
 
   b.colour.r = RandomFloat(0.5f, 1.0f);
   b.colour.g = RandomFloat(0.5f, 1.0f);

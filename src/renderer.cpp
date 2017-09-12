@@ -387,11 +387,21 @@ void Renderer::DrawGameState(const GameState & state)
   }
 
 
-  RenderBlock(state.player, draw_normals);
-  if (draw_bounds) RenderBounds(state.player.bounds);
+  RenderBlock(state.player.block, draw_normals);
+  if (draw_bounds) RenderBounds(state.player.block.bounds);
+  if (state.player.sticky_ball)
+  {
+    //TODO get offset from game state/class
+    vec2 pos = state.player.block.position + vec2{0.0f, -11.0f};
+    DrawCircle(10.0f, pos.x, pos.y);
+  }
 
-  RenderBall(state.mouse_pointer, true);
-  if (draw_bounds) RenderBounds(state.mouse_pointer.bounds);
+
+  if (draw_bounds)
+  {
+    DrawCircle(10.0f, state.mouse_pointer.x, state.mouse_pointer.y);
+  }
+
 
   basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
 

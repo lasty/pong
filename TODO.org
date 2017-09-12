@@ -1,18 +1,15 @@
 
 
 ## Todo List
-- [DONE] command/key to enable debug lines
-- [DONE] setup delta time timer in a new class/func (maybe in input?)
 - [DONE] Fire up from paddle
-  - Get velocity from last (few?) frames, add to ball initial velocity
-  - have a ghost ball ontop of the paddle when ready to fire
-  - have maximum ball count?
-- [DONE] Remove ball from bottom of screen
+  - [DONE] Get velocity from last (few?) frames, add to ball initial velocity
+  - [DONE] have a ghost ball ontop of the paddle when ready to fire
 
 
 # Gameish
   - Win/Lose conditions
-  - New level
+    - have maximum ball count?
+    - New level when all blocks cleared
   - Level load/save/editor ?
 
 

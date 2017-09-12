@@ -46,9 +46,9 @@ enum class BlockType
 
 using BlockGeometry = std::vector<Line>;
 
+
 struct Block
 {
-
   BlockType type = BlockType::none;
   bool alive = true;
 
@@ -58,6 +58,17 @@ struct Block
   BlockGeometry geometry;
 
   BoundingBox bounds;
+};
+
+
+struct Paddle
+{
+  Block block;
+
+  bool alive = true;
+  bool sticky_ball = true;
+
+  std::vector<float> avg_velocity;
 };
 
 
@@ -73,8 +84,8 @@ struct GameState
   std::vector<Block> blocks;
   std::vector<Block> border_lines;
 
-  Block player;
-  Ball mouse_pointer;
+  Paddle player;
+  vec2 mouse_pointer;
 };
 
 
@@ -94,7 +105,9 @@ public:
 
   Ball NewBall(int width, int height) const;
   Block NewBlock(int x, int y, BlockType bt) const;
-  Block MakePlayer(const vec2 &position) const;
+  Paddle MakePlayer(const vec2 &position) const;
+  Paddle UpdatePlayer(const Paddle &old, const vec2 &position) const;
+
   GameState NewGame(int width, int height) const;
 
   GameState Resize(const GameState & state, int width, int height) const;
