@@ -87,28 +87,34 @@ BlockType RandomBlockType()
 }
 
 
-Block NewWorldBorders(float border, int width, int height)
+std::vector<Block> NewWorldBorders(float border, int width, int height)
 {
   Block b;
   b.type = BlockType::world_border;
   b.position = {0.0f, 0.0f};
   b.colour = {1.0f, 1.0f, 1.0f, 1.0f};
-
   b.geometry = {};
+
+  Block outofbounds;
+  outofbounds.type = BlockType::world_out_of_bounds;
+  outofbounds.position = {0.0f, 0.0f};
+  outofbounds.colour = {0.0f, 0.0f, 0.0f, 1.0f};
+  outofbounds.geometry = {};
 
   vec2 tl { border, border };
   vec2 tr { width - border, border };
-  vec2 bl { border, height - border };
-  vec2 br { width - border, height - border };
+  vec2 bl { border, height + 20.0f };
+  vec2 br { width - border, height + 20.0f };
 
   b.geometry.push_back({tl, tr});
   b.geometry.push_back({tr, br});
-  b.geometry.push_back({br, bl});
+  outofbounds.geometry.push_back({br, bl});
   b.geometry.push_back({bl, tl});
 
   b.bounds = MakeBounds(b);
+  outofbounds.bounds = MakeBounds(outofbounds);
 
-  return b;
+  return {b, outofbounds};
 }
 
 
@@ -225,8 +231,7 @@ GameState Game::NewGame(int width, int height) const
     }
   }
 
-  // state.border_lines.clear();
-  state.border_lines.push_back(NewWorldBorders(5, width, height));
+  state.border_lines = NewWorldBorders(5, width, height);
 
   return state;
 }
@@ -260,8 +265,7 @@ GameState Game::Resize(const GameState &state, int width, int height) const
   out.width = width;
   out.height = height;
 
-  out.border_lines.clear();
-  out.border_lines.push_back(NewWorldBorders(5, width, height));
+  out.border_lines = NewWorldBorders(5, width, height);
 
   return out;
 }
@@ -273,7 +277,12 @@ void Game::OnHitBlock(const GameState &state, Ball &ball, Block &block) const
 
   float balance = (ball.position.x / state.width);
 
-  if (block.type == BlockType::world_border)
+  if (block.type == BlockType::world_out_of_bounds)
+  {
+    ball.alive = false;
+    sound.PlaySound("lost_ball", balance);
+  }
+  else if (block.type == BlockType::world_border)
   {
     sound.PlaySound("bounce", balance);
   }
@@ -369,7 +378,7 @@ Ball Game::UpdatePhysics(GameState &state, float dt, Ball & old_ball) const
 
     for(Block * block : hit_blocks)
     {
-      OnHitBlock(state, old_ball, *block);
+      OnHitBlock(state, out, *block);
     }
 
     out.position = old_ball.position;
@@ -454,13 +463,11 @@ GameState Game::Simulate(const GameState &state, float dt) const
   }
 
 
-  for([[maybe_unused]] Block &b : out.blocks)
-  {
-    //TODO maybe add sounds or particles when destroyed
-  }
-
   remove_inplace(out.blocks, [=](auto &b){ return not b.alive; } );
+  remove_inplace(out.balls, [=](auto &b){ return not b.alive; } );
 
+
+  TRACE << "blocks: " << out.blocks.size() << " balls:" << out.balls.size() << "  ";
 
   return out;
 }

@@ -51,6 +51,7 @@ void Sound::LoadSoundLibrary()
       sounds["bounce"] = LoadWav(path + "bounce.wav");
       sounds["bounce_hit"] = LoadWav(path + "bounce_hit.wav");
       sounds["paddle_bounce"] = LoadWav(path + "paddle_bounce.wav");
+      sounds["lost_ball"] = LoadWav(path + "lost_ball.wav");
 
       break;
     }

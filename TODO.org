@@ -5,11 +5,12 @@
 - [DONE] setup delta time timer in a new class/func (maybe in input?)
 - [DONE] Fire up from paddle
   - Get velocity from last (few?) frames, add to ball initial velocity
+  - have a ghost ball ontop of the paddle when ready to fire
+  - have maximum ball count?
+- [DONE] Remove ball from bottom of screen
 
 
 # Gameish
-  - Remove ball from bottom of screen
-    - Rework simple collision checks for out of bounds balls
   - Win/Lose conditions
   - New level
   - Level load/save/editor ?
@@ -30,12 +31,6 @@
 - Do particles when block destroyed
 - Maybe add more varieties in sound
 
-
-
-## Done!
-
-- [DONE] Change player to paddle rect
-- [DONE] Paddle follow mouse cursor X position
 
 
 ## Other Ideas

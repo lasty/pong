@@ -16,6 +16,7 @@ struct BoundingBox
 struct Ball
 {
   int radius = 20;
+  bool alive = true;
   vec2 position;
   vec2 velocity;
   vec4 colour;
@@ -36,7 +37,7 @@ enum class BlockType
 {
   none = 0,
   paddle,
-  world_border,
+  world_border, world_out_of_bounds,
 
   square, triangle_left, triangle_right,
   rectangle, rect_triangle_left, rect_triangle_right
