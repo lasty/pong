@@ -45,7 +45,7 @@ vec2 nearest_point_on_line_segment(vec2 const &v, vec2 const &w, vec2 const &p);
 vec2 get_intersection(vec2 ps1, vec2 pe1, vec2 ps2, vec2 pe2); //Throws
 
 bool in_range(float beg, float end, float p);
-
+float clamp(float min, float max, float val);
 
 const float * gl_data(vec2 const &v);
 const float * gl_data(vec3 const &v);

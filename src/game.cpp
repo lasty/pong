@@ -213,13 +213,11 @@ GameState Game::NewGame(int width, int height) const
 
   state.mouse_pointer = GetCenter(width, height);
 
-  // state.balls.clear();
-  for(int i=0; i<1; i++)
-  {
-    state.balls.push_back(NewBall(width, height));
-  }
+  // for(int i=0; i<0; i++)
+  // {
+  //   state.balls.push_back(NewBall(width, height));
+  // }
 
-  // state.blocks.clear();
   for(int x=0; x<5; x++)
   {
     for (int y=0; y<3; y++)
@@ -476,19 +474,30 @@ GameState Game::ProcessIntents(const GameState &state,
           break;
 
           case PlayerInput::mouse_position:
+          {
             out.mouse_pointer = intent.position;
 
-            out.player = UpdatePlayer(out.player, intent.position);
+            float b = 50 + 10;
+            vec2 pos = {clamp(b, state.width-b, intent.position.x), intent.position.y};
+            out.player = UpdatePlayer(out.player, pos);
+          }
           break;
 
           case PlayerInput::shoot:
             if (intent.down)
             {
-              auto b = Shoot(state.player.block.position);
-              b.velocity.x += GetPaddleVelocity(state.player) * 30.0f;
-              out.balls.push_back(b);
-
-              sound.PlaySound("paddle_bounce", state.player.block.position.x / state.width);
+              if (state.player.sticky_ball)
+              {
+                auto b = Shoot(state.player.block.position);
+                b.velocity.x += GetPaddleVelocity(state.player) * 30.0f;
+                out.balls.push_back(b);
+                sound.PlaySound("paddle_bounce", state.player.block.position.x / state.width);
+                out.player.sticky_ball = false;
+              }
+              else
+              {
+                sound.PlaySound("error", state.player.block.position.x / state.width);
+              }
             }
           break;
 
@@ -512,9 +521,15 @@ GameState Game::Simulate(const GameState &state, float dt) const
   remove_inplace(out.blocks, [=](auto &b){ return not b.alive; } );
   remove_inplace(out.balls, [=](auto &b){ return not b.alive; } );
 
+  if (out.balls.size() == 0)
+  {
+    //TODO subtract lives or something
+    out.player.sticky_ball = true;
+  }
+
   UpdatePaddleVelocity(out.player);
 
-  TRACE << "avg_vel: " << GetPaddleVelocity(out.player) << "  ";
+  // TRACE << "avg_vel: " << GetPaddleVelocity(out.player) << "  ";
 
   TRACE << "blocks: " << out.blocks.size() << " balls:" << out.balls.size() << "  ";
 

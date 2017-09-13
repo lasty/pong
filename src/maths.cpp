@@ -232,6 +232,12 @@ bool in_range(float beg, float end, float p)
 }
 
 
+float clamp(float min, float max, float val)
+{
+  return std::min(std::max(min, val), max);
+}
+
+
 const float * gl_data(vec2 const &v)
 {
   return reinterpret_cast<const float*>(&v);

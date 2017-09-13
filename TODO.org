@@ -1,16 +1,16 @@
 
 
-## Todo List
-- [DONE] Fire up from paddle
-  - [DONE] Get velocity from last (few?) frames, add to ball initial velocity
-  - [DONE] have a ghost ball ontop of the paddle when ready to fire
+# Todo List
+- Win/Lose conditions
+  - have maximum ball count?
+  - New level when all blocks cleared
+- [DONE] Limit paddle x range (goes off screen)
+- Change shader to take vertex colours
+- Particles class
+- Do particles when block destroyed
+- Text rendering
+  - vector font, like 7 segment display
 
-
-# Gameish
-  - Win/Lose conditions
-    - have maximum ball count?
-    - New level when all blocks cleared
-  - Level load/save/editor ?
 
 
 # Refactor
@@ -24,8 +24,7 @@
 ## Todo Low Priority
 - [TODO] Watch more of those videos
 - [TODO] Investigate atom clang-format
-- Particles class
-- Do particles when block destroyed
+- Level load/save/editor ?
 - Maybe add more varieties in sound
 
 
