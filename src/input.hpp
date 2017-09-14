@@ -22,6 +22,7 @@ enum class IntentType
   quit,
   toggle_debug,
   new_balls,
+  reset_ball,
   time_passed,
   player_input
 };

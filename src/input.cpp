@@ -48,6 +48,9 @@ void Input::SetupBinds()
   AddBind(GLFW_KEY_G, IntentType::toggle_debug);
   AddBind(GLFW_KEY_F1, IntentType::toggle_debug);
 
+  AddBind(GLFW_KEY_F5, IntentType::reset_ball);
+  AddBind(GLFW_KEY_R, IntentType::reset_ball);
+
   AddBind(GLFW_KEY_A, PlayerInput::move_left);
   AddBind(GLFW_KEY_LEFT, PlayerInput::move_left);
 

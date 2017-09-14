@@ -461,6 +461,11 @@ GameState Game::ProcessIntents(const GameState &state,
         out = NewGame(state.width, state.height);
       break;
 
+      case IntentType::reset_ball:
+        out.balls.clear();
+        sound.PlaySound("lost_ball", 0.5f);
+      break;
+
       case IntentType::time_passed:
         //TODO
       break;
@@ -509,6 +514,79 @@ GameState Game::ProcessIntents(const GameState &state,
   return out;
 }
 
+
+std::string ToString(const State &state)
+{
+  const std::map<State, std::string> state_to_string
+   {
+     {State::new_level, "new_level"},
+     {State::ball_launch, "ball_launch"},
+     {State::mid_game, "mid_game"},
+     {State::ball_died, "ball_died"},
+     {State::game_won, "game_won"}
+   };
+
+  return state_to_string.at(state);
+}
+
+
+GameState Game::ProcessStateGraph(const GameState &state, float dt) const
+{
+  GameState out = state;
+  out.state_timer += dt;
+
+  switch (state.state)
+  {
+    case State::new_level:
+      out = NewGame(state.width, state.height);
+      out.state = State::ball_launch;
+      out.state_timer = 0.0f;
+    break;
+
+    case State::ball_launch:
+      if (not out.player.sticky_ball)
+      {
+        out.state = State::mid_game;
+        out.state_timer = 0.0f;
+      }
+    break;
+
+    case State::mid_game:
+      if (out.balls.size() == 0)
+      {
+        out.state = State::ball_died;
+        out.state_timer = 0.0f;
+      }
+
+      if (out.blocks.size() == 0)
+      {
+        out.state = State::game_won;
+        out.state_timer = 0.0f;
+      }
+    break;
+
+    case State::ball_died:
+      if (out.state_timer > 1.0f)
+      {
+        out.state = State::ball_launch;
+        out.state_timer = 0.0f;
+        out.player.sticky_ball = true;
+      }
+    break;
+
+    case State::game_won:
+      if (out.state_timer > 1.0f)
+      {
+        out.state = State::new_level;
+        out.state_timer = 0.0f;
+      }
+  }
+
+  TRACE << "State: " << ToString(out.state) << "  ";
+
+  return out;
+}
+
 GameState Game::Simulate(const GameState &state, float dt) const
 {
   GameState out = state;
@@ -521,11 +599,11 @@ GameState Game::Simulate(const GameState &state, float dt) const
   remove_inplace(out.blocks, [=](auto &b){ return not b.alive; } );
   remove_inplace(out.balls, [=](auto &b){ return not b.alive; } );
 
-  if (out.balls.size() == 0)
-  {
-    //TODO subtract lives or something
-    out.player.sticky_ball = true;
-  }
+  // if (out.balls.size() == 0)
+  // {
+  //   //TODO subtract lives or something
+  //   out.player.sticky_ball = true;
+  // }
 
   UpdatePaddleVelocity(out.player);
 

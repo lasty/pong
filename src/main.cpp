@@ -183,6 +183,8 @@ void main_game()
 
     gamestate = game.ProcessIntents(gamestate, input.GetIntentStream());
 
+    gamestate = game.ProcessStateGraph(gamestate, delta_time);
+
     gamestate = game.Simulate(gamestate, delta_time);
 
 

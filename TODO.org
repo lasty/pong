@@ -1,24 +1,26 @@
 
 
 # Todo List
-- Win/Lose conditions
-  - have maximum ball count?
-  - New level when all blocks cleared
-- [DONE] Limit paddle x range (goes off screen)
+- [DONE] Win/Lose conditions
+  - [DONE] have maximum ball count?
+  - [DONE] New level when all blocks cleared
 - Change shader to take vertex colours
 - Particles class
 - Do particles when block destroyed
 - Text rendering
   - vector font, like 7 segment display
-
+- [DONE] Have a debug key reset ball (return to ball_launch state)
+- Have paddle intersections apply velocity of paddle to the ball
+- Win game sound/message
+- Rework block rendering (Draw fill then outline, in static buffer)
 
 
 # Refactor
-- [DONE] Read/watch: unidirectional user interface architecture
-- [TODO] Try to implement Model/View/Intent style system
-  - [DONE] Input class should return an intent
-  - [DONE] Game/Update should be pure, take an intent, output new state
-  - [DONE] Render takes game state
+- Go through and rename badly named functions/variables/enums
+- Eliminate commented/dead code
+- Have a pass at TODO comments
+- see if possible to have sound play commands in one place
+- state graph calls to set state and reset timer in one expression
 
 
 ## Todo Low Priority

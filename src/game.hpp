@@ -72,6 +72,16 @@ struct Paddle
 };
 
 
+enum class State
+{
+  new_level,
+  ball_launch,
+  mid_game,
+  ball_died,
+  game_won
+};
+
+
 struct GameState
 {
   bool running = true;
@@ -83,6 +93,9 @@ struct GameState
   std::vector<Ball> balls;
   std::vector<Block> blocks;
   std::vector<Block> border_lines;
+
+  float state_timer;
+  State state = State::new_level;
 
   Paddle player;
   vec2 mouse_pointer;
@@ -118,6 +131,7 @@ public:
   Ball UpdatePhysics(GameState &state, float dt, Ball & b) const;
 
   GameState ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream) const;
+  GameState ProcessStateGraph(const GameState &state, float dt) const;
   GameState Simulate(const GameState &state, float dt) const;
 
   Ball Shoot(const vec2 & position) const;
