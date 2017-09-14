@@ -29,8 +29,8 @@ private:
 
   Shader::Basic basic_shader;
 
-  int attribs_per_vertex = 2;
-  int stride = attribs_per_vertex * sizeof(float);
+  int floats_per_vertex = 2 + 4;
+  int stride = floats_per_vertex * sizeof(float);
   std::vector<float> vertex_data;
 
   int buf_id = 0;
@@ -64,7 +64,7 @@ public:
 
   void SetupDynamicVertexData();
   void ClearDynamicVertexData();
-  void DynamicLine(vec2 const &v1, vec2 const &v2);
+  void DynamicLine(vec2 const &v1, vec2 const &v2, const vec4 &colour);
   void UpdateDynamicVertexData();
   void DrawDynamic(GLenum draw_type);
 

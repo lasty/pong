@@ -45,6 +45,7 @@ Basic::Basic()
   SetZoom(1.0f);
 }
 
+
 Basic::~Basic()
 {
   glDetachShader(program_id, vertex_shader_id);
@@ -105,6 +106,9 @@ const std::string Basic::vertex_src =
 R"(#version 450
 
 layout(location=0) in vec2 v;
+layout(location=1) in vec4 col;
+
+out vec4 vertex_colour;
 
 uniform ivec2 screen_resolution;
 
@@ -137,6 +141,7 @@ void main(void)
   const vec2 screen_pos = v_zoomed + offset;
 
   gl_Position = vec4(ScreenToClip(screen_pos), 0.0, 1.0);
+  vertex_colour = col;
 }
 )";
 
@@ -146,12 +151,13 @@ R"(#version 450
 
 uniform vec4 colour;
 
+in vec4 vertex_colour;
 out vec4 out_colour;
 
 void main(void)
 {
-  out_colour = colour;
-  //out_colour.a = 1.0;
+  out_colour = colour * vertex_colour;
+  //out_colour.a += 0.5;
 }
 
 )";

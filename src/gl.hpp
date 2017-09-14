@@ -25,7 +25,7 @@ int ValidateProgram(int program_id);
 int CreateBuffers();
 int CreateVertexArrays();
 
-void AttachAttribute(int vao_id, int attrib_id, int vertex_size, GLenum type);
+void AttachAttribute(int vao_id, int attrib_id, int size, int offset, GLenum type);
 
 template<typename T>
 void UseProgram(T const &prog)

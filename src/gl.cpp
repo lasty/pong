@@ -205,13 +205,13 @@ int CreateVertexArrays()
 }
 
 
-void AttachAttribute(int vao_id, int attrib_id, int vertex_size, GLenum type)
+void AttachAttribute(int vao_id, int attrib_id, int size, int offset, GLenum type)
 {
   constexpr int buffer_index = 0;
-  constexpr int relative_offset = 0;
+  const int relative_offset = offset * sizeof(float);
 
   glEnableVertexArrayAttrib(vao_id, attrib_id);
-  glVertexArrayAttribFormat(vao_id, attrib_id, vertex_size, type, false, relative_offset);
+  glVertexArrayAttribFormat(vao_id, attrib_id, size, type, false, relative_offset);
   glVertexArrayAttribBinding(vao_id, attrib_id, buffer_index);
 }
 

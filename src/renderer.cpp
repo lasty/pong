@@ -9,7 +9,7 @@
 #include "maths_utils.hpp"
 
 
-std::vector<float> MakeCircle(float radius, int segments)
+std::vector<float> MakeCircle(float radius, int segments, const vec4 &colour)
 {
   std::vector<float> out;
 
@@ -22,13 +22,18 @@ std::vector<float> MakeCircle(float radius, int segments)
 
     out.push_back(x);
     out.push_back(y);
+
+    out.push_back(colour.r);
+    out.push_back(colour.g);
+    out.push_back(colour.b);
+    out.push_back(colour.a);
   }
 
   return out;
 }
 
 
-std::vector<float> MakeArrow(float radius)
+std::vector<float> MakeArrow(float radius, const vec4 &colour)
 {
   std::vector<float> out;
 
@@ -40,27 +45,48 @@ std::vector<float> MakeArrow(float radius)
 
     out.push_back(x);
     out.push_back(y);
+
+    out.push_back(colour.r);
+    out.push_back(colour.g);
+    out.push_back(colour.b);
+    out.push_back(colour.a);
   }
 
   return out;
 }
 
 
-std::vector<float> MakeRect(float width, float height)
+std::vector<float> MakeRect(float width, float height, vec4 colour)
 {
   std::vector<float> out;
 
   out.push_back(0);
   out.push_back(0);
+  out.push_back(colour.r);
+  out.push_back(colour.g);
+  out.push_back(colour.b);
+  out.push_back(colour.a);
 
   out.push_back(width);
   out.push_back(0);
+  out.push_back(colour.r);
+  out.push_back(colour.g);
+  out.push_back(colour.b);
+  out.push_back(colour.a);
 
   out.push_back(width);
   out.push_back(height);
+  out.push_back(colour.r);
+  out.push_back(colour.g);
+  out.push_back(colour.b);
+  out.push_back(colour.a);
 
   out.push_back(0);
   out.push_back(height);
+  out.push_back(colour.r);
+  out.push_back(colour.g);
+  out.push_back(colour.b);
+  out.push_back(colour.a);
 
   return out;
 }
@@ -127,13 +153,13 @@ void Renderer::Resize(int width, int height)
 
 shape_def Renderer::AddShape(std::vector<float> const & vertexes)
 {
-  if (vertexes.size() % attribs_per_vertex != 0)
+  if (vertexes.size() % floats_per_vertex != 0)
     { throw std::runtime_error("Uneven vertexes given to AddShape"); }
 
 
   shape_def s;
-  s.offset = (vertex_data.size() / attribs_per_vertex);
-  s.count = vertexes.size() / attribs_per_vertex;
+  s.offset = vertex_data.size() / floats_per_vertex;
+  s.count = vertexes.size() / floats_per_vertex;
 
   vertex_data.insert(vertex_data.end(), vertexes.begin(), vertexes.end());
 
@@ -150,8 +176,8 @@ void Renderer::SetupVertexData()
   int buffer_index = 0;
   glVertexArrayVertexBuffer(vao_id, buffer_index, buf_id, 0, stride);
 
-  int attrib_id = 0;
-  GL::AttachAttribute(vao_id, attrib_id, attribs_per_vertex, GL_FLOAT);
+  GL::AttachAttribute(vao_id, 0, 2, 0, GL_FLOAT); //position location = 0
+  GL::AttachAttribute(vao_id, 1, 4, 2, GL_FLOAT); //colour, location = 1
 }
 
 
@@ -169,10 +195,11 @@ void Renderer::SetupDynamicVertexData()
   int buffer_index = 0;
   glVertexArrayVertexBuffer(dynamic_vao_id, buffer_index, dynamic_buff_id, 0, stride);
 
-  int attrib_id = 0;
-  GL::AttachAttribute(dynamic_vao_id, attrib_id, attribs_per_vertex, GL_FLOAT);
+  GL::AttachAttribute(dynamic_vao_id, 0, 2, 0, GL_FLOAT); //position location = 0
+  GL::AttachAttribute(dynamic_vao_id, 1, 4, 2, GL_FLOAT); //colour, location = 1
 
-  DynamicLine({0,0}, {10,10});
+
+  DynamicLine({0,0}, {10,10}, {1.0f, 1.0f, 1.0f, 1.0f});
   UpdateDynamicVertexData();
 }
 
@@ -183,18 +210,31 @@ void Renderer::ClearDynamicVertexData()
 }
 
 
-void Renderer::DynamicLine(vec2 const &v1, vec2 const &v2)
+void Renderer::DynamicLine(vec2 const &v1, vec2 const &v2, const vec4 &colour)
 {
   dynamic_vertex_data.push_back(v1.x);
   dynamic_vertex_data.push_back(v1.y);
+  dynamic_vertex_data.push_back(colour.r);
+  dynamic_vertex_data.push_back(colour.g);
+  dynamic_vertex_data.push_back(colour.b);
+  dynamic_vertex_data.push_back(colour.a);
+
 
   dynamic_vertex_data.push_back(v2.x);
   dynamic_vertex_data.push_back(v2.y);
+  dynamic_vertex_data.push_back(colour.r);
+  dynamic_vertex_data.push_back(colour.g);
+  dynamic_vertex_data.push_back(colour.b);
+  dynamic_vertex_data.push_back(colour.a);
+
 }
 
 
 void Renderer::UpdateDynamicVertexData()
 {
+  if (dynamic_vertex_data.size() % floats_per_vertex != 0)
+    { throw std::runtime_error("Uneven vertexes given to Dynamic Buffer"); }
+
   glNamedBufferData(dynamic_buff_id, sizeof(float) * dynamic_vertex_data.size(), dynamic_vertex_data.data(), GL_DYNAMIC_DRAW);
 }
 
@@ -208,15 +248,16 @@ void Renderer::DrawDynamic(GLenum draw_type)
   basic_shader.SetRotation(0.0f);
   basic_shader.SetZoom(1.0f);
 
-  glDrawArrays(draw_type, 0, dynamic_vertex_data.size() / attribs_per_vertex);
+  glDrawArrays(draw_type, 0, dynamic_vertex_data.size() / floats_per_vertex);
 }
 
 
 void Renderer::SetupShapes()
 {
-  circle_shape = AddShape(MakeCircle(1, 64));
+  vec4 colour {1.0f, 1.0f, 1.0f, 1.0f};
+  circle_shape = AddShape(MakeCircle(1, 64, colour));
 
-  arrow_shape = AddShape(MakeArrow(20));
+  arrow_shape = AddShape(MakeArrow(20, colour));
 
   SetupVertexData();
   UpdateVertexData();
@@ -307,7 +348,8 @@ shape_def Renderer::GetRectShape(int w, int h)
   auto shape = rect_shapes[w][h];
   if (shape.offset == 0)
   {
-    shape = AddShape(MakeRect(w, h));
+    vec4 colour {1.0f, 1.0f, 1.0f, 1.0f};
+    shape = AddShape(MakeRect(w, h, colour));
     UpdateVertexData();
     rect_shapes[w][h] = shape;
   }
@@ -323,13 +365,13 @@ void Renderer::RenderBlock(const Block & block, bool draw_normals)
     const auto p1 = line.p1;// + block.position;
     const auto p2 = line.p2;// + block.position;
 
-    DynamicLine(p1, p2);
+    DynamicLine(p1, p2, block.colour);
 
     if (draw_normals)
     {
       vec2 normal = get_normal(p1, p2);
       vec2 center = (p1 + p2) / 2.0f;
-      DynamicLine(center, center + (normal * 4.0f));
+      DynamicLine(center, center + (normal * 4.0f), vec4{1.0f, 1.0f, 1.0f, 1.0f} );
     }
   }
 }
@@ -412,13 +454,13 @@ void Renderer::DrawGameState(const GameState & state)
     {
       for(const auto &line : block.geometry)
       {
-        DynamicLine(line.p1, line.p2);
+        DynamicLine(line.p1, line.p2, block.colour);
 
         if (draw_normals)
         {
           vec2 normal = get_normal(line.p1, line.p2);
           vec2 center = (line.p1 + line.p2) / 2.0f;
-          DynamicLine(center, center+ (normal * 20.0f));
+          DynamicLine(center, center+ (normal * 20.0f), vec4{1.0f, 1.0f, 1.0f, 1.0f});
         }
       }
     }
@@ -430,7 +472,7 @@ void Renderer::DrawGameState(const GameState & state)
     for (const auto& ball : state.balls)
     {
       vec2 dir = (ball.velocity);
-      DynamicLine(ball.position, ball.position + dir * 1.0f);
+      DynamicLine(ball.position, ball.position + dir * 1.0f, vec4{1.0f, 1.0f, 1.0f, 1.0f});
     }
   }
 

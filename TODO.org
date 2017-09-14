@@ -4,7 +4,7 @@
 - [DONE] Win/Lose conditions
   - [DONE] have maximum ball count?
   - [DONE] New level when all blocks cleared
-- Change shader to take vertex colours
+- [DONE] Change shader to take vertex colours
 - Particles class
 - Do particles when block destroyed
 - Text rendering
