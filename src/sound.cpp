@@ -25,11 +25,10 @@ Sound::Sound()
   LoadSoundLibrary();
 
   Mix_AllocateChannels(32);
-
 }
 
 
-Mix_Chunk * Sound::LoadWav(const std::string &filename)
+Mix_Chunk *Sound::LoadWav(const std::string &filename)
 {
   Mix_Chunk *sample = Mix_LoadWAV(filename.c_str());
 
@@ -44,7 +43,7 @@ Mix_Chunk * Sound::LoadWav(const std::string &filename)
 
 void Sound::LoadSoundLibrary()
 {
-  for(const std::string path : {"../data/"})
+  for (const std::string path : {"../data/"})
   {
     try
     {
@@ -61,7 +60,6 @@ void Sound::LoadSoundLibrary()
       continue;
     }
   }
-
 }
 
 #include <iostream>
@@ -74,7 +72,7 @@ int Sound::PlaySound(const std::string &what)
   if (chan == -1)
   {
     std::cout << "PlaySound(" << what << ") returned " << chan
-      << "  [" << Mix_GetError() << "]" << std::endl;
+              << "  [" << Mix_GetError() << "]" << std::endl;
   }
   return chan;
 }
@@ -102,12 +100,12 @@ void Sound::Quit()
 
   Mix_CloseAudio();
 
-  for(auto pair : sounds)
+  for (auto pair : sounds)
   {
     Mix_FreeChunk(pair.second);
   }
   sounds.clear();
 
   //This is what the docs say to shutdown...
-  while(Mix_Init(0)) Mix_Quit();
+  while (Mix_Init(0)) Mix_Quit();
 }

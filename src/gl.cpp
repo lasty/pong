@@ -17,8 +17,7 @@ namespace GL {
 
 //Debugging stuff
 
-const std::map<GLenum, std::string> enum_to_string
-{
+const std::map<GLenum, std::string> enum_to_string{
   {GL_DEBUG_SEVERITY_HIGH, "SEVERITY_HIGH"},
   {GL_DEBUG_SEVERITY_MEDIUM, "SEVERITY_MEDIUM"},
   {GL_DEBUG_SEVERITY_LOW, "SEVERITY_LOW"},
@@ -37,14 +36,13 @@ const std::map<GLenum, std::string> enum_to_string
   {GL_DEBUG_SOURCE_SHADER_COMPILER, "SHADER_COMPILER"},
   {GL_DEBUG_SOURCE_THIRD_PARTY, "SOURCE_THIRD_PARTY"},
   {GL_DEBUG_SOURCE_APPLICATION, "SOURCE_APPLICATION"},
-  {GL_DEBUG_SOURCE_OTHER, "SOURCE_OTHER"}
-};
+  {GL_DEBUG_SOURCE_OTHER, "SOURCE_OTHER"}};
 
 
 template<typename MAP>
-typename MAP::mapped_type const get_map(MAP const & map,  typename MAP::key_type const & key, typename MAP::mapped_type const & default_value)
+typename MAP::mapped_type const get_map(MAP const &map, typename MAP::key_type const &key, typename MAP::mapped_type const &default_value)
 {
-  auto const & it = map.find(key);
+  auto const &it = map.find(key);
   if (it == map.end()) return default_value;
   return it->second;
 }
@@ -64,10 +62,10 @@ void opengl_debug_callback(
   if (strstr(message, "Buffer detailed") != message)
   {
     std::cout << "[OPENGL"
-      << " " << get_map(enum_to_string, type, "?")
-      << " " << get_map(enum_to_string, severity, "?")
-      //<< " " << get_map(enum_to_string, source, "?")
-      << "]  " << message << std::endl;
+              << " " << get_map(enum_to_string, type, "?")
+              << " " << get_map(enum_to_string, severity, "?")
+              //<< " " << get_map(enum_to_string, source, "?")
+              << "]  " << message << std::endl;
   }
 }
 
@@ -96,17 +94,17 @@ void Debuging(bool enable)
 
 int GetShaderi(int shader_id, GLenum param_name)
 {
- int value = 0;
- glGetShaderiv(shader_id, param_name, &value);
- return value;
+  int value = 0;
+  glGetShaderiv(shader_id, param_name, &value);
+  return value;
 }
 
 
 int GetProgrami(int program_id, GLenum param_name)
 {
- int value = 0;
- glGetProgramiv(program_id, param_name, &value);
- return value;
+  int value = 0;
+  glGetProgramiv(program_id, param_name, &value);
+  return value;
 }
 
 
@@ -120,35 +118,35 @@ int GetInteger(GLenum param_name)
 
 std::string GetShaderLog(int shader_id)
 {
-	int log_length = GetShaderi(shader_id, GL_INFO_LOG_LENGTH);
-	if (log_length == 0) return "";
+  int log_length = GetShaderi(shader_id, GL_INFO_LOG_LENGTH);
+  if (log_length == 0) return "";
 
-	std::vector<GLchar> log_data((size_t) log_length);
-	glGetShaderInfoLog(shader_id, log_length, nullptr, log_data.data());
+  std::vector<GLchar> log_data((size_t)log_length);
+  glGetShaderInfoLog(shader_id, log_length, nullptr, log_data.data());
 
-	std::string log_str{log_data.begin(), log_data.begin() + log_length};
+  std::string log_str{log_data.begin(), log_data.begin() + log_length};
 
-	return log_str;
+  return log_str;
 }
 
 
 std::string GetProgramLog(int program_id)
 {
-	int log_length = GetProgrami(program_id, GL_INFO_LOG_LENGTH);
-	if (log_length == 0) return "";
+  int log_length = GetProgrami(program_id, GL_INFO_LOG_LENGTH);
+  if (log_length == 0) return "";
 
-	std::vector<GLchar> log_data((size_t) log_length);
-	glGetProgramInfoLog(program_id, log_length, nullptr, log_data.data());
+  std::vector<GLchar> log_data((size_t)log_length);
+  glGetProgramInfoLog(program_id, log_length, nullptr, log_data.data());
 
-	std::string log_str{log_data.begin(), log_data.begin() + log_length};
+  std::string log_str{log_data.begin(), log_data.begin() + log_length};
 
-	return log_str;
+  return log_str;
 }
 
 
 int CreateShader(int shader_type, const std::string &shader_source)
 {
-  const GLchar* source_ptrs[1] { shader_source.c_str() };
+  const GLchar *source_ptrs[1]{shader_source.c_str()};
 
   int shader_id = glCreateShader(shader_type);
   glShaderSource(shader_id, 1, source_ptrs, nullptr);
@@ -173,18 +171,18 @@ void LinkProgram(int program_id)
   int status = GetProgrami(program_id, GL_LINK_STATUS);
   if (status != GL_TRUE)
   {
-      std::string log = GetProgramLog(program_id);
-      std::cerr << "Program log: " << log << std::endl;
-      throw std::runtime_error{"Error linking shader program"};
+    std::string log = GetProgramLog(program_id);
+    std::cerr << "Program log: " << log << std::endl;
+    throw std::runtime_error{"Error linking shader program"};
   }
 }
 
 
 int ValidateProgram(int program_id)
 {
-	glValidateProgram(program_id);
+  glValidateProgram(program_id);
 
-	int status = GetProgrami(program_id, GL_VALIDATE_STATUS);
+  int status = GetProgrami(program_id, GL_VALIDATE_STATUS);
   return status;
 }
 

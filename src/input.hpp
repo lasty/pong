@@ -7,7 +7,6 @@
 #include "maths_types.hpp"
 
 
-
 enum class PlayerInput
 {
   move_left,
@@ -28,26 +27,20 @@ enum class IntentType
 };
 
 
-
-
 struct Intent
 {
   IntentType type;
 
-  union
-  {
+  union {
     PlayerInput player_input = PlayerInput::move_left;
     float delta_time;
   };
 
-  union
-  {
+  union {
     vec2 position;
     bool down;
   };
-
 };
-
 
 
 //move to game state?
@@ -60,7 +53,6 @@ struct MovementInput
 };
 
 
-
 class Input
 {
 private:
@@ -70,7 +62,7 @@ private:
   std::vector<Intent> intent_stream;
 
 public:
-  Input(struct GLFWwindow *window);//, class Game &game);
+  Input(struct GLFWwindow *window); //, class Game &game);
 
   void AddBind(int key, IntentType control);
   void AddBind(int key, PlayerInput control);
@@ -84,12 +76,11 @@ public:
 
   // void HandleCommand(IntentType control, bool down);
 
-  static Input * GetThis(GLFWwindow *window);
-  static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-  static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
-  static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+  static Input *GetThis(GLFWwindow *window);
+  static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
+  static void cursor_position_callback(GLFWwindow *window, double xpos, double ypos);
+  static void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
 
   void SetupCallbacks(GLFWwindow *window);
   void RemoveCallbacks(GLFWwindow *window);
-
 };

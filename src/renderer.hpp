@@ -47,7 +47,6 @@ private:
 
 
 public:
-
   Renderer();
   ~Renderer();
 
@@ -59,7 +58,7 @@ public:
   void Resize(int width, int height);
 
   void SetupVertexData();
-  shape_def AddShape(std::vector<float> const & vertexes);
+  shape_def AddShape(std::vector<float> const &vertexes);
   void UpdateVertexData();
 
   void SetupDynamicVertexData();
@@ -71,19 +70,18 @@ public:
   void SetupShapes();
   void DeleteShapes();
 
-  void DrawShape(GLenum draw_type, shape_def const & shape);
+  void DrawShape(GLenum draw_type, shape_def const &shape);
 
   void DrawCircle(int radius, float x, float y);
   void FillCircle(int radius, float x, float y);
-  void RenderBall(const struct Ball & ball, bool draw_outline = true);
+  void RenderBall(const struct Ball &ball, bool draw_outline = true);
 
-  void RenderArrow(const Ball & ball);
+  void RenderArrow(const Ball &ball);
 
   shape_def GetRectShape(int w, int h);
-  void RenderBlock(const struct Block & block, bool draw_normals = false);
-  void RenderBounds(const struct BoundingBox & bounds);
+  void RenderBlock(const struct Block &block, bool draw_normals = false);
+  void RenderBounds(const struct BoundingBox &bounds);
 
 
-  void DrawGameState(const struct GameState & state);
-
+  void DrawGameState(const struct GameState &state);
 };

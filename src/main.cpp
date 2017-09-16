@@ -6,9 +6,9 @@
 
 // #define TEST_MATHS
 
-const int SWAP_INTERVAL {1};
-const int GL_MAJOR {4};
-const int GL_MINOR {5};
+const int SWAP_INTERVAL{1};
+const int GL_MAJOR{4};
+const int GL_MINOR{5};
 
 
 #include <SDL.h>
@@ -31,14 +31,13 @@ const int GL_MINOR {5};
 std::ostringstream TRACE;
 
 
-
-void glfw_error_callback([[maybe_unused]] int error, const char* description)
+void glfw_error_callback([[maybe_unused]] int error, const char *description)
 {
   std::cout << "GLFW Error: " << description << std::endl;
 }
 
 
-void set_display_title(GLFWwindow* window, const std::string &str)
+void set_display_title(GLFWwindow *window, const std::string &str)
 {
   const std::string title = "GLFW - " + str;
 
@@ -63,23 +62,23 @@ public:
 
   float Update()
   {
-      float time_now = glfwGetTime();
-      float delta_time = time_now - time_last;
-      time_last = time_now;
+    float time_now = glfwGetTime();
+    float delta_time = time_now - time_last;
+    time_last = time_now;
 
-      if (SWAP_INTERVAL > 1)
+    if (SWAP_INTERVAL > 1)
       delta_time = 1.0f / 60.0f;
 
-      frame_count++;
+    frame_count++;
 
-      if (time_now >= frame_last_time)
-      {
-        last_fps = frame_count;
-        frame_last_time += 1.0f;
-        frame_count = 0;
-      }
+    if (time_now >= frame_last_time)
+    {
+      last_fps = frame_count;
+      frame_last_time += 1.0f;
+      frame_count = 0;
+    }
 
-      return delta_time;
+    return delta_time;
   }
 
   int FPS() const { return last_fps; }
@@ -88,10 +87,13 @@ public:
 
 void SetTitle(GLFWwindow *window, const Timer &timer, const std::string &msg)
 {
-  std::stringstream ss;  ss << std::fixed;  ss.precision(2);
-  TRACE << std::fixed;  TRACE.precision(2);
+  std::stringstream ss;
+  ss << std::fixed;
+  ss.precision(2);
+  TRACE << std::fixed;
+  TRACE.precision(2);
 
-  ss << "FPS: " << timer.FPS() <<  "  ";//seconds: " << frame_timer;
+  ss << "FPS: " << timer.FPS() << "  "; //seconds: " << frame_timer;
 
   ss << "   " << msg;
 
@@ -119,9 +121,9 @@ void main_game()
   SDL_GetVersion(&linked);
 
   std::cout << "SDL Version: "
-    << "(compiled with " << (int)compiled.major << "." << (int)compiled.minor << "." << (int)compiled.patch << ")"
-    << "  (linked with " << (int)linked.major << "." << (int)linked.minor << "." << (int)linked.patch << ")"
-    << std::endl;
+            << "(compiled with " << (int)compiled.major << "." << (int)compiled.minor << "." << (int)compiled.patch << ")"
+            << "  (linked with " << (int)linked.major << "." << (int)linked.minor << "." << (int)linked.patch << ")"
+            << std::endl;
 
 
   std::cout << "GLFW Version: " << glfwGetVersionString() << std::endl;
@@ -135,7 +137,7 @@ void main_game()
 
   int width = 640;
   int height = 480;
-  GLFWwindow* window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
+  GLFWwindow *window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
 
   if (not window)
   {
@@ -145,7 +147,7 @@ void main_game()
   glfwMakeContextCurrent(window);
 
   //load opengl extension library here
-  if(glewInit() != GLEW_OK)
+  if (glewInit() != GLEW_OK)
   {
     throw std::runtime_error("failed to init GLEW");
   }
@@ -194,7 +196,7 @@ void main_game()
 
     //Check framebuffer size
     glfwGetFramebufferSize(window, &width, &height);
-    if (not (width == gamestate.width and height == gamestate.height))
+    if (not(width == gamestate.width and height == gamestate.height))
     {
       renderer.Resize(width, height);
       gamestate = game.Resize(gamestate, width, height);
@@ -210,7 +212,7 @@ void main_game()
 
     glfwSwapBuffers(window);
 
-  }  // end main loop
+  } // end main loop
 
 
   //Clean up
@@ -220,17 +222,16 @@ void main_game()
 
   glfwDestroyWindow(window);
   glfwTerminate();
-
 }
 
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
 {
-  #ifdef TEST_MATHS
-    TestMaths();
-  #else
-    main_game();
-  #endif
+#ifdef TEST_MATHS
+  TestMaths();
+#else
+  main_game();
+#endif
 
   return EXIT_SUCCESS;
 }

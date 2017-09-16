@@ -30,9 +30,8 @@ Basic::Basic()
   uniforms.colour = glGetUniformLocation(program_id, "colour");
   uniforms.zoom = glGetUniformLocation(program_id, "zoom");
 
-  for (auto & u :
-    {uniforms.screen_resolution, uniforms.offset
-    ,uniforms.rotation, uniforms.colour, uniforms.zoom})
+  for (auto& u :
+    {uniforms.screen_resolution, uniforms.offset, uniforms.rotation, uniforms.colour, uniforms.zoom})
   {
     if (u == -1) throw std::runtime_error("uniform is not valid");
   }
@@ -70,10 +69,10 @@ void Basic::SetOffset(int x, int y)
 }
 
 
-void Basic::SetOffset(vec2 const & offset)
+void Basic::SetOffset(vec2 const& offset)
 {
- //glProgramUniform2fv(program_id, uniforms.offset, 1, offset.gl_data());
- glProgramUniform2fv(program_id, uniforms.offset, 1, gl_data(offset));
+  //glProgramUniform2fv(program_id, uniforms.offset, 1, offset.gl_data());
+  glProgramUniform2fv(program_id, uniforms.offset, 1, gl_data(offset));
 }
 
 
@@ -95,15 +94,14 @@ void Basic::SetColour(float r, float g, float b, float a)
 }
 
 
-void Basic::SetColour(vec4 const & colour)
+void Basic::SetColour(vec4 const& colour)
 {
   glProgramUniform4fv(program_id, uniforms.colour, 1, reinterpret_cast<const GLfloat*>(&colour));
 }
 
 
-
 const std::string Basic::vertex_src =
-R"(#version 450
+  R"(#version 450
 
 layout(location=0) in vec2 v;
 layout(location=1) in vec4 col;
@@ -147,7 +145,7 @@ void main(void)
 
 
 const std::string Basic::fragment_src =
-R"(#version 450
+  R"(#version 450
 
 uniform vec4 colour;
 

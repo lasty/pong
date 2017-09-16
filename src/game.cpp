@@ -15,40 +15,38 @@
 #include "maths_utils.hpp"
 
 
-
 Game::Game(Sound &sound)
-:sound(sound)
+: sound(sound)
 {
-  srand (static_cast <unsigned> (time(0)));
+  srand(static_cast<unsigned>(time(0)));
 
   SetupBlockGeometry();
 }
 
 
-
 vec2 GetCenter(int width, int height)
 {
-  return { width / 2.0f, height / 2.0f};
+  return {width / 2.0f, height / 2.0f};
 }
 
 
 vec2 RandomPosition(int width, int height, float border = 50.0f)
 {
-  return { RandomFloat(border, width - border) , RandomFloat(border, height - border)};
+  return {RandomFloat(border, width - border), RandomFloat(border, height - border)};
 }
 
 
 vec2 RandomPositionBottom(int width, int height)
 {
   float border = 50.0f;
-  return { RandomFloat(border, width - border) , RandomFloat(height - 2*border, height - border)};
+  return {RandomFloat(border, width - border), RandomFloat(height - 2 * border, height - border)};
 }
 
 
-BoundingBox MakeBounds(const Ball & ball)
+BoundingBox MakeBounds(const Ball &ball)
 {
-  const vec2 tl {ball.position.x - ball.radius, ball.position.y - ball.radius};
-  const vec2 br {ball.position.x + ball.radius, ball.position.y + ball.radius};
+  const vec2 tl{ball.position.x - ball.radius, ball.position.y - ball.radius};
+  const vec2 br{ball.position.x + ball.radius, ball.position.y + ball.radius};
 
   return {tl, br};
 }
@@ -77,12 +75,11 @@ BoundingBox MakeBounds(const Block &block)
 
 BlockType RandomBlockType()
 {
-  const std::vector<BlockType> vec {
+  const std::vector<BlockType> vec{
     BlockType::square,
     BlockType::triangle_left, BlockType::triangle_right,
     BlockType::rectangle,
-    BlockType::rect_triangle_left, BlockType::rect_triangle_right
-  };
+    BlockType::rect_triangle_left, BlockType::rect_triangle_right};
   return vec.at(RandomInt(0, vec.size()));
 }
 
@@ -101,10 +98,10 @@ std::vector<Block> NewWorldBorders(float border, int width, int height)
   outofbounds.colour = {0.0f, 0.0f, 0.0f, 1.0f};
   outofbounds.geometry = {};
 
-  vec2 tl { border, border };
-  vec2 tr { width - border, border };
-  vec2 bl { border, height + 20.0f };
-  vec2 br { width - border, height + 20.0f };
+  vec2 tl{border, border};
+  vec2 tr{width - border, border};
+  vec2 bl{border, height + 20.0f};
+  vec2 br{width - border, height + 20.0f};
 
   b.geometry.push_back({tl, tr});
   b.geometry.push_back({tr, br});
@@ -120,44 +117,44 @@ std::vector<Block> NewWorldBorders(float border, int width, int height)
 
 void Game::SetupBlockGeometry()
 {
-  vec2 tl {0,0};
-  vec2 bl {0, 50};
-  vec2 tr {50, 0};
-  vec2 br {50, 50};
+  vec2 tl{0, 0};
+  vec2 bl{0, 50};
+  vec2 tr{50, 0};
+  vec2 br{50, 50};
 
   block_shapes.emplace(BlockType::square,
-    BlockGeometry { {tl, bl}, {bl, br}, {br, tr}, {tr, tl} });
+    BlockGeometry{{tl, bl}, {bl, br}, {br, tr}, {tr, tl}});
 
   block_shapes.emplace(BlockType::triangle_left,
-    BlockGeometry { {tr, tl}, {tl, br}, {br, tr} });
+    BlockGeometry{{tr, tl}, {tl, br}, {br, tr}});
 
   block_shapes.emplace(BlockType::triangle_right,
-    BlockGeometry { {tr, tl}, {tl, bl}, {bl, tr} });
+    BlockGeometry{{tr, tl}, {tl, bl}, {bl, tr}});
 
-  vec2 wtr {100, 0};
-  vec2 wbr {100, 50};
+  vec2 wtr{100, 0};
+  vec2 wbr{100, 50};
 
   block_shapes.emplace(BlockType::rectangle,
-    BlockGeometry { {tl, bl}, {bl, wbr}, {wbr, wtr}, {wtr, tl} });
+    BlockGeometry{{tl, bl}, {bl, wbr}, {wbr, wtr}, {wtr, tl}});
 
   block_shapes.emplace(BlockType::rect_triangle_left,
-    BlockGeometry { {wtr, tl}, {tl, br}, {br, wbr}, {wbr, wtr} });
+    BlockGeometry{{wtr, tl}, {tl, br}, {br, wbr}, {wbr, wtr}});
 
   block_shapes.emplace(BlockType::rect_triangle_right,
-    BlockGeometry { {wtr, tl}, {tl, bl}, {bl, br}, {br, wtr} });
+    BlockGeometry{{wtr, tl}, {tl, bl}, {bl, br}, {br, wtr}});
 
 
-  vec2 ptl {-50,0};
-  vec2 ptr {50,0};
-  vec2 pbl {-50, 40};
-  vec2 pbr {50, 40};
+  vec2 ptl{-50, 0};
+  vec2 ptr{50, 0};
+  vec2 pbl{-50, 40};
+  vec2 pbr{50, 40};
 
   block_shapes.emplace(BlockType::paddle,
-    BlockGeometry { {ptl, pbl}, {pbl, pbr}, {pbr, ptr}, {ptr, ptl} });
+    BlockGeometry{{ptl, pbl}, {pbl, pbr}, {pbr, ptr}, {ptr, ptl}});
 }
 
 
-const BlockGeometry & Game::GetGeometry(BlockType bt) const
+const BlockGeometry &Game::GetGeometry(BlockType bt) const
 {
   return block_shapes.at(bt);
 }
@@ -169,7 +166,7 @@ Ball Game::NewBall(int width, int height) const
   b.position = RandomPositionBottom(width, height);
 
   const float speed = 100.0f;
-  b.velocity = { RandomFloat(-speed, speed) , RandomFloat(-speed, speed)};
+  b.velocity = {RandomFloat(-speed, speed), RandomFloat(-speed, speed)};
 
   b.radius = RandomInt(5, 50);
 
@@ -186,11 +183,11 @@ Block Game::NewBlock(int x, int y, BlockType bt) const
   Block b;
   b.type = bt;
 
-  b.position = { 50.0f + (110.0f * x) , 50.0f + (60.0f * y) };
+  b.position = {50.0f + (110.0f * x), 50.0f + (60.0f * y)};
   b.colour = RandomRGB();
   b.geometry = GetGeometry(b.type);
 
-  for (auto & line : b.geometry)
+  for (auto &line : b.geometry)
   {
     line.p1 += b.position;
     line.p2 += b.position;
@@ -218,9 +215,9 @@ GameState Game::NewGame(int width, int height) const
   //   state.balls.push_back(NewBall(width, height));
   // }
 
-  for(int x=0; x<5; x++)
+  for (int x = 0; x < 5; x++)
   {
-    for (int y=0; y<3; y++)
+    for (int y = 0; y < 3; y++)
     {
       state.blocks.push_back(NewBlock(x, y, RandomBlockType()));
     }
@@ -240,7 +237,7 @@ Paddle Game::MakePlayer(const vec2 &position) const
   block.position = position;
   block.geometry = GetGeometry(BlockType::paddle);
 
-  for (auto & line : block.geometry)
+  for (auto &line : block.geometry)
   {
     line.p1 += position;
     line.p2 += position;
@@ -266,7 +263,7 @@ Paddle Game::UpdatePlayer(const Paddle &old, const vec2 &position) const
 
   player.block.geometry = GetGeometry(BlockType::paddle);
 
-  for (auto & line : player.block.geometry)
+  for (auto &line : player.block.geometry)
   {
     line.p1 += player.block.position;
     line.p2 += player.block.position;
@@ -289,9 +286,9 @@ void UpdatePaddleVelocity(Paddle &player)
 float GetPaddleVelocity(const Paddle &player)
 {
   float vels = 0.0f;
-  for (unsigned i=1; i<player.avg_velocity.size(); i++)
+  for (unsigned i = 1; i < player.avg_velocity.size(); i++)
   {
-    vels += (player.avg_velocity[i] - player.avg_velocity[i-1]);
+    vels += (player.avg_velocity[i] - player.avg_velocity[i - 1]);
   }
 
   float avg = vels / float(player.avg_velocity.size() - 1);
@@ -332,43 +329,44 @@ void Game::OnHitBlock(const GameState &state, Ball &ball, Block &block) const
   {
     sound.PlaySound("bounce_hit", balance);
   }
-
 }
 
 
 struct BlockIterator
 {
-  Block * i1;
-  Block * i2;
+  Block *i1;
+  Block *i2;
 
   BlockIterator(std::vector<Block> &vec)
   : i1(vec.data())
   , i2(vec.data() + vec.size())
-  {}
+  {
+  }
 
   BlockIterator(Block &single)
   : i1(&single)
-  , i2(i1+1)
-  {}
+  , i2(i1 + 1)
+  {
+  }
 
-  Block * begin() { return i1; }
-  Block * end() { return i2; }
+  Block *begin() { return i1; }
+  Block *end() { return i2; }
 };
 
 
-bool Game::CalculateBallCollision(GameState &state, const Ball & old_ball, vec2 &out_normal_vec, std::vector<Block*> &out_hit_blocks) const
+bool Game::CalculateBallCollision(GameState &state, const Ball &old_ball, vec2 &out_normal_vec, std::vector<Block *> &out_hit_blocks) const
 {
   vec2 normal_acc = {};
   int num_normals = 0;
   out_hit_blocks.clear();
 
-  for (auto vec : { BlockIterator(state.blocks), BlockIterator(state.border_lines), BlockIterator(state.player.block) })
+  for (auto vec : {BlockIterator(state.blocks), BlockIterator(state.border_lines), BlockIterator(state.player.block)})
   {
-    for (Block & block : vec)
+    for (Block &block : vec)
     {
       if (not BoundingBoxCollides(old_ball.bounds, block.bounds)) continue;
 
-      for(auto & line : block.geometry)
+      for (auto &line : block.geometry)
       {
         if (Collides(old_ball, line))
         {
@@ -401,7 +399,7 @@ bool Game::CalculateBallCollision(GameState &state, const Ball & old_ball, vec2 
 }
 
 
-Ball Game::UpdatePhysics(GameState &state, float dt, Ball & old_ball) const
+Ball Game::UpdatePhysics(GameState &state, float dt, Ball &old_ball) const
 {
   Ball out = old_ball;
   float orig_speed = get_length(old_ball.velocity);
@@ -410,15 +408,15 @@ Ball Game::UpdatePhysics(GameState &state, float dt, Ball & old_ball) const
   out.bounds = MakeBounds(out);
 
 
-  std::vector<Block*> hit_blocks {};
-  vec2 normal_avg {};
+  std::vector<Block *> hit_blocks{};
+  vec2 normal_avg{};
   if (CalculateBallCollision(state, old_ball, normal_avg, hit_blocks))
   {
     vec2 refl = reflect(normalize(old_ball.velocity), normalize(normal_avg));
 
     out.velocity = normalize(refl) * orig_speed;
 
-    for(Block * block : hit_blocks)
+    for (Block *block : hit_blocks)
     {
       OnHitBlock(state, out, *block);
     }
@@ -431,12 +429,11 @@ Ball Game::UpdatePhysics(GameState &state, float dt, Ball & old_ball) const
 }
 
 
-template <typename CONT, typename PRED>
+template<typename CONT, typename PRED>
 void remove_inplace(CONT &container, const PRED &pred)
 {
   container.erase(
-    std::remove_if(container.begin(), container.end(), pred)
-    , container.end());
+    std::remove_if(container.begin(), container.end(), pred), container.end());
 }
 
 
@@ -445,45 +442,45 @@ GameState Game::ProcessIntents(const GameState &state,
 {
   GameState out = state;
 
-  for(auto & intent : intent_stream)
+  for (auto &intent : intent_stream)
   {
-    switch(intent.type)
+    switch (intent.type)
     {
       case IntentType::quit:
         out.running = false;
-      break;
+        break;
 
       case IntentType::toggle_debug:
         out.debug_enabled = not out.debug_enabled;
-      break;
+        break;
 
       case IntentType::new_balls:
         out = NewGame(state.width, state.height);
-      break;
+        break;
 
       case IntentType::reset_ball:
         out.balls.clear();
         sound.PlaySound("lost_ball", 0.5f);
-      break;
+        break;
 
       case IntentType::time_passed:
         //TODO
-      break;
+        break;
 
       case IntentType::player_input:
         switch (intent.player_input)
         {
           case PlayerInput::move_left:
-          break;
+            break;
           case PlayerInput::move_right:
-          break;
+            break;
 
           case PlayerInput::mouse_position:
           {
             out.mouse_pointer = intent.position;
 
             float b = 50 + 10;
-            vec2 pos = {clamp(b, state.width-b, intent.position.x), intent.position.y};
+            vec2 pos = {clamp(b, state.width - b, intent.position.x), intent.position.y};
             out.player = UpdatePlayer(out.player, pos);
           }
           break;
@@ -504,10 +501,9 @@ GameState Game::ProcessIntents(const GameState &state,
                 sound.PlaySound("error", state.player.block.position.x / state.width);
               }
             }
-          break;
-
+            break;
         }
-      break;
+        break;
     }
   }
 
@@ -517,14 +513,12 @@ GameState Game::ProcessIntents(const GameState &state,
 
 std::string ToString(const State &state)
 {
-  const std::map<State, std::string> state_to_string
-   {
-     {State::new_level, "new_level"},
-     {State::ball_launch, "ball_launch"},
-     {State::mid_game, "mid_game"},
-     {State::ball_died, "ball_died"},
-     {State::game_won, "game_won"}
-   };
+  const std::map<State, std::string> state_to_string{
+    {State::new_level, "new_level"},
+    {State::ball_launch, "ball_launch"},
+    {State::mid_game, "mid_game"},
+    {State::ball_died, "ball_died"},
+    {State::game_won, "game_won"}};
 
   return state_to_string.at(state);
 }
@@ -541,7 +535,7 @@ GameState Game::ProcessStateGraph(const GameState &state, float dt) const
       out = NewGame(state.width, state.height);
       out.state = State::ball_launch;
       out.state_timer = 0.0f;
-    break;
+      break;
 
     case State::ball_launch:
       if (not out.player.sticky_ball)
@@ -549,7 +543,7 @@ GameState Game::ProcessStateGraph(const GameState &state, float dt) const
         out.state = State::mid_game;
         out.state_timer = 0.0f;
       }
-    break;
+      break;
 
     case State::mid_game:
       if (out.balls.size() == 0)
@@ -563,7 +557,7 @@ GameState Game::ProcessStateGraph(const GameState &state, float dt) const
         out.state = State::game_won;
         out.state_timer = 0.0f;
       }
-    break;
+      break;
 
     case State::ball_died:
       if (out.state_timer > 1.0f)
@@ -572,7 +566,7 @@ GameState Game::ProcessStateGraph(const GameState &state, float dt) const
         out.state_timer = 0.0f;
         out.player.sticky_ball = true;
       }
-    break;
+      break;
 
     case State::game_won:
       if (out.state_timer > 1.0f)
@@ -591,13 +585,13 @@ GameState Game::Simulate(const GameState &state, float dt) const
 {
   GameState out = state;
 
-  for(Ball &b : out.balls)
+  for (Ball &b : out.balls)
   {
     b = UpdatePhysics(out, dt, b);
   }
 
-  remove_inplace(out.blocks, [=](auto &b){ return not b.alive; } );
-  remove_inplace(out.balls, [=](auto &b){ return not b.alive; } );
+  remove_inplace(out.blocks, [=](auto &b) { return not b.alive; });
+  remove_inplace(out.balls, [=](auto &b) { return not b.alive; });
 
   // if (out.balls.size() == 0)
   // {

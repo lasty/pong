@@ -13,9 +13,9 @@ std::vector<float> MakeCircle(float radius, int segments, const vec4 &colour)
 {
   std::vector<float> out;
 
-  for(int i = 0; i < segments; i++)
+  for (int i = 0; i < segments; i++)
   {
-    float angle = float(2*PI) * (float(i) / float(segments));
+    float angle = float(2 * PI) * (float(i) / float(segments));
 
     float x = radius * cosf(angle);
     float y = radius * sinf(angle);
@@ -38,7 +38,7 @@ std::vector<float> MakeArrow(float radius, const vec4 &colour)
   std::vector<float> out;
 
   float width = (PI / 8);
-  for(float angle : { 0.0f, PI - width, PI + width })
+  for (float angle : {0.0f, PI - width, PI + width})
   {
     float x = radius * cosf(angle);
     float y = radius * sinf(angle);
@@ -151,10 +151,12 @@ void Renderer::Resize(int width, int height)
 }
 
 
-shape_def Renderer::AddShape(std::vector<float> const & vertexes)
+shape_def Renderer::AddShape(std::vector<float> const &vertexes)
 {
   if (vertexes.size() % floats_per_vertex != 0)
-    { throw std::runtime_error("Uneven vertexes given to AddShape"); }
+  {
+    throw std::runtime_error("Uneven vertexes given to AddShape");
+  }
 
 
   shape_def s;
@@ -199,7 +201,7 @@ void Renderer::SetupDynamicVertexData()
   GL::AttachAttribute(dynamic_vao_id, 1, 4, 2, GL_FLOAT); //colour, location = 1
 
 
-  DynamicLine({0,0}, {10,10}, {1.0f, 1.0f, 1.0f, 1.0f});
+  DynamicLine({0, 0}, {10, 10}, {1.0f, 1.0f, 1.0f, 1.0f});
   UpdateDynamicVertexData();
 }
 
@@ -226,14 +228,15 @@ void Renderer::DynamicLine(vec2 const &v1, vec2 const &v2, const vec4 &colour)
   dynamic_vertex_data.push_back(colour.g);
   dynamic_vertex_data.push_back(colour.b);
   dynamic_vertex_data.push_back(colour.a);
-
 }
 
 
 void Renderer::UpdateDynamicVertexData()
 {
   if (dynamic_vertex_data.size() % floats_per_vertex != 0)
-    { throw std::runtime_error("Uneven vertexes given to Dynamic Buffer"); }
+  {
+    throw std::runtime_error("Uneven vertexes given to Dynamic Buffer");
+  }
 
   glNamedBufferData(dynamic_buff_id, sizeof(float) * dynamic_vertex_data.size(), dynamic_vertex_data.data(), GL_DYNAMIC_DRAW);
 }
@@ -254,7 +257,7 @@ void Renderer::DrawDynamic(GLenum draw_type)
 
 void Renderer::SetupShapes()
 {
-  vec4 colour {1.0f, 1.0f, 1.0f, 1.0f};
+  vec4 colour{1.0f, 1.0f, 1.0f, 1.0f};
   circle_shape = AddShape(MakeCircle(1, 64, colour));
 
   arrow_shape = AddShape(MakeArrow(20, colour));
@@ -272,7 +275,7 @@ void Renderer::DeleteShapes()
 }
 
 
-void Renderer::DrawShape(GLenum draw_type, shape_def const & shape)
+void Renderer::DrawShape(GLenum draw_type, shape_def const &shape)
 {
   glDrawArrays(draw_type, shape.offset, shape.count);
 }
@@ -302,11 +305,11 @@ void Renderer::FillCircle(int radius, float x, float y)
 }
 
 
-void Renderer::RenderBall(const Ball & ball, bool draw_outline)
+void Renderer::RenderBall(const Ball &ball, bool draw_outline)
 {
   glLineWidth(2.0f);
 
-  const auto & radius = ball.radius;
+  const auto &radius = ball.radius;
 
   UseProgram(basic_shader.GetProgramId());
   UseVAO(vao_id);
@@ -330,7 +333,7 @@ void Renderer::RenderBall(const Ball & ball, bool draw_outline)
 }
 
 
-void Renderer::RenderArrow(const Ball & arrow)
+void Renderer::RenderArrow(const Ball &arrow)
 {
   glLineWidth(2.0f);
 
@@ -348,7 +351,7 @@ shape_def Renderer::GetRectShape(int w, int h)
   auto shape = rect_shapes[w][h];
   if (shape.offset == 0)
   {
-    vec4 colour {1.0f, 1.0f, 1.0f, 1.0f};
+    vec4 colour{1.0f, 1.0f, 1.0f, 1.0f};
     shape = AddShape(MakeRect(w, h, colour));
     UpdateVertexData();
     rect_shapes[w][h] = shape;
@@ -358,12 +361,12 @@ shape_def Renderer::GetRectShape(int w, int h)
 }
 
 
-void Renderer::RenderBlock(const Block & block, bool draw_normals)
+void Renderer::RenderBlock(const Block &block, bool draw_normals)
 {
   for (auto line : block.geometry)
   {
-    const auto p1 = line.p1;// + block.position;
-    const auto p2 = line.p2;// + block.position;
+    const auto p1 = line.p1; // + block.position;
+    const auto p2 = line.p2; // + block.position;
 
     DynamicLine(p1, p2, block.colour);
 
@@ -371,13 +374,13 @@ void Renderer::RenderBlock(const Block & block, bool draw_normals)
     {
       vec2 normal = get_normal(p1, p2);
       vec2 center = (p1 + p2) / 2.0f;
-      DynamicLine(center, center + (normal * 4.0f), vec4{1.0f, 1.0f, 1.0f, 1.0f} );
+      DynamicLine(center, center + (normal * 4.0f), vec4{1.0f, 1.0f, 1.0f, 1.0f});
     }
   }
 }
 
 
-void Renderer::RenderBounds(const BoundingBox & bounds)
+void Renderer::RenderBounds(const BoundingBox &bounds)
 {
   glLineWidth(1.0f);
   const vec2 size = bounds.bottom_right - bounds.top_left;
@@ -396,12 +399,10 @@ void Renderer::RenderBounds(const BoundingBox & bounds)
     basic_shader.SetColour(0.9f, 0.1f, 0.9f, 0.9f);
     DrawShape(GL_LINE_LOOP, shape);
   }
-
 }
 
 
-
-void Renderer::DrawGameState(const GameState & state)
+void Renderer::DrawGameState(const GameState &state)
 {
   const bool draw_normals = state.debug_enabled;
   const bool draw_velocity = state.debug_enabled;
@@ -414,18 +415,18 @@ void Renderer::DrawGameState(const GameState & state)
   UseVAO(vao_id);
 
 
-  for(const auto &ball : state.balls)
+  for (const auto &ball : state.balls)
   {
     if (draw_bounds) RenderBounds(ball.bounds);
 
     RenderBall(ball, true);
   }
 
-  for(const auto &block : state.blocks)
+  for (const auto &block : state.blocks)
   {
-      if (draw_bounds) RenderBounds(block.bounds);
+    if (draw_bounds) RenderBounds(block.bounds);
 
-      RenderBlock(block, draw_normals);
+    RenderBlock(block, draw_normals);
   }
 
 
@@ -450,9 +451,9 @@ void Renderer::DrawGameState(const GameState & state)
 
   for (const auto &vec : {state.border_lines})
   {
-    for(const auto &block : vec)
+    for (const auto &block : vec)
     {
-      for(const auto &line : block.geometry)
+      for (const auto &line : block.geometry)
       {
         DynamicLine(line.p1, line.p2, block.colour);
 
@@ -460,7 +461,7 @@ void Renderer::DrawGameState(const GameState & state)
         {
           vec2 normal = get_normal(line.p1, line.p2);
           vec2 center = (line.p1 + line.p2) / 2.0f;
-          DynamicLine(center, center+ (normal * 20.0f), vec4{1.0f, 1.0f, 1.0f, 1.0f});
+          DynamicLine(center, center + (normal * 20.0f), vec4{1.0f, 1.0f, 1.0f, 1.0f});
         }
       }
     }
@@ -469,7 +470,7 @@ void Renderer::DrawGameState(const GameState & state)
 
   if (draw_velocity)
   {
-    for (const auto& ball : state.balls)
+    for (const auto &ball : state.balls)
     {
       vec2 dir = (ball.velocity);
       DynamicLine(ball.position, ball.position + dir * 1.0f, vec4{1.0f, 1.0f, 1.0f, 1.0f});

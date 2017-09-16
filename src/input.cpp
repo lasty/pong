@@ -9,7 +9,7 @@
 #include "game.hpp"
 
 
-Input::Input(GLFWwindow *window)//, Game &game)
+Input::Input(GLFWwindow* window) //, Game &game)
 //:game(game)
 {
   SetupCallbacks(window);
@@ -62,7 +62,7 @@ void Input::SetupBinds()
 }
 
 
-Input * Input::GetThis(GLFWwindow *window)
+Input* Input::GetThis(GLFWwindow* window)
 {
   Input* input = static_cast<Input*>(glfwGetWindowUserPointer(window));
 
@@ -100,7 +100,6 @@ void Input::key_callback(
 
     input->intent_stream.push_back(i);
   }
-
 }
 
 
@@ -118,7 +117,7 @@ void Input::cursor_position_callback(GLFWwindow* window, double xpos, [[maybe_un
 
 
   Intent i{IntentType::player_input, PlayerInput::mouse_position, {}};
-  i.position = vec2 { float(xpos), float(ypos) };
+  i.position = vec2{float(xpos), float(ypos)};
 
   input->intent_stream.push_back(i);
 }
@@ -141,7 +140,7 @@ void Input::mouse_button_callback(GLFWwindow* window, int button, int action, [[
 }
 
 
-void Input::SetupCallbacks(GLFWwindow *window)
+void Input::SetupCallbacks(GLFWwindow* window)
 {
   if (glfwGetWindowUserPointer(window) != nullptr)
     throw std::runtime_error("Already got window user pointer?");
@@ -154,7 +153,7 @@ void Input::SetupCallbacks(GLFWwindow *window)
 }
 
 
-void Input::RemoveCallbacks(GLFWwindow *window)
+void Input::RemoveCallbacks(GLFWwindow* window)
 {
   if (glfwGetWindowUserPointer(window) != this)
     throw std::runtime_error("Pointer not set correctly?");

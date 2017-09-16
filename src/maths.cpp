@@ -26,13 +26,13 @@ float radians(float degrees)
 }
 
 
-float get_angle(vec2 const & v)
+float get_angle(vec2 const &v)
 {
   return atan2f(v.y, v.x);
 }
 
 
-float get_length(vec2 const & v)
+float get_length(vec2 const &v)
 {
   return sqrtf(v.x * v.x + v.y * v.y);
 }
@@ -67,7 +67,7 @@ vec2 operator/(vec2 const &a, float s)
 }
 
 
-vec2 & operator+=(vec2 &a, vec2 const &b)
+vec2 &operator+=(vec2 &a, vec2 const &b)
 {
   a.x += b.x;
   a.y += b.y;
@@ -75,7 +75,7 @@ vec2 & operator+=(vec2 &a, vec2 const &b)
 }
 
 
-vec2 & operator-=(vec2 &a, vec2 const &b)
+vec2 &operator-=(vec2 &a, vec2 const &b)
 {
   a.x -= b.x;
   a.y -= b.y;
@@ -83,7 +83,7 @@ vec2 & operator-=(vec2 &a, vec2 const &b)
 }
 
 
-vec2 & operator*=(vec2 &a, float s)
+vec2 &operator*=(vec2 &a, float s)
 {
   a.x *= s;
   a.y *= s;
@@ -91,7 +91,7 @@ vec2 & operator*=(vec2 &a, float s)
 }
 
 
-vec2 & operator/=(vec2 &a, float s)
+vec2 &operator/=(vec2 &a, float s)
 {
   a.x /= s;
   a.y /= s;
@@ -101,7 +101,7 @@ vec2 & operator/=(vec2 &a, float s)
 
 vec4 operator*(vec4 const &a, float s)
 {
-  return { a.x * s, a.y * s, a.z * s, a.w * s };
+  return {a.x * s, a.y * s, a.z * s, a.w * s};
 }
 
 
@@ -136,7 +136,7 @@ vec2 get_normal(vec2 const &p1, vec2 const &p2)
   float dx = p2.x - p1.x;
   float dy = p2.y - p1.y;
 
-  vec2 normal { -dy, dx };
+  vec2 normal{-dy, dx};
   return normalize(normal);
 }
 
@@ -155,10 +155,9 @@ vec2 reflect(vec2 const &I, vec2 const &N)
 }
 
 
-
 vec2 nearest_point_on_line(vec2 const &v, vec2 const &w, vec2 const &p)
 {
-  const float line_length = distance_squared(v, w);  // i.e. |w-v|^2 -  avoid a sqrt
+  const float line_length = distance_squared(v, w); // i.e. |w-v|^2 -  avoid a sqrt
 
   // v == w case
   if (line_length == 0.0) return v;
@@ -172,7 +171,7 @@ vec2 nearest_point_on_line(vec2 const &v, vec2 const &w, vec2 const &p)
   float t = dot(p - v, w - v) / line_length;
   //t = std::max(0.0f, std::min(1.0f, t));
 
-  const vec2 projection = v + (w - v) * t;  // Projection falls on the segment
+  const vec2 projection = v + (w - v) * t; // Projection falls on the segment
 
   return projection;
   //return distance(p, projection);
@@ -180,7 +179,7 @@ vec2 nearest_point_on_line(vec2 const &v, vec2 const &w, vec2 const &p)
 
 vec2 nearest_point_on_line_segment(vec2 const &v, vec2 const &w, vec2 const &p)
 {
-  const float line_length = distance_squared(v, w);  // i.e. |w-v|^2 -  avoid a sqrt
+  const float line_length = distance_squared(v, w); // i.e. |w-v|^2 -  avoid a sqrt
 
   // v == w case
   if (line_length == 0.0) return v;
@@ -194,7 +193,7 @@ vec2 nearest_point_on_line_segment(vec2 const &v, vec2 const &w, vec2 const &p)
   float t = dot(p - v, w - v) / line_length;
   t = std::max(0.0f, std::min(1.0f, t));
 
-  const vec2 projection = v + (w - v) * t;  // Projection falls on the segment
+  const vec2 projection = v + (w - v) * t; // Projection falls on the segment
 
   return projection;
   //return distance(p, projection);
@@ -204,25 +203,24 @@ vec2 nearest_point_on_line_segment(vec2 const &v, vec2 const &w, vec2 const &p)
 vec2 get_intersection(vec2 ps1, vec2 pe1, vec2 ps2, vec2 pe2)
 {
   // Get A,B,C of first line - points : ps1 to pe1
-  float A1 = pe1.y-ps1.y;
-  float B1 = ps1.x-pe1.x;
-  float C1 = A1*ps1.x+B1*ps1.y;
+  float A1 = pe1.y - ps1.y;
+  float B1 = ps1.x - pe1.x;
+  float C1 = A1 * ps1.x + B1 * ps1.y;
 
   // Get A,B,C of second line - points : ps2 to pe2
-  float A2 = pe2.y-ps2.y;
-  float B2 = ps2.x-pe2.x;
-  float C2 = A2*ps2.x+B2*ps2.y;
+  float A2 = pe2.y - ps2.y;
+  float B2 = ps2.x - pe2.x;
+  float C2 = A2 * ps2.x + B2 * ps2.y;
 
   // Get delta and check if the lines are parallel
-  float delta = A1*B2 - A2*B1;
-  if(delta == 0)
-     throw std::runtime_error("Lines are parallel");
+  float delta = A1 * B2 - A2 * B1;
+  if (delta == 0)
+    throw std::runtime_error("Lines are parallel");
 
   // now return the Vector2 intersection point
   return {
-      (B2*C1 - B1*C2)/delta,
-      (A1*C2 - A2*C1)/delta
-  };
+    (B2 * C1 - B1 * C2) / delta,
+    (A1 * C2 - A2 * C1) / delta};
 }
 
 
@@ -238,21 +236,20 @@ float clamp(float min, float max, float val)
 }
 
 
-const float * gl_data(vec2 const &v)
+const float *gl_data(vec2 const &v)
 {
-  return reinterpret_cast<const float*>(&v);
+  return reinterpret_cast<const float *>(&v);
 }
 
-const float * gl_data(vec3 const &v)
+const float *gl_data(vec3 const &v)
 {
-  return reinterpret_cast<const float*>(&v);
+  return reinterpret_cast<const float *>(&v);
 }
 
-const float * gl_data(vec4 const &v)
+const float *gl_data(vec4 const &v)
 {
-  return reinterpret_cast<const float*>(&v);
+  return reinterpret_cast<const float *>(&v);
 }
-
 
 
 float RandomFloat()
@@ -277,13 +274,13 @@ int RandomInt(int r1, int r2)
 
 vec4 RandomRGB()
 {
-  return { RandomFloat(), RandomFloat(), RandomFloat(), 1.0f };
+  return {RandomFloat(), RandomFloat(), RandomFloat(), 1.0f};
 }
 
 
 vec4 RandomRGBA()
 {
-  return { RandomFloat(), RandomFloat(), RandomFloat(), RandomFloat() };
+  return {RandomFloat(), RandomFloat(), RandomFloat(), RandomFloat()};
 }
 
 
@@ -291,13 +288,9 @@ bool BoundingBoxCollides(const BoundingBox &a, const BoundingBox &b)
 {
   if (&a == &b) return false;
 
-  return
-    (a.top_left.x < b.bottom_right.x)
-    and
-    (a.bottom_right.x > b.top_left.x)
-    and
-    (a.top_left.y < b.bottom_right.y)
-    and
+  return (a.top_left.x < b.bottom_right.x) and
+    (a.bottom_right.x > b.top_left.x) and
+    (a.top_left.y < b.bottom_right.y) and
     (a.bottom_right.y > b.top_left.y);
 }
 
@@ -316,7 +309,7 @@ bool Collides(const Ball &ball, const Block &block)
 {
   if (not BoundingBoxCollides(ball.bounds, block.bounds)) return false;
 
-  for(auto const &line : block.geometry)
+  for (auto const &line : block.geometry)
   {
     if (Collides(ball, line)) return true;
   }
@@ -347,13 +340,13 @@ bool Collides(const Ball &b1, const Ball &b2)
 //// Testing stuff
 
 
-vec2 GetGLStyle(const float* data)
+vec2 GetGLStyle(const float *data)
 {
   using std::cout;
   using std::endl;
 
   cout << "GetGLStyle got data :" << data[0] << ", " << data[1] << endl;
-  vec2 out { data[0], data[1] };
+  vec2 out{data[0], data[1]};
   return out;
 }
 
@@ -366,11 +359,12 @@ void TestMaths()
   cout.precision(2);
   cout << std::fixed;
 
-  cout << "\n\n==== Testing Maths()\n" << endl;
+  cout << "\n\n==== Testing Maths()\n"
+       << endl;
 
-  if(false)
+  if (false)
   {
-    vec2 in { 3, 6 };
+    vec2 in{3, 6};
     cout << "in = " << in << endl;
 
     //vec2 out = GetGLStyle(gl_data(in));
@@ -379,13 +373,13 @@ void TestMaths()
     cout << "out = " << out << endl;
 
     cout << "sizeof(vec2) is " << sizeof(vec2) << " which is " << sizeof(vec2) / sizeof(float) << " floats." << endl;
-    cout << "\n===\n" << endl;
-
+    cout << "\n===\n"
+         << endl;
   }
 
   if (false)
   {
-    vec2 v {1, 2};
+    vec2 v{1, 2};
     cout << "v = " << v << endl;
     cout << "get angle (v) = " << get_angle(v) << endl;
     cout << "get length (v) = " << get_length(v) << endl;
@@ -399,27 +393,29 @@ void TestMaths()
     cout << "get length (w) = " << get_length(w) << endl;
 
     cout << "sizeof(vec2) is " << sizeof(vec2) << " which is " << sizeof(vec2) / sizeof(float) << " floats." << endl;
-    cout << "\n===\n" << endl;
+    cout << "\n===\n"
+         << endl;
   }
 
   if (false)
   {
-    vec2 v1{10,5};
+    vec2 v1{10, 5};
     cout << "v1 = " << v1 << endl;
     cout << "get angle (v1) = " << get_angle(v1) << endl;
     cout << "get length (v1) = " << get_length(v1) << endl;
     cout << "v2 = angle_to_vec2(PI/6.0, 100)" << endl;
-    vec2 v2 = angle_to_vec2(PI/6.0, 100);
+    vec2 v2 = angle_to_vec2(PI / 6.0, 100);
     cout << "v2 = " << v2 << endl;
     cout << "get angle (v2) = " << get_angle(v2) << endl;
     cout << "get length (v2) = " << get_length(v2) << endl;
-    cout << "\n===\n" << endl;
+    cout << "\n===\n"
+         << endl;
   }
 
   if (false)
   {
-    vec2 v1 {10,5};
-    vec2 v2 {3,4};
+    vec2 v1{10, 5};
+    vec2 v2{3, 4};
 
     vec2 v3 = v1 + v2;
 
@@ -436,25 +432,26 @@ void TestMaths()
     cout << "m1=  " << m1 << endl;
 
 
-    cout << "\n===\n" << endl;
+    cout << "\n===\n"
+         << endl;
   }
 
   if (false)
   {
-    cout << "\n===\n" << endl;
+    cout << "\n===\n"
+         << endl;
   }
 
 
   if (true)
   {
-    vec2 zero {};
-    vec2 tri { 3, 4 };
+    vec2 zero{};
+    vec2 tri{3, 4};
     cout << "tri = " << tri << endl;
     cout << "get_length(tri) = " << get_length(tri) << endl;
 
     cout << "\nzero = " << zero << endl;
     cout << "distance(zero, tri) = " << distance(zero, tri) << endl;
     cout << "distance_squared(zero, tri) = " << distance_squared(zero, tri) << endl;
-
   }
 }

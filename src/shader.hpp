@@ -11,7 +11,6 @@ namespace Shader {
 class Basic
 {
 private:
-
   static const std::string vertex_src;
   static const std::string fragment_src;
 
@@ -30,21 +29,20 @@ private:
   uniform uniforms;
 
 public:
-
   Basic();
   ~Basic();
 
   void SetResolution(int width, int height);
 
   void SetOffset(int x, int y);
-  void SetOffset(vec2 const & offset);
+  void SetOffset(vec2 const& offset);
 
   void SetRotation(float rot);
 
   void SetZoom(float zoom);
 
   void SetColour(float r, float g, float b, float a);
-  void SetColour(vec4 const & colour);
+  void SetColour(vec4 const& colour);
 
 
   int GetProgramId() const { return program_id; }
