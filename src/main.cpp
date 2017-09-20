@@ -6,9 +6,9 @@
 
 // #define TEST_MATHS
 
-const int SWAP_INTERVAL{1};
-const int GL_MAJOR{4};
-const int GL_MINOR{5};
+constexpr int SWAP_INTERVAL{1};
+constexpr int GL_MAJOR{4};
+constexpr int GL_MINOR{5};
 
 
 #include <SDL.h>

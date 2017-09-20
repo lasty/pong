@@ -29,21 +29,13 @@ void Input::AddBind(int key, PlayerInput control)
 }
 
 
-// Control Input::GetControl(int key) const
-// {
-//   const auto & it = bind_list.find(key);
-//   if (it != bind_list.end()) return (*it).second;
-//   return Control::none;
-// }
-
-
 void Input::SetupBinds()
 {
   AddBind(GLFW_KEY_ESCAPE, IntentType::quit);
   AddBind(GLFW_KEY_Q, IntentType::quit);
 
-  AddBind(GLFW_KEY_SPACE, IntentType::new_balls);
-  AddBind(GLFW_KEY_N, IntentType::new_balls);
+  AddBind(GLFW_KEY_SPACE, IntentType::new_game);
+  AddBind(GLFW_KEY_N, IntentType::new_game);
 
   AddBind(GLFW_KEY_G, IntentType::toggle_debug);
   AddBind(GLFW_KEY_F1, IntentType::toggle_debug);
@@ -161,7 +153,6 @@ void Input::RemoveCallbacks(GLFWwindow* window)
   glfwSetKeyCallback(window, nullptr);
   glfwSetMouseButtonCallback(window, nullptr);
   glfwSetCursorPosCallback(window, nullptr);
-
 
   glfwSetWindowUserPointer(window, nullptr);
 }

@@ -24,25 +24,6 @@ Game::Game(Sound &sound)
 }
 
 
-vec2 GetCenter(int width, int height)
-{
-  return {width / 2.0f, height / 2.0f};
-}
-
-
-vec2 RandomPosition(int width, int height, float border = 50.0f)
-{
-  return {RandomFloat(border, width - border), RandomFloat(border, height - border)};
-}
-
-
-vec2 RandomPositionBottom(int width, int height)
-{
-  float border = 50.0f;
-  return {RandomFloat(border, width - border), RandomFloat(height - 2 * border, height - border)};
-}
-
-
 BoundingBox MakeBounds(const Ball &ball)
 {
   const vec2 tl{ball.position.x - ball.radius, ball.position.y - ball.radius};
@@ -154,44 +135,40 @@ void Game::SetupBlockGeometry()
 }
 
 
-const BlockGeometry &Game::GetGeometry(BlockType bt) const
+BlockGeometry Game::MakeGeometry(BlockType bt, const vec2 &offset) const
 {
-  return block_shapes.at(bt);
+  BlockGeometry geom = block_shapes.at(bt);
+
+  for (auto &line : geom)
+  {
+    line.p1 += offset;
+    line.p2 += offset;
+  }
+  return geom;
 }
 
 
-Ball Game::NewBall(int width, int height) const
+Ball Game::NewBall(const vec2 &position, const vec2 &velocity) const
 {
   Ball b;
-  b.position = RandomPositionBottom(width, height);
-
-  const float speed = 100.0f;
-  b.velocity = {RandomFloat(-speed, speed), RandomFloat(-speed, speed)};
-
-  b.radius = RandomInt(5, 50);
-
+  b.position = position;
+  b.velocity = velocity;
+  b.radius = 10.0f;
   b.colour = RandomRGB();
-
   b.bounds = MakeBounds(b);
 
   return b;
 }
 
 
-Block Game::NewBlock(int x, int y, BlockType bt) const
+Block Game::NewBlock(const vec2 &position, BlockType bt) const
 {
   Block b;
   b.type = bt;
 
-  b.position = {50.0f + (110.0f * x), 50.0f + (60.0f * y)};
+  b.position = position;
   b.colour = RandomRGB();
-  b.geometry = GetGeometry(b.type);
-
-  for (auto &line : b.geometry)
-  {
-    line.p1 += b.position;
-    line.p2 += b.position;
-  }
+  b.geometry = MakeGeometry(b.type, position);
 
   b.bounds = MakeBounds(b);
 
@@ -208,18 +185,14 @@ GameState Game::NewGame(int width, int height) const
 
   state.player = MakePlayer({width / 2.0f, height - 50.0f});
 
-  state.mouse_pointer = GetCenter(width, height);
-
-  // for(int i=0; i<0; i++)
-  // {
-  //   state.balls.push_back(NewBall(width, height));
-  // }
+  state.mouse_pointer = {width / 2.0f, height / 2.0f};
 
   for (int x = 0; x < 5; x++)
   {
     for (int y = 0; y < 3; y++)
     {
-      state.blocks.push_back(NewBlock(x, y, RandomBlockType()));
+      vec2 position{50.0f + (110.0f * x), 50.0f + (60.0f * y)};
+      state.blocks.push_back(NewBlock(position, RandomBlockType()));
     }
   }
 
@@ -231,17 +204,11 @@ GameState Game::NewGame(int width, int height) const
 
 Paddle Game::MakePlayer(const vec2 &position) const
 {
-  Block block = NewBlock(5, 5, BlockType::paddle);
+  Block block = NewBlock({0, 0}, BlockType::paddle);
   block.colour = {1.0f, 1.0f, 1.0f, 1.0f};
 
   block.position = position;
-  block.geometry = GetGeometry(BlockType::paddle);
-
-  for (auto &line : block.geometry)
-  {
-    line.p1 += position;
-    line.p2 += position;
-  }
+  block.geometry = MakeGeometry(BlockType::paddle, position);
 
   block.bounds = MakeBounds(block);
 
@@ -261,13 +228,7 @@ Paddle Game::UpdatePlayer(const Paddle &old, const vec2 &position) const
   Paddle player = old;
   player.block.position.x = position.x;
 
-  player.block.geometry = GetGeometry(BlockType::paddle);
-
-  for (auto &line : player.block.geometry)
-  {
-    line.p1 += player.block.position;
-    line.p2 += player.block.position;
-  }
+  player.block.geometry = MakeGeometry(BlockType::paddle, player.block.position);
 
   player.block.bounds = MakeBounds(player.block);
 
@@ -454,17 +415,13 @@ GameState Game::ProcessIntents(const GameState &state,
         out.debug_enabled = not out.debug_enabled;
         break;
 
-      case IntentType::new_balls:
+      case IntentType::new_game:
         out = NewGame(state.width, state.height);
         break;
 
       case IntentType::reset_ball:
         out.balls.clear();
         sound.PlaySound("lost_ball", 0.5f);
-        break;
-
-      case IntentType::time_passed:
-        //TODO
         break;
 
       case IntentType::player_input:
@@ -490,7 +447,7 @@ GameState Game::ProcessIntents(const GameState &state,
             {
               if (state.player.sticky_ball)
               {
-                auto b = Shoot(state.player.block.position);
+                auto b = NewBall(state.player.block.position, {0.0f, -300.0f});
                 b.velocity.x += GetPaddleVelocity(state.player) * 30.0f;
                 out.balls.push_back(b);
                 sound.PlaySound("paddle_bounce", state.player.block.position.x / state.width);
@@ -581,6 +538,7 @@ GameState Game::ProcessStateGraph(const GameState &state, float dt) const
   return out;
 }
 
+
 GameState Game::Simulate(const GameState &state, float dt) const
 {
   GameState out = state;
@@ -593,33 +551,9 @@ GameState Game::Simulate(const GameState &state, float dt) const
   remove_inplace(out.blocks, [=](auto &b) { return not b.alive; });
   remove_inplace(out.balls, [=](auto &b) { return not b.alive; });
 
-  // if (out.balls.size() == 0)
-  // {
-  //   //TODO subtract lives or something
-  //   out.player.sticky_ball = true;
-  // }
-
   UpdatePaddleVelocity(out.player);
-
-  // TRACE << "avg_vel: " << GetPaddleVelocity(out.player) << "  ";
 
   TRACE << "blocks: " << out.blocks.size() << " balls:" << out.balls.size() << "  ";
 
   return out;
-}
-
-
-Ball Game::Shoot(const vec2 &position) const
-{
-  Ball b = NewBall(0, 0);
-
-  b.position = position + vec2{0.0f, -11.0f};
-  b.velocity = {0.0f, -300.0f};
-
-  b.colour.r = RandomFloat(0.5f, 1.0f);
-  b.colour.g = RandomFloat(0.5f, 1.0f);
-  b.colour.b = RandomFloat(0.5f, 1.0f);
-  b.radius = 10.0f;
-
-  return b;
 }

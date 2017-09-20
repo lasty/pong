@@ -1,31 +1,29 @@
 
 
 # Todo List
-- [DONE] Win/Lose conditions
-  - [DONE] have maximum ball count?
-  - [DONE] New level when all blocks cleared
-- [DONE] Change shader to take vertex colours
 - Particles class
 - Do particles when block destroyed
 - Text rendering
   - vector font, like 7 segment display
-- [DONE] Have a debug key reset ball (return to ball_launch state)
 - Have paddle intersections apply velocity of paddle to the ball
 - Win game sound/message
 - Rework block rendering (Draw fill then outline, in static buffer)
 
 
 # Refactor
-- Go through and rename badly named functions/variables/enums
-- Eliminate commented/dead code
+- [DONE] Go through and rename badly named functions/variables/enums
+- [DONE] Eliminate commented/dead code
 - Have a pass at TODO comments
 - see if possible to have sound play commands in one place
 - state graph calls to set state and reset timer in one expression
 
 
+# Bugs
+- Ball straight up hits a 45 degree block, will go left and right indefinitely
+
+
 ## Todo Low Priority
 - [TODO] Watch more of those videos
-- [DONE] Investigate atom clang-format
 - Level load/save/editor ?
 - Maybe add more varieties in sound
 

@@ -20,7 +20,6 @@ struct Ball
   vec2 position;
   vec2 velocity;
   vec4 colour;
-  float rot = 0.0f;
 
   BoundingBox bounds;
 };
@@ -118,10 +117,10 @@ public:
   Game(Sound &sound);
 
   void SetupBlockGeometry();
-  const BlockGeometry &GetGeometry(BlockType bt) const;
+  BlockGeometry MakeGeometry(BlockType bt, const vec2 &offset) const;
 
-  Ball NewBall(int width, int height) const;
-  Block NewBlock(int x, int y, BlockType bt) const;
+  Ball NewBall(const vec2 &position, const vec2 &velocity) const;
+  Block NewBlock(const vec2 &position, BlockType bt) const;
   Paddle MakePlayer(const vec2 &position) const;
   Paddle UpdatePlayer(const Paddle &old, const vec2 &position) const;
 
@@ -137,6 +136,4 @@ public:
   GameState ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream) const;
   GameState ProcessStateGraph(const GameState &state, float dt) const;
   GameState Simulate(const GameState &state, float dt) const;
-
-  Ball Shoot(const vec2 &position) const;
 };

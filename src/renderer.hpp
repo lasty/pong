@@ -25,7 +25,7 @@ struct shape_def
 class Renderer
 {
 private:
-  GLState state;
+  GLState gl_state;
 
   Shader::Basic basic_shader;
 
@@ -76,7 +76,7 @@ public:
   void FillCircle(int radius, float x, float y);
   void RenderBall(const struct Ball &ball, bool draw_outline = true);
 
-  void RenderArrow(const Ball &ball);
+  void RenderArrow(const vec2 &position, float rot);
 
   shape_def GetRectShape(int w, int h);
   void RenderBlock(const struct Block &block, bool draw_normals = false);

@@ -108,26 +108,26 @@ Renderer::~Renderer()
 
 void Renderer::UseProgram(int program_id)
 {
-  if (state.program == program_id) return;
+  if (gl_state.program == program_id) return;
 
-  state.program = program_id;
-  GL::UseProgram(basic_shader);
+  gl_state.program = program_id;
+  glUseProgram(program_id);
 }
 
 
 void Renderer::UseVAO(int vao_id)
 {
-  if (state.vao == vao_id) return;
+  if (gl_state.vao == vao_id) return;
 
-  state.vao = vao_id;
-  GL::UseVAO(vao_id);
+  gl_state.vao = vao_id;
+  glBindVertexArray(vao_id);
 }
 
 
 void Renderer::EnableBlend()
 {
-  if (state.blending) return;
-  state.blending = true;
+  if (gl_state.blending) return;
+  gl_state.blending = true;
 
   glEnable(GL_BLEND);
   //glEnablei(GL_BLEND, 0);
@@ -138,8 +138,8 @@ void Renderer::EnableBlend()
 
 void Renderer::DisableBlend()
 {
-  if (state.blending == false) return;
-  state.blending = false;
+  if (gl_state.blending == false) return;
+  gl_state.blending = false;
 
   glDisable(GL_BLEND);
 }
@@ -315,7 +315,7 @@ void Renderer::RenderBall(const Ball &ball, bool draw_outline)
   UseVAO(vao_id);
 
   basic_shader.SetOffset(ball.position);
-  basic_shader.SetRotation(ball.rot);
+  basic_shader.SetRotation(0.0f);
   basic_shader.SetZoom(radius);
 
   basic_shader.SetColour(ball.colour.r, ball.colour.g, ball.colour.b, ball.colour.a * 0.3f);
@@ -333,13 +333,12 @@ void Renderer::RenderBall(const Ball &ball, bool draw_outline)
 }
 
 
-void Renderer::RenderArrow(const Ball &arrow)
+void Renderer::RenderArrow(const vec2 &position, float rot)
 {
   glLineWidth(2.0f);
 
-  basic_shader.SetOffset(arrow.position.x, arrow.position.y);
-  basic_shader.SetRotation(arrow.rot);
-  basic_shader.SetColour(arrow.colour);
+  basic_shader.SetOffset(position);
+  basic_shader.SetRotation(rot);
   basic_shader.SetZoom(1.0f);
 
   DrawShape(GL_LINE_LOOP, arrow_shape);

@@ -20,9 +20,8 @@ enum class IntentType
 {
   quit,
   toggle_debug,
-  new_balls,
+  new_game,
   reset_ball,
-  time_passed,
   player_input
 };
 
@@ -40,16 +39,6 @@ struct Intent
     vec2 position;
     bool down;
   };
-};
-
-
-//move to game state?
-struct MovementInput
-{
-  bool up = false;
-  bool left = false;
-  bool right = false;
-  bool down = false;
 };
 
 

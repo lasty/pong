@@ -71,7 +71,6 @@ void Basic::SetOffset(int x, int y)
 
 void Basic::SetOffset(vec2 const& offset)
 {
-  //glProgramUniform2fv(program_id, uniforms.offset, 1, offset.gl_data());
   glProgramUniform2fv(program_id, uniforms.offset, 1, gl_data(offset));
 }
 

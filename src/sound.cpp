@@ -16,7 +16,6 @@ Sound::Sound()
     throw std::runtime_error("SDL_mixer did not init properly?");
   }
 
-
   if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) == -1)
   {
     throw std::runtime_error("Mix_OpenAudio failed");

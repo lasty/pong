@@ -2,8 +2,6 @@
 
 #include <string>
 
-//#include "gl.hpp"
-
 #include "maths_types.hpp"
 
 namespace Shader {

@@ -27,14 +27,4 @@ int CreateVertexArrays();
 
 void AttachAttribute(int vao_id, int attrib_id, int size, int offset, GLenum type);
 
-template<typename T>
-void UseProgram(T const &prog)
-{
-  int program_id = prog.GetProgramId();
-  glUseProgram(program_id);
-}
-
-void UseVAO(int vao_id);
-
-
 } //namespace GL

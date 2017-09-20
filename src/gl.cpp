@@ -214,10 +214,4 @@ void AttachAttribute(int vao_id, int attrib_id, int size, int offset, GLenum typ
 }
 
 
-void UseVAO(int vao_id)
-{
-  glBindVertexArray(vao_id);
-}
-
-
 } //namespace GL
