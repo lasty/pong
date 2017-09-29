@@ -6,6 +6,7 @@
 
 #include <stdexcept>
 
+constexpr float MASTER_VOLUME = 0.1f;
 
 Sound::Sound()
 {
@@ -85,6 +86,9 @@ int Sound::PlaySound(const std::string &what, float balance)
   {
     int left = (1.0f - balance) * 127 + 96;
     int right = balance * 127 + 96;
+
+    left *= MASTER_VOLUME;
+    right *= MASTER_VOLUME;
 
     Mix_SetPanning(chan, left, right);
   }
