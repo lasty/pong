@@ -5,6 +5,8 @@
 
 #include "maths_types.hpp"
 
+#include "particles.hpp"
+
 
 struct BoundingBox
 {
@@ -103,6 +105,8 @@ struct GameState
 
   Paddle player;
   vec2 mouse_pointer;
+
+  std::vector<Particle> particles;
 };
 
 

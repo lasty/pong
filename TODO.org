@@ -1,7 +1,7 @@
 
 
 # Todo List
-- Particles class
+- [TODO] Particles class
 - Do particles when block destroyed
 - Text rendering
   - vector font, like 7 segment display
@@ -16,7 +16,7 @@
 - Have a pass at TODO comments
 - see if possible to have sound play commands in one place
 - state graph calls to set state and reset timer in one expression
-
+- Pull out data clump vao/buffer in Renderer.cpp
 
 # Bugs
 - Ball straight up hits a 45 degree block, will go left and right indefinitely

@@ -97,6 +97,7 @@ Renderer::Renderer()
   SetupShapes();
 
   SetupDynamicVertexData();
+  SetupParticleVertexData();
 }
 
 
@@ -250,8 +251,51 @@ void Renderer::DrawDynamic(GLenum draw_type)
   basic_shader.SetOffset(0.0f, 0.0f);
   basic_shader.SetRotation(0.0f);
   basic_shader.SetZoom(1.0f);
+  basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
 
   glDrawArrays(draw_type, 0, dynamic_vertex_data.size() / floats_per_vertex);
+}
+
+
+void Renderer::SetupParticleVertexData()
+{
+  particle_buff_id = GL::CreateBuffers();
+  particle_vao_id = GL::CreateVertexArrays();
+
+  int buffer_index = 0;
+  glVertexArrayVertexBuffer(particle_vao_id, buffer_index, particle_buff_id, 0, stride);
+
+  GL::AttachAttribute(particle_vao_id, 0, 2, 0, GL_FLOAT); //position location = 0
+  GL::AttachAttribute(particle_vao_id, 1, 4, 2, GL_FLOAT); //colour, location = 1
+
+  particle_vertex_data = MakeParticleVertexes(Particle{});
+  //DynamicLine({0, 0}, {10, 10}, {1.0f, 1.0f, 1.0f, 1.0f});
+  UpdateParticleVertexData();
+}
+
+
+void Renderer::UpdateParticleVertexData()
+{
+  if (particle_vertex_data.size() % floats_per_vertex != 0)
+  {
+    throw std::runtime_error("Uneven vertexes given to Dynamic Buffer");
+  }
+
+  glNamedBufferData(particle_buff_id, sizeof(float) * particle_vertex_data.size(), particle_vertex_data.data(), GL_DYNAMIC_DRAW);
+}
+
+
+void Renderer::DrawParticles()
+{
+  UseProgram(basic_shader.GetProgramId());
+  UseVAO(particle_vao_id);
+
+  basic_shader.SetOffset(0.0f, 0.0f);
+  basic_shader.SetRotation(0.0f);
+  basic_shader.SetZoom(1.0f);
+  basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
+
+  glDrawArrays(GL_TRIANGLES, 0, particle_vertex_data.size() / floats_per_vertex);
 }
 
 
@@ -428,6 +472,13 @@ void Renderer::DrawGameState(const GameState &state)
     RenderBlock(block, draw_normals);
   }
 
+  if (state.particles.size())
+  {
+    particle_vertex_data = MakeParticleVertexes(state.particles);
+    UpdateParticleVertexData();
+
+    DrawParticles();
+  }
 
   RenderBlock(state.player.block, draw_normals);
   if (draw_bounds) RenderBounds(state.player.block.bounds);

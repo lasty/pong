@@ -28,6 +28,7 @@ add_executable(pong WIN32
   src/input.cpp
   src/main.cpp
   src/maths.cpp
+  src/particles.cpp
   src/renderer.cpp
   src/shader.cpp
   src/sound.cpp

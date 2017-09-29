@@ -457,6 +457,16 @@ GameState Game::ProcessIntents(const GameState &state,
               {
                 sound.PlaySound("error", state.player.block.position.x / state.width);
               }
+
+              const vec2 particle_vel{0.0f, -1.0f};
+              const vec4 particle_col{1.0f, 1.0f, 0.5f, 1.0f};
+
+              for (int i = 0; i < 10; i++)
+              {
+                out.particles.emplace_back(
+                  MakeParticle(state.player.block.position, particle_vel,
+                    1, particle_col, 2.0f));
+              }
             }
             break;
         }
@@ -548,12 +558,20 @@ GameState Game::Simulate(const GameState &state, float dt) const
     b = UpdatePhysics(out, dt, b);
   }
 
+  for (Particle &p : out.particles)
+  {
+    p = UpdateParticle(p, dt);
+  }
+
   remove_inplace(out.blocks, [=](auto &b) { return not b.alive; });
   remove_inplace(out.balls, [=](auto &b) { return not b.alive; });
+  remove_inplace(out.particles, [=](auto &p) { return p.ttl < 0.0f; });
+
 
   UpdatePaddleVelocity(out.player);
 
-  TRACE << "blocks: " << out.blocks.size() << " balls:" << out.balls.size() << "  ";
+  TRACE << "blocks: " << out.blocks.size() << " balls:" << out.balls.size()
+        << "particles: " << out.particles.size() << "  ";
 
   return out;
 }

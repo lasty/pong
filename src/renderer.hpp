@@ -46,6 +46,10 @@ private:
   std::vector<float> dynamic_vertex_data;
 
 
+  int particle_buff_id = 0;
+  int particle_vao_id = 0;
+  std::vector<float> particle_vertex_data;
+
 public:
   Renderer();
   ~Renderer();
@@ -66,6 +70,11 @@ public:
   void DynamicLine(vec2 const &v1, vec2 const &v2, const vec4 &colour);
   void UpdateDynamicVertexData();
   void DrawDynamic(GLenum draw_type);
+
+  void SetupParticleVertexData();
+  void UpdateParticleVertexData();
+  void DrawParticles();
+
 
   void SetupShapes();
   void DeleteShapes();
