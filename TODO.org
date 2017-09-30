@@ -1,7 +1,11 @@
 
 
 # Todo List
-- [TODO] Particles class
+- [DONE] Particles class
+- Pass around list of collision events somehow
+  - For each collision
+    - Add particles on collision
+    - Add Sounds on collision
 - Do particles when block destroyed
 - Text rendering
   - vector font, like 7 segment display
@@ -11,12 +15,11 @@
 
 
 # Refactor
-- [DONE] Go through and rename badly named functions/variables/enums
-- [DONE] Eliminate commented/dead code
 - Have a pass at TODO comments
 - see if possible to have sound play commands in one place
 - state graph calls to set state and reset timer in one expression
 - Pull out data clump vao/buffer in Renderer.cpp
+
 
 # Bugs
 - Ball straight up hits a 45 degree block, will go left and right indefinitely
@@ -26,7 +29,6 @@
 - [TODO] Watch more of those videos
 - Level load/save/editor ?
 - Maybe add more varieties in sound
-
 
 
 ## Other Ideas

@@ -6,7 +6,8 @@
 
 float RandomSpread(float spread)
 {
-  return RandomFloat(-spread, spread);
+  float accum = RandomFloat(-spread, spread) + RandomFloat(-spread, spread);
+  return accum / 2.0f;
 }
 
 
@@ -23,10 +24,10 @@ Particle MakeParticle(vec2 location, vec2 vel, float size,
   vel += RandomVec2(1.0f);
 
   size += RandomFloat(0.0f, 5.0f);
-  ttl += RandomFloat(-0.5f, 0.5f);
+  ttl += RandomFloat(-0.2f, 0.3f);
 
   float rotation = RandomFloat(0, TWO_PI);
-  float rot_vel = RandomFloat(-10.0f, 10.0f);
+  float rot_vel = RandomSpread(0.1f);
 
   return {ttl, size, col, location, rotation, vel, rot_vel};
 }
@@ -51,28 +52,22 @@ std::vector<float> MakeParticleVertexes(const Particle &p)
   std::vector<float> out;
   out.reserve(PARTICLE_VERTEX_SIZE);
 
-  float alpha = p.ttl < 2.0f ? p.ttl / 2.0f : 1.0f;
+  float alpha = p.ttl < 0.8f ? p.ttl / 0.8f : 1.0f;
 
-  out.push_back(0.0f * p.size + p.position.x);
-  out.push_back(-1.0f * p.size + p.position.y);
-  out.push_back(p.colour.r);
-  out.push_back(p.colour.g);
-  out.push_back(p.colour.b);
-  out.push_back(alpha);
+  for (int i = 0; i < 3; i++)
+  {
+    float angle = (i / 3.0f) * TWO_PI;
+    angle += p.rotation;
+    float x = cosf(angle) * p.size;
+    float y = sinf(angle) * p.size;
 
-  out.push_back(-1.0f * p.size + p.position.x);
-  out.push_back(1.0f * p.size + p.position.y);
-  out.push_back(p.colour.r);
-  out.push_back(p.colour.g);
-  out.push_back(p.colour.b);
-  out.push_back(alpha);
-
-  out.push_back(1.0f * p.size + p.position.x);
-  out.push_back(1.0f * p.size + p.position.y);
-  out.push_back(p.colour.r);
-  out.push_back(p.colour.g);
-  out.push_back(p.colour.b);
-  out.push_back(alpha);
+    out.push_back(x + p.position.x);
+    out.push_back(y + p.position.y);
+    out.push_back(p.colour.r);
+    out.push_back(p.colour.g);
+    out.push_back(p.colour.b);
+    out.push_back(alpha * p.colour.a);
+  }
 
   assert(out.size() == PARTICLE_VERTEX_SIZE);
 

@@ -465,7 +465,7 @@ GameState Game::ProcessIntents(const GameState &state,
               {
                 out.particles.emplace_back(
                   MakeParticle(state.player.block.position, particle_vel,
-                    1, particle_col, 2.0f));
+                    1, particle_col, 1.0f));
               }
             }
             break;
