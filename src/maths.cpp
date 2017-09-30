@@ -351,6 +351,25 @@ vec2 GetGLStyle(const float *data)
 }
 
 
+mat4 identity()
+{
+  mat4 m{0.0f};
+  m.elements[0][0] = 1.0f;
+  m.elements[1][1] = 1.0f;
+  m.elements[2][2] = 1.0f;
+  m.elements[3][3] = 1.0f;
+
+  return m;
+}
+
+mat4 matrix_zero()
+{
+  mat4 m{0.0f};
+
+  return m;
+}
+
+
 void TestMaths()
 {
   using std::cout;
@@ -443,7 +462,7 @@ void TestMaths()
   }
 
 
-  if (true)
+  if (false)
   {
     vec2 zero{};
     vec2 tri{3, 4};
@@ -453,5 +472,22 @@ void TestMaths()
     cout << "\nzero = " << zero << endl;
     cout << "distance(zero, tri) = " << distance(zero, tri) << endl;
     cout << "distance_squared(zero, tri) = " << distance_squared(zero, tri) << endl;
+  }
+
+  if (true)
+  {
+    mat4 ident = identity();
+
+    cout << "itent = " << ident << endl
+         << endl;
+
+    mat4 zero = matrix_zero();
+
+    float *elem = (float *)zero.elements;
+    elem[0] = 1;
+    elem[1] = 2;
+
+    cout << "zero = " << zero << endl
+         << endl;
   }
 }

@@ -25,5 +25,21 @@ inline std::ostream &operator<<(std::ostream &out, vec4 const &v4)
 }
 
 
+inline std::ostream &operator<<(std::ostream &out, mat4 const &mat)
+{
+  out << "mat4 [";
+  for (int x = 0; x < 4; x++)
+  {
+    out << "\n";
+    for (int y = 0; y < 4; y++)
+    {
+      out << "\t" << mat.elements[y][x];
+    }
+  }
+  out << " ]";
+  return out;
+}
+
+
 //Defined in main.cpp - outputs to window title, cleared per frame
 extern std::ostringstream TRACE;

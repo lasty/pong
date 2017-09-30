@@ -48,3 +48,9 @@ struct vec4
     float a;
   };
 };
+
+
+struct mat4
+{
+  float elements[4][4];
+};
