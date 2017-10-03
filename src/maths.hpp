@@ -59,4 +59,5 @@ vec4 RandomRGB();
 vec4 RandomRGBA();
 
 
-void TestMaths();
+mat4 mat4_identity();
+mat4 mat4_zero();

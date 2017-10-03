@@ -19,7 +19,8 @@
 - see if possible to have sound play commands in one place
 - state graph calls to set state and reset timer in one expression
 - Pull out data clump vao/buffer in Renderer.cpp
-
+- [TODO] Move tests to another file and test in cmakelists
+- Add line width to glstate thing?
 
 # Bugs
 - Ball straight up hits a 45 degree block, will go left and right indefinitely

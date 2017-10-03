@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include <ctime>
 
-// #define TEST_MATHS
 
 constexpr int SWAP_INTERVAL{1};
 constexpr int GL_MAJOR{4};
@@ -227,11 +226,7 @@ void main_game()
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
 {
-#ifdef TEST_MATHS
-  TestMaths();
-#else
   main_game();
-#endif
 
   return EXIT_SUCCESS;
 }
