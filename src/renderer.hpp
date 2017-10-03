@@ -22,6 +22,36 @@ struct shape_def
 };
 
 
+class VertexData
+{
+private:
+  std::vector<float> vertex_data;
+  int buffer_id = 0;
+  int vao_id = 0;
+  GLenum usage {};
+
+  const int floats_per_vertex = 2 + 4;
+  const int stride = floats_per_vertex * sizeof(float);
+
+
+public:
+  VertexData(GLenum usage);
+
+  void Clear();
+
+  shape_def AddShape(std::vector<float> const &vertexes);
+
+  void AddVertex(const vec2 &position, const vec4 &colour);
+
+  void UpdateVertexes();
+
+  int GetOffset() const;
+  int GetNumVertexes() const;
+
+  int GetVAO() const;
+};
+
+
 class Renderer
 {
 private:
@@ -29,26 +59,14 @@ private:
 
   Shader::Basic basic_shader;
 
-  int floats_per_vertex = 2 + 4;
-  int stride = floats_per_vertex * sizeof(float);
-  std::vector<float> vertex_data;
-
-  int buf_id = 0;
-  int vao_id = 0;
+  VertexData shapes_data;
 
   shape_def circle_shape;
   shape_def arrow_shape;
   std::map<int, std::map<int, shape_def>> rect_shapes;
 
-
-  int dynamic_buff_id = 0;
-  int dynamic_vao_id = 0;
-  std::vector<float> dynamic_vertex_data;
-
-
-  int particle_buff_id = 0;
-  int particle_vao_id = 0;
-  std::vector<float> particle_vertex_data;
+  VertexData lines_data;
+  VertexData particle_data;
 
 public:
   Renderer();
@@ -61,23 +79,10 @@ public:
 
   void Resize(int width, int height);
 
-  void SetupVertexData();
-  shape_def AddShape(std::vector<float> const &vertexes);
-  void UpdateVertexData();
-
-  void SetupDynamicVertexData();
-  void ClearDynamicVertexData();
   void DynamicLine(vec2 const &v1, vec2 const &v2, const vec4 &colour);
-  void UpdateDynamicVertexData();
-  void DrawDynamic(GLenum draw_type);
-
-  void SetupParticleVertexData();
-  void UpdateParticleVertexData();
-  void DrawParticles();
-
+  void DrawVertexData(GLenum draw_type, const VertexData &vertex_data);
 
   void SetupShapes();
-  void DeleteShapes();
 
   void DrawShape(GLenum draw_type, shape_def const &shape);
 
@@ -90,7 +95,6 @@ public:
   shape_def GetRectShape(int w, int h);
   void RenderBlock(const struct Block &block, bool draw_normals = false);
   void RenderBounds(const struct BoundingBox &bounds);
-
 
   void DrawGameState(const struct GameState &state);
 };

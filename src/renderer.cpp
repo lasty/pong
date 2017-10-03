@@ -9,6 +9,81 @@
 #include "maths_utils.hpp"
 
 
+VertexData::VertexData(GLenum usage)
+: usage(usage)
+{
+  buffer_id = GL::CreateBuffers();
+  vao_id = GL::CreateVertexArrays();
+
+  int buffer_index = 0;
+  glVertexArrayVertexBuffer(vao_id, buffer_index, buffer_id, 0, stride);
+
+  GL::AttachAttribute(vao_id, 0, 2, 0, GL_FLOAT); //position location = 0
+  GL::AttachAttribute(vao_id, 1, 4, 2, GL_FLOAT); //colour, location = 1
+}
+
+//TODO
+//VertexData::~VertexData() { }
+
+
+void VertexData::Clear()
+{
+  vertex_data.clear();
+}
+
+
+shape_def VertexData::AddShape(std::vector<float> const &vertexes)
+{
+  if (vertexes.size() % floats_per_vertex != 0)
+  {
+    throw std::runtime_error("Uneven vertexes given to AddShape");
+  }
+
+  shape_def s;
+  s.offset = GetOffset();
+  s.count = vertexes.size() / floats_per_vertex;
+
+  vertex_data.insert(vertex_data.end(), vertexes.begin(), vertexes.end());
+
+  return s;
+}
+
+
+void VertexData::AddVertex(const vec2 &position, const vec4 &colour)
+{
+  vertex_data.push_back(position.x);
+  vertex_data.push_back(position.y);
+  vertex_data.push_back(colour.r);
+  vertex_data.push_back(colour.g);
+  vertex_data.push_back(colour.b);
+  vertex_data.push_back(colour.a);
+}
+
+
+void VertexData::UpdateVertexes()
+{
+  glNamedBufferData(buffer_id, sizeof(float) * vertex_data.size(), vertex_data.data(), usage);
+}
+
+
+int VertexData::GetOffset() const
+{
+  return vertex_data.size() / floats_per_vertex;
+}
+
+
+int VertexData::GetNumVertexes() const
+{
+  return vertex_data.size() / floats_per_vertex;
+}
+
+
+int VertexData::GetVAO() const
+{
+  return vao_id;
+}
+
+
 std::vector<float> MakeCircle(float radius, int segments, const vec4 &colour)
 {
   std::vector<float> out;
@@ -93,17 +168,16 @@ std::vector<float> MakeRect(float width, float height, vec4 colour)
 
 
 Renderer::Renderer()
+: shapes_data(GL_STATIC_DRAW)
+, lines_data(GL_DYNAMIC_DRAW)
+, particle_data(GL_DYNAMIC_DRAW)
 {
   SetupShapes();
-
-  SetupDynamicVertexData();
-  SetupParticleVertexData();
 }
 
 
 Renderer::~Renderer()
 {
-  DeleteShapes();
 }
 
 
@@ -152,170 +226,36 @@ void Renderer::Resize(int width, int height)
 }
 
 
-shape_def Renderer::AddShape(std::vector<float> const &vertexes)
-{
-  if (vertexes.size() % floats_per_vertex != 0)
-  {
-    throw std::runtime_error("Uneven vertexes given to AddShape");
-  }
-
-
-  shape_def s;
-  s.offset = vertex_data.size() / floats_per_vertex;
-  s.count = vertexes.size() / floats_per_vertex;
-
-  vertex_data.insert(vertex_data.end(), vertexes.begin(), vertexes.end());
-
-  return s;
-}
-
-
-void Renderer::SetupVertexData()
-{
-  buf_id = GL::CreateBuffers();
-
-  vao_id = GL::CreateVertexArrays();
-
-  int buffer_index = 0;
-  glVertexArrayVertexBuffer(vao_id, buffer_index, buf_id, 0, stride);
-
-  GL::AttachAttribute(vao_id, 0, 2, 0, GL_FLOAT); //position location = 0
-  GL::AttachAttribute(vao_id, 1, 4, 2, GL_FLOAT); //colour, location = 1
-}
-
-
-void Renderer::UpdateVertexData()
-{
-  glNamedBufferData(buf_id, sizeof(float) * vertex_data.size(), vertex_data.data(), GL_STATIC_DRAW);
-}
-
-
-void Renderer::SetupDynamicVertexData()
-{
-  dynamic_buff_id = GL::CreateBuffers();
-  dynamic_vao_id = GL::CreateVertexArrays();
-
-  int buffer_index = 0;
-  glVertexArrayVertexBuffer(dynamic_vao_id, buffer_index, dynamic_buff_id, 0, stride);
-
-  GL::AttachAttribute(dynamic_vao_id, 0, 2, 0, GL_FLOAT); //position location = 0
-  GL::AttachAttribute(dynamic_vao_id, 1, 4, 2, GL_FLOAT); //colour, location = 1
-
-
-  DynamicLine({0, 0}, {10, 10}, {1.0f, 1.0f, 1.0f, 1.0f});
-  UpdateDynamicVertexData();
-}
-
-
-void Renderer::ClearDynamicVertexData()
-{
-  dynamic_vertex_data.clear();
-}
-
-
 void Renderer::DynamicLine(vec2 const &v1, vec2 const &v2, const vec4 &colour)
 {
-  dynamic_vertex_data.push_back(v1.x);
-  dynamic_vertex_data.push_back(v1.y);
-  dynamic_vertex_data.push_back(colour.r);
-  dynamic_vertex_data.push_back(colour.g);
-  dynamic_vertex_data.push_back(colour.b);
-  dynamic_vertex_data.push_back(colour.a);
-
-
-  dynamic_vertex_data.push_back(v2.x);
-  dynamic_vertex_data.push_back(v2.y);
-  dynamic_vertex_data.push_back(colour.r);
-  dynamic_vertex_data.push_back(colour.g);
-  dynamic_vertex_data.push_back(colour.b);
-  dynamic_vertex_data.push_back(colour.a);
+  lines_data.AddVertex(v1, colour);
+  lines_data.AddVertex(v2, colour);
 }
 
 
-void Renderer::UpdateDynamicVertexData()
-{
-  if (dynamic_vertex_data.size() % floats_per_vertex != 0)
-  {
-    throw std::runtime_error("Uneven vertexes given to Dynamic Buffer");
-  }
-
-  glNamedBufferData(dynamic_buff_id, sizeof(float) * dynamic_vertex_data.size(), dynamic_vertex_data.data(), GL_DYNAMIC_DRAW);
-}
-
-
-void Renderer::DrawDynamic(GLenum draw_type)
+void Renderer::DrawVertexData(GLenum draw_type, const VertexData &vertex_data)
 {
   UseProgram(basic_shader.GetProgramId());
-  UseVAO(dynamic_vao_id);
+  UseVAO(vertex_data.GetVAO());
 
   basic_shader.SetOffset(0.0f, 0.0f);
   basic_shader.SetRotation(0.0f);
   basic_shader.SetZoom(1.0f);
   basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
 
-  glDrawArrays(draw_type, 0, dynamic_vertex_data.size() / floats_per_vertex);
-}
-
-
-void Renderer::SetupParticleVertexData()
-{
-  particle_buff_id = GL::CreateBuffers();
-  particle_vao_id = GL::CreateVertexArrays();
-
-  int buffer_index = 0;
-  glVertexArrayVertexBuffer(particle_vao_id, buffer_index, particle_buff_id, 0, stride);
-
-  GL::AttachAttribute(particle_vao_id, 0, 2, 0, GL_FLOAT); //position location = 0
-  GL::AttachAttribute(particle_vao_id, 1, 4, 2, GL_FLOAT); //colour, location = 1
-
-  particle_vertex_data = MakeParticleVertexes(Particle{});
-  //DynamicLine({0, 0}, {10, 10}, {1.0f, 1.0f, 1.0f, 1.0f});
-  UpdateParticleVertexData();
-}
-
-
-void Renderer::UpdateParticleVertexData()
-{
-  if (particle_vertex_data.size() % floats_per_vertex != 0)
-  {
-    throw std::runtime_error("Uneven vertexes given to Dynamic Buffer");
-  }
-
-  glNamedBufferData(particle_buff_id, sizeof(float) * particle_vertex_data.size(), particle_vertex_data.data(), GL_DYNAMIC_DRAW);
-}
-
-
-void Renderer::DrawParticles()
-{
-  UseProgram(basic_shader.GetProgramId());
-  UseVAO(particle_vao_id);
-
-  basic_shader.SetOffset(0.0f, 0.0f);
-  basic_shader.SetRotation(0.0f);
-  basic_shader.SetZoom(1.0f);
-  basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
-
-  glDrawArrays(GL_TRIANGLES, 0, particle_vertex_data.size() / floats_per_vertex);
+  glDrawArrays(draw_type, 0, vertex_data.GetNumVertexes());
 }
 
 
 void Renderer::SetupShapes()
 {
   vec4 colour{1.0f, 1.0f, 1.0f, 1.0f};
-  circle_shape = AddShape(MakeCircle(1, 64, colour));
+  circle_shape = shapes_data.AddShape(MakeCircle(1, 64, colour));
 
-  arrow_shape = AddShape(MakeArrow(20, colour));
+  arrow_shape = shapes_data.AddShape(MakeArrow(20, colour));
 
-  SetupVertexData();
-  UpdateVertexData();
-}
-
-
-void Renderer::DeleteShapes()
-{
-  //TODO
-  //glDeleteBuffers(fbo);
-  //glDeleteFBO(fbo);
+  // SetupVertexData();
+  shapes_data.UpdateVertexes();
 }
 
 
@@ -327,9 +267,6 @@ void Renderer::DrawShape(GLenum draw_type, shape_def const &shape)
 
 void Renderer::DrawCircle(int radius, float x, float y)
 {
-  UseProgram(basic_shader.GetProgramId());
-  UseVAO(vao_id);
-
   basic_shader.SetOffset(x, y);
   basic_shader.SetZoom(radius);
 
@@ -339,9 +276,6 @@ void Renderer::DrawCircle(int radius, float x, float y)
 
 void Renderer::FillCircle(int radius, float x, float y)
 {
-  UseProgram(basic_shader.GetProgramId());
-  UseVAO(vao_id);
-
   basic_shader.SetOffset(x, y);
   basic_shader.SetZoom(radius);
 
@@ -354,9 +288,6 @@ void Renderer::RenderBall(const Ball &ball, bool draw_outline)
   glLineWidth(2.0f);
 
   const auto &radius = ball.radius;
-
-  UseProgram(basic_shader.GetProgramId());
-  UseVAO(vao_id);
 
   basic_shader.SetOffset(ball.position);
   basic_shader.SetRotation(0.0f);
@@ -395,8 +326,8 @@ shape_def Renderer::GetRectShape(int w, int h)
   if (shape.offset == 0)
   {
     vec4 colour{1.0f, 1.0f, 1.0f, 1.0f};
-    shape = AddShape(MakeRect(w, h, colour));
-    UpdateVertexData();
+    shape = shapes_data.AddShape(MakeRect(w, h, colour));
+    shapes_data.UpdateVertexes();
     rect_shapes[w][h] = shape;
   }
 
@@ -452,10 +383,11 @@ void Renderer::DrawGameState(const GameState &state)
   const bool draw_bounds = state.debug_enabled;
 
   EnableBlend();
-  ClearDynamicVertexData();
+
+  lines_data.Clear();
 
   UseProgram(basic_shader.GetProgramId());
-  UseVAO(vao_id);
+  UseVAO(shapes_data.GetVAO());
 
 
   for (const auto &ball : state.balls)
@@ -474,10 +406,11 @@ void Renderer::DrawGameState(const GameState &state)
 
   if (state.particles.size())
   {
-    particle_vertex_data = MakeParticleVertexes(state.particles);
-    UpdateParticleVertexData();
+    particle_data.Clear();
+    particle_data.AddShape(MakeParticleVertexes(state.particles));
+    particle_data.UpdateVertexes();
 
-    DrawParticles();
+    DrawVertexData(GL_TRIANGLES, particle_data);
   }
 
   RenderBlock(state.player.block, draw_normals);
@@ -528,10 +461,11 @@ void Renderer::DrawGameState(const GameState &state)
   }
 
 
-  UpdateDynamicVertexData();
+  lines_data.UpdateVertexes();
 
   basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
   glLineWidth(2.0f);
 
-  DrawDynamic(GL_LINES);
+  DrawVertexData(GL_LINES, lines_data);
+
 }
