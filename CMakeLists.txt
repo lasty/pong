@@ -34,7 +34,12 @@ add_executable(pong WIN32
   src/sound.cpp
 )
 
-target_compile_features(pong PRIVATE cxx_std_14)
+if($ENV{FEATURES_OVERRIDE})
+  #Somehow homebrew clang/gcc fails compile feature on my macbook
+  target_compile_options(pong PRIVATE "-std=c++1y")
+else()
+  target_compile_features(pong PRIVATE cxx_std_14)
+endif()
 
 target_link_libraries(pong PRIVATE
   ${MINGW32} SDL2::main SDL2::SDL2 SDL2::mixer
@@ -50,7 +55,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -fmax-errors=1>
     $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -ferror-limit=1
       -Wno-missing-braces
-      #-Wno-c++98-compat -Wno-c++1z-extensions -Wno-padded
     >
     $<$<CXX_COMPILER_ID:AppleClang>:-Weverything>)
 endif()

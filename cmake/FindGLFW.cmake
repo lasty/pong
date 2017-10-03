@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.9)
 # link to GLFW::GLFW
 
 find_path(GLFW_INCLUDE_DIR glfw3.h PATH_SUFFIXES GLFW)
-find_library(GLFW_LIBRARY glfw3)
+find_library(GLFW_LIBRARY NAMES glfw3 glfw)
 
 
 # find version
