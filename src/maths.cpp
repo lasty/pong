@@ -339,7 +339,6 @@ bool Collides(const Ball &b1, const Ball &b2)
 }
 
 
-
 mat4 mat4_identity()
 {
   mat4 m{0.0f};

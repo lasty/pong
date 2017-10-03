@@ -22,43 +22,47 @@ endif()
 
 ##### Main target
 
-add_executable(pong WIN32
+add_library(core
   src/game.cpp
   src/gl.cpp
   src/input.cpp
-  src/main.cpp
   src/maths.cpp
   src/particles.cpp
   src/renderer.cpp
   src/shader.cpp
-  src/sound.cpp
-)
+  src/sound.cpp)
+
+add_executable(pong WIN32 src/main.cpp)
+add_executable(test_pong EXCLUDE_FROM_ALL src/tests.cpp)
+
 
 if($ENV{FEATURES_OVERRIDE})
   #Somehow homebrew clang/gcc fails compile feature on my macbook
-  target_compile_options(pong PRIVATE "-std=c++1y")
+  target_compile_options(core PUBLIC "-std=c++1y")
 else()
-  target_compile_features(pong PRIVATE cxx_std_14)
+  target_compile_features(core PUBLIC cxx_std_14)
 endif()
 
-target_link_libraries(pong PRIVATE
-  ${MINGW32} SDL2::main SDL2::SDL2 SDL2::mixer
+target_link_libraries(core PRIVATE
+  SDL2::SDL2 SDL2::mixer
   GLFW::GLFW
   GLEW::GLEW OpenGL::GL)
+
+target_link_libraries(pong PRIVATE core ${MINGW32} SDL2::main SDL2::SDL2)
+target_link_libraries(test_pong PRIVATE core)
+
 
 #### Extra
 
 #Enable all warnings if debug build
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   message(STATUS "Enabling all warnings")
-  target_compile_options(pong PRIVATE
+  target_compile_options(core PUBLIC
     $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -fmax-errors=1>
-    $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -ferror-limit=1
-      -Wno-missing-braces
-    >
+    $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -ferror-limit=1 -Wno-missing-braces>
     $<$<CXX_COMPILER_ID:AppleClang>:-Weverything>)
 endif()
 
 if(MINGW)
-  target_compile_options(pong PUBLIC "-fdiagnostics-color=always")
+  target_compile_options(core PUBLIC "-fdiagnostics-color=always")
 endif()

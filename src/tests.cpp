@@ -7,6 +7,9 @@ using std::endl;
 #include "maths_utils.hpp"
 
 
+std::ostringstream TRACE;
+
+
 vec2 GetGLStyle(const float *data)
 {
   using std::cout;
@@ -119,12 +122,12 @@ void TestMat4()
 
   if (true)
   {
-    mat4 ident = identity();
+    mat4 ident = mat4_identity();
 
     cout << "itent = " << ident << endl
          << endl;
 
-    mat4 zero = matrix_zero();
+    mat4 zero = mat4_zero();
 
     float *elem = (float *)zero.elements;
     elem[0] = 1;
@@ -151,7 +154,7 @@ void TestMaths()
 
 int main()
 {
-    TestMaths();
+  TestMaths();
 
-    return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }
