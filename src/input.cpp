@@ -70,8 +70,6 @@ void Input::key_callback(
 {
   Input* input = Input::GetThis(window);
 
-  //TODO synchronus updates to intent_stream?
-
   auto it = input->intent_bind_list.find(key);
   if (it != input->intent_bind_list.end())
   {

@@ -195,11 +195,25 @@ int CreateBuffers()
 }
 
 
+void DeleteBuffers(int buffer_id)
+{
+  GLuint buf_id = buffer_id;
+  glDeleteBuffers(1, &buf_id);
+}
+
+
 int CreateVertexArrays()
 {
   GLuint vao_id = 0;
   glCreateVertexArrays(1, &vao_id);
   return vao_id;
+}
+
+
+void DeleteVertexArrays(int vao_id)
+{
+  GLuint vao = vao_id;
+  glDeleteVertexArrays(1, &vao);
 }
 
 
@@ -211,6 +225,12 @@ void AttachAttribute(int vao_id, int attrib_id, int size, int offset, GLenum typ
   glEnableVertexArrayAttrib(vao_id, attrib_id);
   glVertexArrayAttribFormat(vao_id, attrib_id, size, type, false, relative_offset);
   glVertexArrayAttribBinding(vao_id, attrib_id, buffer_index);
+}
+
+
+void DetachAttribute(int vao_id, int attrib_id)
+{
+  glDisableVertexArrayAttrib(vao_id, attrib_id);
 }
 
 

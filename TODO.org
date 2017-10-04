@@ -15,7 +15,6 @@
 
 
 # Refactor
-- Have a pass at TODO comments
 - see if possible to have sound play commands in one place
 - state graph calls to set state and reset timer in one expression
 - Pull out data clump vao/buffer in Renderer.cpp

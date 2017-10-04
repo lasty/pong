@@ -22,8 +22,17 @@ VertexData::VertexData(GLenum usage)
   GL::AttachAttribute(vao_id, 1, 4, 2, GL_FLOAT); //colour, location = 1
 }
 
-//TODO
-//VertexData::~VertexData() { }
+
+VertexData::~VertexData()
+{
+  GL::DetachAttribute(vao_id, 0); //position location = 0
+  GL::DetachAttribute(vao_id, 1); //colour, location = 1
+
+  GL::DeleteBuffers(buffer_id);
+
+  glBindVertexArray(0);
+  GL::DeleteVertexArrays(vao_id);
+}
 
 
 void VertexData::Clear()
@@ -413,12 +422,12 @@ void Renderer::DrawGameState(const GameState &state)
     DrawVertexData(GL_TRIANGLES, particle_data);
   }
 
+
   RenderBlock(state.player.block, draw_normals);
   if (draw_bounds) RenderBounds(state.player.block.bounds);
   if (state.player.sticky_ball)
   {
-    //TODO get offset from game state/class
-    vec2 pos = state.player.block.position + vec2{0.0f, -11.0f};
+    vec2 pos = state.player.block.position + state.player.sticky_ball_offset;
     DrawCircle(10.0f, pos.x, pos.y);
   }
 
@@ -467,5 +476,4 @@ void Renderer::DrawGameState(const GameState &state)
   glLineWidth(2.0f);
 
   DrawVertexData(GL_LINES, lines_data);
-
 }

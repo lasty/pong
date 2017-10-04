@@ -28,7 +28,7 @@ private:
   std::vector<float> vertex_data;
   int buffer_id = 0;
   int vao_id = 0;
-  GLenum usage {};
+  GLenum usage{};
 
   const int floats_per_vertex = 2 + 4;
   const int stride = floats_per_vertex * sizeof(float);
@@ -36,6 +36,7 @@ private:
 
 public:
   VertexData(GLenum usage);
+  ~VertexData();
 
   void Clear();
 

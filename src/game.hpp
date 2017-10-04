@@ -74,6 +74,8 @@ struct Paddle
   bool alive = true;
   bool sticky_ball = true;
 
+  vec2 sticky_ball_offset;
+
   std::vector<float> avg_velocity;
 };
 

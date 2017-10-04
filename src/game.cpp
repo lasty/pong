@@ -217,6 +217,8 @@ Paddle Game::MakePlayer(const vec2 &position) const
   player.block = block;
   player.alive = true;
   player.sticky_ball = true;
+  player.sticky_ball_offset = {0.0f, -11.0f};
+
   player.avg_velocity = std::vector<float>(10, position.x);
 
   return player;
@@ -447,7 +449,7 @@ GameState Game::ProcessIntents(const GameState &state,
             {
               if (state.player.sticky_ball)
               {
-                auto b = NewBall(state.player.block.position, {0.0f, -300.0f});
+                auto b = NewBall(state.player.block.position + state.player.sticky_ball_offset, {0.0f, -300.0f});
                 b.velocity.x += GetPaddleVelocity(state.player) * 30.0f;
                 out.balls.push_back(b);
                 sound.PlaySound("paddle_bounce", state.player.block.position.x / state.width);
