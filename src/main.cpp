@@ -107,9 +107,38 @@ void ClearTrace(std::ostringstream &TRACE)
 }
 
 
+class TimedLogger
+{
+public:
+  float last_time = glfwGetTime();
+  std::string last_msg;
+
+  void BEGIN(const std::string &msg)
+  {
+    last_msg = msg;
+    last_time = glfwGetTime();
+  }
+
+  void END()
+  {
+    float time_now = glfwGetTime();
+    float seconds = time_now - last_time;
+    last_time = time_now;
+
+    std::cout << "---==[ Time Log ] ==--  "
+              << last_msg << "    (" << seconds * 1000 << " ms)"
+              << std::endl;
+  }
+};
+
+
 void main_game()
 {
   std::cout << "Hello, world" << std::endl;
+  std::cout.precision(2);
+  std::cout << std::fixed;
+
+  TimedLogger TIMELOG;
 
   SDL_Init(SDL_INIT_AUDIO);
 
@@ -129,7 +158,7 @@ void main_game()
   if (not glfwInit()) throw std::runtime_error("failed to init GLFW");
   glfwSetErrorCallback(glfw_error_callback);
 
-
+  TIMELOG.BEGIN("glfw creating window");
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, GL_MAJOR);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, GL_MINOR);
 
@@ -143,14 +172,21 @@ void main_game()
     throw std::runtime_error("failed to create window");
   }
 
-  glfwMakeContextCurrent(window);
+  TIMELOG.END();
 
+  TIMELOG.BEGIN("make context current");
+  glfwMakeContextCurrent(window);
+  TIMELOG.END();
+
+  TIMELOG.BEGIN("glewInit()");
   //load opengl extension library here
   if (glewInit() != GLEW_OK)
   {
     throw std::runtime_error("failed to init GLEW");
   }
+  TIMELOG.END();
 
+  TIMELOG.BEGIN("Misc gl stuff");
   std::cout << "GLEW Version: " << glewGetString(GLEW_VERSION) << std::endl;
   std::cout << "GL Version String: " << glGetString(GL_VERSION) << std::endl;
 
@@ -162,7 +198,9 @@ void main_game()
   GL::Debuging(true);
 
   glfwSwapInterval(SWAP_INTERVAL);
+  TIMELOG.END();
 
+  TIMELOG.BEGIN("Renderer, Sound, Timer, Game, etc, inits");
   Renderer renderer;
   Sound sound;
   Timer timer;
@@ -173,6 +211,8 @@ void main_game()
   GameState gamestate = game.NewGame(width, height);
 
   Input input(window);
+
+  TIMELOG.END();
 
   // Main Loop
   while ((not glfwWindowShouldClose(window)) and gamestate.running)
@@ -214,12 +254,17 @@ void main_game()
   } // end main loop
 
 
+  TIMELOG.BEGIN("Cleanup");
+
   //Clean up
   sound.Quit();
   SDL_Quit();
   input.RemoveCallbacks(window);
 
   glfwDestroyWindow(window);
+
+  TIMELOG.END();
+
   glfwTerminate();
 }
 
