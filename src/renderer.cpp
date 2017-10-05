@@ -294,7 +294,7 @@ void Renderer::FillCircle(int radius, float x, float y)
 
 void Renderer::RenderBall(const Ball &ball, bool draw_outline)
 {
-  glLineWidth(2.0f);
+  //glLineWidth(2.0f);
 
   const auto &radius = ball.radius;
 
@@ -319,7 +319,7 @@ void Renderer::RenderBall(const Ball &ball, bool draw_outline)
 
 void Renderer::RenderArrow(const vec2 &position, float rot)
 {
-  glLineWidth(2.0f);
+  //glLineWidth(2.0f);
 
   basic_shader.SetOffset(position);
   basic_shader.SetRotation(rot);
@@ -365,7 +365,7 @@ void Renderer::RenderBlock(const Block &block, bool draw_normals)
 
 void Renderer::RenderBounds(const BoundingBox &bounds)
 {
-  glLineWidth(1.0f);
+  //glLineWidth(1.0f);
   const vec2 size = bounds.bottom_right - bounds.top_left;
   auto shape = GetRectShape(size.x, size.y);
 
@@ -473,7 +473,8 @@ void Renderer::DrawGameState(const GameState &state)
   lines_data.UpdateVertexes();
 
   basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
-  glLineWidth(2.0f);
+
+  //glLineWidth(2.0f);
 
   DrawVertexData(GL_LINES, lines_data);
 }

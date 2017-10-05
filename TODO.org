@@ -1,6 +1,7 @@
 
 
 # Todo List
+- [TODO] Add an OpenGL 3.3 renderer
 - [DONE] Particles class
 - Pass around list of collision events somehow
   - For each collision
@@ -17,11 +18,11 @@
 # Refactor
 - see if possible to have sound play commands in one place
 - state graph calls to set state and reset timer in one expression
-- Pull out data clump vao/buffer in Renderer.cpp
-- Add line width to glstate thing?
+
 
 # Bugs
 - Ball straight up hits a 45 degree block, will go left and right indefinitely
+
 
 ## Todo Low Priority
 - [TODO] Watch more of those videos

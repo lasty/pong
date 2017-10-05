@@ -6,8 +6,14 @@
 
 
 constexpr int SWAP_INTERVAL{1};
+
+#if OLD_OPENGL
+constexpr int GL_MAJOR{3};
+constexpr int GL_MINOR{3};
+#else
 constexpr int GL_MAJOR{4};
 constexpr int GL_MINOR{5};
+#endif
 
 
 #include <SDL.h>
@@ -38,7 +44,8 @@ void glfw_error_callback([[maybe_unused]] int error, const char *description)
 
 void set_display_title(GLFWwindow *window, const std::string &str)
 {
-  const std::string title = "GLFW - " + str;
+  const std::string gl_ver{'0' + GL_MAJOR, '.', '0' + GL_MINOR};
+  const std::string title = "GL " + gl_ver + " - " + str;
 
   glfwSetWindowTitle(window, title.c_str());
 }
@@ -161,7 +168,13 @@ void main_game()
   TIMELOG.BEGIN("glfw creating window");
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, GL_MAJOR);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, GL_MINOR);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+
+  std::cout << "Requestiong OpenGL Context version " << GL_MAJOR << "." << GL_MINOR
+            << std::endl;
 
   int width = 640;
   int height = 480;

@@ -82,6 +82,7 @@ void Debuging(bool enable)
   if (enable)
   {
     glDebugMessageCallback(opengl_debug_callback, 0);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glEnable(GL_DEBUG_OUTPUT);
   }
   else

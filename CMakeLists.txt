@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.9)
 
+
+option(OLD_OPENGL "Use OpenGL 3.3 instead of modern 4.5" OFF)
+
+
 #### Deps
 
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/cmake")
@@ -9,8 +13,6 @@ find_package(GLFW 3.2 REQUIRED)
 find_package(SDL2 2.0 REQUIRED COMPONENTS main image mixer)
 
 find_package(GLEW 2.0 REQUIRED)
-
-# find_package(GLM 0.9.8.0 REQUIRED)
 
 find_package(OpenGL REQUIRED)
 
@@ -42,6 +44,12 @@ if($ENV{FEATURES_OVERRIDE})
 else()
   target_compile_features(core PUBLIC cxx_std_14)
 endif()
+
+
+if(OLD_OPENGL)
+  target_compile_definitions(core PUBLIC -DOLD_OPENGL=1)
+endif()
+
 
 target_link_libraries(core PRIVATE
   SDL2::SDL2 SDL2::mixer
