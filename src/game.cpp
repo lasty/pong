@@ -615,8 +615,43 @@ GameState Game::Simulate(const GameState &state, float dt) const
     p = UpdateParticle(p, dt);
   }
 
-  remove_inplace(out.blocks, [=](auto &b) { return not b.alive; });
+
+  auto destroyed_blocks = std::stable_partition(out.blocks.begin(), out.blocks.end(),
+    [](Block &b) { return b.alive; });
+
+  for (auto it = destroyed_blocks; it != out.blocks.end(); it++)
+  {
+    Block &block = *it;
+    // block.alive = true;
+    for (int i = 0; i < 100; i++)
+    {
+      int whichline = RandomInt(-1, block.geometry.size());
+      vec2 pos{0.0f, 0.0f};
+      if (whichline >= 0)
+      {
+        const Line &line = block.geometry[whichline];
+        pos = (line.p1 + line.p2) / 2.0f;
+      }
+      else
+      {
+        for (const auto &line : block.geometry)
+        {
+          pos += line.p1 + line.p2;
+        }
+        pos /= (block.geometry.size() * 2.0f);
+      }
+
+      vec2 vel = {0.0, 0.0f};
+      auto particle = MakeParticle(pos, vel, 4.0f, block.colour, 1.0f);
+      out.particles.push_back(particle);
+    }
+  }
+  out.blocks.erase(destroyed_blocks, out.blocks.end());
+
+
   remove_inplace(out.balls, [=](auto &b) { return not b.alive; });
+
+
   remove_inplace(out.particles, [=](auto &p) { return p.ttl < 0.0f; });
 
 
