@@ -80,6 +80,17 @@ struct Paddle
 };
 
 
+struct Collision
+{
+  vec2 position;
+
+  vec2 in_vel;
+  vec2 out_vel;
+
+  BlockType block_type;
+};
+
+
 enum class State
 {
   new_level,
@@ -108,6 +119,7 @@ struct GameState
   Paddle player;
   vec2 mouse_pointer;
 
+  std::vector<Collision> collisions;
   std::vector<Particle> particles;
 };
 
@@ -134,12 +146,16 @@ public:
 
   GameState Resize(const GameState &state, int width, int height) const;
 
-  void OnHitBlock(const GameState &state, Ball &ball, Block &block) const;
+  void OnHitBlock(Ball &ball, Block &block) const;
 
   bool CalculateBallCollision(GameState &state, const Ball &old_ball, vec2 &normal_vec, std::vector<Block *> &out_hit_blocks) const;
-  Ball UpdatePhysics(GameState &state, float dt, Ball &b) const;
+  Ball UpdatePhysics(GameState &state, float dt, Ball &b, std::vector<Collision> &collisions) const;
 
   GameState ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream) const;
   GameState ProcessStateGraph(const GameState &state, float dt) const;
+
+  void PlayCollisionSound(const Collision &collision, const GameState &state) const;
+  std::vector<Particle> CreateCollisionParticles(const Collision &collision) const;
+
   GameState Simulate(const GameState &state, float dt) const;
 };

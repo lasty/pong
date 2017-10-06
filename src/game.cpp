@@ -273,24 +273,13 @@ GameState Game::Resize(const GameState &state, int width, int height) const
 }
 
 
-void Game::OnHitBlock(const GameState &state, Ball &ball, Block &block) const
+void Game::OnHitBlock(Ball &ball, Block &block) const
 {
   block.alive = false;
-
-  float balance = (ball.position.x / state.width);
 
   if (block.type == BlockType::world_out_of_bounds)
   {
     ball.alive = false;
-    sound.PlaySound("lost_ball", balance);
-  }
-  else if (block.type == BlockType::world_border)
-  {
-    sound.PlaySound("bounce", balance);
-  }
-  else
-  {
-    sound.PlaySound("bounce_hit", balance);
   }
 }
 
@@ -362,7 +351,7 @@ bool Game::CalculateBallCollision(GameState &state, const Ball &old_ball, vec2 &
 }
 
 
-Ball Game::UpdatePhysics(GameState &state, float dt, Ball &old_ball) const
+Ball Game::UpdatePhysics(GameState &state, float dt, Ball &old_ball, std::vector<Collision> &collisions) const
 {
   Ball out = old_ball;
   float orig_speed = get_length(old_ball.velocity);
@@ -381,7 +370,8 @@ Ball Game::UpdatePhysics(GameState &state, float dt, Ball &old_ball) const
 
     for (Block *block : hit_blocks)
     {
-      OnHitBlock(state, out, *block);
+      OnHitBlock(out, *block);
+      collisions.push_back({out.position, old_ball.velocity, out.velocity, block->type});
     }
 
     out.position = old_ball.position;
@@ -467,7 +457,7 @@ GameState Game::ProcessIntents(const GameState &state,
               {
                 out.particles.emplace_back(
                   MakeParticle(state.player.block.position, particle_vel,
-                    1, particle_col, 1.0f));
+                    1.0f, particle_col, 1.0f));
               }
             }
             break;
@@ -551,14 +541,74 @@ GameState Game::ProcessStateGraph(const GameState &state, float dt) const
 }
 
 
+void Game::PlayCollisionSound(const Collision &collision, const GameState &state) const
+{
+  float balance = (collision.position.x / state.width);
+
+  if (collision.block_type == BlockType::world_out_of_bounds)
+  {
+    sound.PlaySound("lost_ball", balance);
+  }
+  else if (collision.block_type == BlockType::world_border)
+  {
+    sound.PlaySound("bounce", balance);
+  }
+  else if (collision.block_type == BlockType::paddle)
+  {
+    sound.PlaySound("paddle_bounce", balance);
+  }
+  else
+  {
+    sound.PlaySound("bounce_hit", balance);
+  }
+}
+
+
+std::vector<Particle> Game::CreateCollisionParticles(const Collision &collision) const
+{
+  std::vector<Particle> particles;
+
+  // const vec2 particle_vel = collision.in_vel / 50.0f;
+  const vec4 particle_col{1.0f, 1.0f, 0.5f, 1.0f};
+
+  for (int i = 0; i < 20; i++)
+  {
+    vec2 particle_vel;
+    const int r = RandomInt(0, 3);
+    if (r == 0)
+      particle_vel = collision.in_vel / 150.0f;
+    else if (r == 1)
+      particle_vel = collision.out_vel / 150.0f;
+    else
+      particle_vel = {0.0, 0.0};
+
+    particles.emplace_back(
+      MakeParticle(collision.position, particle_vel, 0.5f, particle_col, 1.0f));
+  }
+
+  return particles;
+}
+
+
 GameState Game::Simulate(const GameState &state, float dt) const
 {
   GameState out = state;
 
   for (Ball &b : out.balls)
   {
-    b = UpdatePhysics(out, dt, b);
+    b = UpdatePhysics(out, dt, b, out.collisions);
   }
+
+
+  for (Collision &collision : out.collisions)
+  {
+    PlayCollisionSound(collision, out);
+
+    std::vector<Particle> new_particles = CreateCollisionParticles(collision);
+    out.particles.insert(out.particles.end(), new_particles.begin(), new_particles.end());
+  }
+  out.collisions.clear();
+
 
   for (Particle &p : out.particles)
   {
