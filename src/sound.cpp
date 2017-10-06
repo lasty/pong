@@ -7,6 +7,8 @@
 #include <stdexcept>
 
 constexpr float MASTER_VOLUME = 0.1f;
+constexpr bool MASTER_MUTE = true;
+
 
 Sound::Sound()
 {
@@ -67,6 +69,8 @@ void Sound::LoadSoundLibrary()
 
 int Sound::PlaySound(const std::string &what)
 {
+  if (MASTER_MUTE) return -1;
+
   int chan = Mix_PlayChannel(-1, sounds.at(what), 0);
 
   if (chan == -1)
@@ -80,6 +84,8 @@ int Sound::PlaySound(const std::string &what)
 
 int Sound::PlaySound(const std::string &what, float balance)
 {
+  if (MASTER_MUTE) return -1;
+
   int chan = PlaySound(what);
 
   if (chan != -1)
