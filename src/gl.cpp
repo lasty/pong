@@ -191,7 +191,13 @@ int ValidateProgram(int program_id)
 int CreateBuffers()
 {
   GLuint buf_id = 0;
-  glCreateBuffers(1, &buf_id);
+
+  #if OLD_OPENGL
+    glGenBuffers(1, &buf_id);
+  #else
+    glCreateBuffers(1, &buf_id);
+  #endif
+
   return buf_id;
 }
 
@@ -206,7 +212,13 @@ void DeleteBuffers(int buffer_id)
 int CreateVertexArrays()
 {
   GLuint vao_id = 0;
-  glCreateVertexArrays(1, &vao_id);
+
+  #if OLD_OPENGL
+    glGenVertexArrays(1, &vao_id);
+  #else
+    glCreateVertexArrays(1, &vao_id);
+  #endif
+
   return vao_id;
 }
 
@@ -218,21 +230,6 @@ void DeleteVertexArrays(int vao_id)
 }
 
 
-void AttachAttribute(int vao_id, int attrib_id, int size, int offset, GLenum type)
-{
-  constexpr int buffer_index = 0;
-  const int relative_offset = offset * sizeof(float);
-
-  glEnableVertexArrayAttrib(vao_id, attrib_id);
-  glVertexArrayAttribFormat(vao_id, attrib_id, size, type, false, relative_offset);
-  glVertexArrayAttribBinding(vao_id, attrib_id, buffer_index);
-}
-
-
-void DetachAttribute(int vao_id, int attrib_id)
-{
-  glDisableVertexArrayAttrib(vao_id, attrib_id);
-}
 
 
 } //namespace GL

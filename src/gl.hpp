@@ -28,7 +28,5 @@ void DeleteBuffers(int buffer_id);
 int CreateVertexArrays();
 void DeleteVertexArrays(int vao_id);
 
-void AttachAttribute(int vao_id, int attrib_id, int size, int offset, GLenum type);
-void DetachAttribute(int vao_id, int attrib_id);
 
 } //namespace GL

@@ -98,6 +98,63 @@ void Basic::SetColour(vec4 const& colour)
   glProgramUniform4fv(program_id, uniforms.colour, 1, reinterpret_cast<const GLfloat*>(&colour));
 }
 
+#if OLD_OPENGL
+
+const std::string Basic::vertex_src =
+  R"(#version 330
+
+layout(location=0) in vec2 v;
+layout(location=1) in vec4 col;
+
+out vec4 vertex_colour;
+
+uniform ivec2 screen_resolution;
+
+uniform vec2 offset;
+uniform float rotation;
+uniform float zoom;
+
+vec2 ScreenToClip(const vec2 screen)
+{
+  float x = ((screen.x / float(screen_resolution.x)) * 2.0) - 1.0;
+  float y = ((1.0 - (screen.y / float(screen_resolution.y))) * 2.0) - 1.0;
+  return vec2(x,y);
+}
+
+mat2 RotateMatrix(float angle)
+{
+  return mat2(cos(angle), sin(angle), -sin(angle), cos(angle));
+}
+
+void main(void)
+{
+  vec2 v_rotated = RotateMatrix(rotation) * v;
+  vec2 v_zoomed = v_rotated * zoom;
+  vec2 screen_pos = v_zoomed + offset;
+
+  gl_Position = vec4(ScreenToClip(screen_pos), 0.0, 1.0);
+  vertex_colour = col;
+}
+)";
+
+
+const std::string Basic::fragment_src =
+  R"(#version 330
+
+uniform vec4 colour;
+
+in vec4 vertex_colour;
+out vec4 out_colour;
+
+void main(void)
+{
+  out_colour = colour * vertex_colour;
+  //out_colour.a += 0.5;
+}
+
+)";
+
+#else
 
 const std::string Basic::vertex_src =
   R"(#version 450
@@ -120,21 +177,15 @@ vec2 ScreenToClip(const vec2 screen)
   return vec2(x,y);
 }
 
-
 mat2 RotateMatrix(float angle)
 {
   return mat2(cos(angle), sin(angle), -sin(angle), cos(angle));
-  //return mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
-  //return mat2(sin(angle), cos(angle) , cos(angle), -sin(angle));
 }
-
 
 void main(void)
 {
   const vec2 v_rotated = RotateMatrix(rotation) * v;
-
   const vec2 v_zoomed = v_rotated * zoom;
-
   const vec2 screen_pos = v_zoomed + offset;
 
   gl_Position = vec4(ScreenToClip(screen_pos), 0.0, 1.0);
@@ -159,5 +210,6 @@ void main(void)
 
 )";
 
+#endif
 
 } //namespace Shader

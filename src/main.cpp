@@ -208,7 +208,9 @@ void main_game()
 
   std::cout << "GL Version: " << gl_version_maj << "." << gl_version_min << std::endl;
 
-  GL::Debuging(true);
+  #if !OLD_OPENGL
+    GL::Debuging(true);
+  #endif
 
   glfwSwapInterval(SWAP_INTERVAL);
   TIMELOG.END();
@@ -284,7 +286,14 @@ void main_game()
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
 {
+  try {
+
   main_game();
+  }
+  catch(std::exception &e)
+  {
+    std::cout << "std::exception thrown -- " << e.what() << std::endl;
+  }
 
   return EXIT_SUCCESS;
 }

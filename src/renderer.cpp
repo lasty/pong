@@ -15,18 +15,30 @@ VertexData::VertexData(GLenum usage)
   buffer_id = GL::CreateBuffers();
   vao_id = GL::CreateVertexArrays();
 
-  int buffer_index = 0;
-  glVertexArrayVertexBuffer(vao_id, buffer_index, buffer_id, 0, stride);
+  #if OLD_OPENGL
+    glBindVertexArray(vao_id);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+  #else
+    int buffer_index = 0;
+    glVertexArrayVertexBuffer(vao_id, buffer_index, buffer_id, 0, stride);
+  #endif
 
-  GL::AttachAttribute(vao_id, 0, 2, 0, GL_FLOAT); //position location = 0
-  GL::AttachAttribute(vao_id, 1, 4, 2, GL_FLOAT); //colour, location = 1
+  AttachAttribute(0, 2, 0, GL_FLOAT); //position location = 0
+  AttachAttribute(1, 4, 2, GL_FLOAT); //colour, location = 1
+
+  #if OLD_OPENGL
+  #endif
 }
 
 
 VertexData::~VertexData()
 {
-  GL::DetachAttribute(vao_id, 0); //position location = 0
-  GL::DetachAttribute(vao_id, 1); //colour, location = 1
+  #if OLD_OPENGL
+    glBindVertexArray(vao_id);
+  #endif
+
+  DetachAttribute(0); //position location = 0
+  DetachAttribute(1); //colour, location = 1
 
   GL::DeleteBuffers(buffer_id);
 
@@ -71,7 +83,13 @@ void VertexData::AddVertex(const vec2 &position, const vec4 &colour)
 
 void VertexData::UpdateVertexes()
 {
-  glNamedBufferData(buffer_id, sizeof(float) * vertex_data.size(), vertex_data.data(), usage);
+  #if OLD_OPENGL
+    glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_data.size(), vertex_data.data(), usage);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+  #else
+    glNamedBufferData(buffer_id, sizeof(float) * vertex_data.size(), vertex_data.data(), usage);
+  #endif
 }
 
 
@@ -90,6 +108,39 @@ int VertexData::GetNumVertexes() const
 int VertexData::GetVAO() const
 {
   return vao_id;
+}
+
+
+void VertexData::AttachAttribute(int attrib_id, int size, int offset, GLenum type)
+{
+#if OLD_OPENGL
+  const GLvoid * offset_ptr = reinterpret_cast<GLvoid*>(offset * sizeof(float));
+  // glBindVertexArray(vao_id);
+  // glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+  glVertexAttribPointer(attrib_id, size, type, GL_FALSE, stride, offset_ptr);
+  glEnableVertexAttribArray(attrib_id);
+  // glBindBuffer(GL_ARRAY_BUFFER, 0);
+  // glBindVertexArray(0);
+#else
+  constexpr int buffer_index = 0;
+  const int relative_offset = offset * sizeof(float);
+  glEnableVertexArrayAttrib(vao_id, attrib_id);
+  glVertexArrayAttribFormat(vao_id, attrib_id, size, type, false, relative_offset);
+  glVertexArrayAttribBinding(vao_id, attrib_id, buffer_index);
+#endif
+
+}
+
+
+void VertexData::DetachAttribute(int attrib_id)
+{
+  #if OLD_OPENGL
+    // glBindVertexArray(vao_id);
+    glDisableVertexAttribArray(attrib_id);
+    // glBindVertexArray(0);
+  #else
+    glDisableVertexArrayAttrib(vao_id, attrib_id);
+  #endif
 }
 
 
@@ -182,6 +233,14 @@ Renderer::Renderer()
 , particle_data(GL_DYNAMIC_DRAW)
 {
   SetupShapes();
+
+  #if OLD_OPENGL
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR)
+    {
+      std::cout << "Renderer constructor: GL Error: " << err << std::endl;
+    }
+  #endif
 }
 
 
@@ -477,4 +536,13 @@ void Renderer::DrawGameState(const GameState &state)
   //glLineWidth(2.0f);
 
   DrawVertexData(GL_LINES, lines_data);
+
+  #if OLD_OPENGL
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR)
+    {
+      std::cout << "DrawGameState() - GL Error: " << err << std::endl;
+    }
+  #endif
+
 }
