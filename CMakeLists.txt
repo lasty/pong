@@ -40,7 +40,7 @@ add_executable(test_pong EXCLUDE_FROM_ALL src/tests.cpp)
 
 if($ENV{FEATURES_OVERRIDE})
   #Somehow homebrew clang/gcc fails compile feature on my macbook
-  target_compile_options(core PUBLIC "-std=c++1y")
+  target_compile_options(core PUBLIC "-std=gnu++1y")
 else()
   target_compile_features(core PUBLIC cxx_std_14)
 endif()
@@ -54,7 +54,10 @@ endif()
 target_link_libraries(core PRIVATE
   SDL2::SDL2 SDL2::mixer
   GLFW::GLFW
-  GLEW::GLEW OpenGL::GL)
+  OpenGL::GL)
+
+target_link_libraries(core PUBLIC GLEW::GLEW)
+
 
 target_link_libraries(pong PRIVATE core ${MINGW32} SDL2::main SDL2::SDL2)
 target_link_libraries(test_pong PRIVATE core)

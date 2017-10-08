@@ -50,6 +50,10 @@ public:
   int GetNumVertexes() const;
 
   int GetVAO() const;
+
+  void AttachAttribute(int attrib_id, int size, int offset, GLenum type);
+  void DetachAttribute(int attrib_id);
+
 };
 
 
