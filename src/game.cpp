@@ -275,7 +275,10 @@ GameState Game::Resize(const GameState &state, int width, int height) const
 
 void Game::OnHitBlock(Ball &ball, Block &block) const
 {
-  block.alive = false;
+  if (block.type != BlockType::paddle)
+  {
+    block.alive = false;
+  }
 
   if (block.type == BlockType::world_out_of_bounds)
   {
@@ -370,6 +373,10 @@ Ball Game::UpdatePhysics(GameState &state, float dt, Ball &old_ball, std::vector
 
     for (Block *block : hit_blocks)
     {
+      if (block->type == BlockType::paddle)
+      {
+        out.velocity.x += GetPaddleVelocity(state.player) * 30.0f;
+      }
       OnHitBlock(out, *block);
       collisions.push_back({out.position, old_ball.velocity, out.velocity, block->type});
     }

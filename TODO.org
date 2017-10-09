@@ -1,11 +1,11 @@
 
 
 # Todo List
-- [TODO] Add an OpenGL 3.3 renderer
+- [DONE] Add an OpenGL 3.3 renderer
 - [DONE] Do particles when block destroyed
 - Text rendering
   - vector font, like 7 segment display
-- Have paddle intersections apply velocity of paddle to the ball
+- [DONE] Have paddle intersections apply velocity of paddle to the ball
 - Win game sound/message
 - Rework block rendering (Draw fill then outline, in static buffer)
 
