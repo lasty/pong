@@ -4,10 +4,7 @@
 
 #include "maths.hpp"
 
-
-// std::vector<vec2> vertices;
-
-// std::map<char, std::vector<int>> glyphs;
+#include <string>
 
 
 Text::Text()

@@ -71,7 +71,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   message(STATUS "Enabling all warnings")
   target_compile_options(core PUBLIC
     $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -fmax-errors=1>
-    $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -ferror-limit=1 -Wno-missing-braces>
+    $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -ferror-limit=1 -Wno-missing-braces -fcolor-diagnostics>
     $<$<CXX_COMPILER_ID:AppleClang>:-Weverything>)
 endif()
 
