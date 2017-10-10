@@ -53,7 +53,6 @@ public:
 
   void AttachAttribute(int attrib_id, int size, int offset, GLenum type);
   void DetachAttribute(int attrib_id);
-
 };
 
 
