@@ -529,6 +529,22 @@ void Renderer::DrawGameState(const GameState &state)
   }
 
 
+  //Draw HUD text
+
+  vec4 col{1.0f, 1.0f, 0.7f, 1.0f};
+
+  std::ostringstream status1, status2, status3;
+  status1 << "Balls: " << state.balls.size();
+  status2 << "Blocks: " << state.blocks.size();
+  status3 << "Particles: " << state.particles.size();
+
+  lines_data.AddShape(text.MakeString(status1.str(), vec2{10.0f, 10.0f}, col));
+  lines_data.AddShape(text.MakeString(status2.str(), vec2{10.0f, 40.0f}, col));
+  lines_data.AddShape(text.MakeString(status3.str(), vec2{10.0f, 70.0f}, col));
+  lines_data.AddShape(text.MakeString("The Quick Brown Fox Jumps", vec2{10.0f, 400.0f}, col));
+  lines_data.AddShape(text.MakeString("Over The Lazy Dog.", vec2{10.0f, 430.0f}, col));
+
+
   lines_data.UpdateVertexes();
 
   basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);

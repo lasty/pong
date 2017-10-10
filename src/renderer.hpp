@@ -4,6 +4,7 @@
 #include <map>
 
 #include "shader.hpp"
+#include "text.hpp"
 
 typedef uint32_t GLenum;
 
@@ -68,6 +69,8 @@ private:
   shape_def circle_shape;
   shape_def arrow_shape;
   std::map<int, std::map<int, shape_def>> rect_shapes;
+
+  Text text;
 
   VertexData lines_data;
   VertexData particle_data;

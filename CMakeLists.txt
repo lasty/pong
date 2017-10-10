@@ -32,7 +32,8 @@ add_library(core
   src/particles.cpp
   src/renderer.cpp
   src/shader.cpp
-  src/sound.cpp)
+  src/sound.cpp
+  src/text.cpp)
 
 add_executable(pong WIN32 src/main.cpp)
 add_executable(test_pong EXCLUDE_FROM_ALL src/tests.cpp)
