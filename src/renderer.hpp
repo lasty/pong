@@ -5,6 +5,7 @@
 
 #include "shader.hpp"
 #include "text.hpp"
+#include "game.hpp"
 
 typedef uint32_t GLenum;
 
@@ -69,6 +70,7 @@ private:
   shape_def circle_shape;
   shape_def arrow_shape;
   std::map<int, std::map<int, shape_def>> rect_shapes;
+  std::map<BlockType, shape_def> block_shapes;
 
   Text text;
 
@@ -90,18 +92,19 @@ public:
   void DrawVertexData(GLenum draw_type, const VertexData &vertex_data);
 
   void SetupShapes();
+  void SetupBlockShapes();
 
   void DrawShape(GLenum draw_type, shape_def const &shape);
 
   void DrawCircle(int radius, float x, float y);
   void FillCircle(int radius, float x, float y);
-  void RenderBall(const struct Ball &ball, bool draw_outline = true);
+  void RenderBall(const Ball &ball, bool draw_outline = true);
 
   void RenderArrow(const vec2 &position, float rot);
 
   shape_def GetRectShape(int w, int h);
-  void RenderBlock(const struct Block &block, bool draw_normals = false);
-  void RenderBounds(const struct BoundingBox &bounds);
+  void RenderBlock(const Block &block, bool draw_normals = false);
+  void RenderBounds(const BoundingBox &bounds);
 
-  void DrawGameState(const struct GameState &state);
+  void DrawGameState(const GameState &state);
 };

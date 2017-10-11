@@ -76,5 +76,5 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 if(MINGW)
-  target_compile_options(core PUBLIC "-fdiagnostics-color=always")
+  target_compile_options(core PUBLIC $<$<CXX_COMPILER_ID:GNU>:-fdiagnostics-color=always>)
 endif()

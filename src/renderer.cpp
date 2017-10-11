@@ -321,8 +321,84 @@ void Renderer::SetupShapes()
 
   arrow_shape = shapes_data.AddShape(MakeArrow(20, colour));
 
-  // SetupVertexData();
+  SetupBlockShapes();
+
   shapes_data.UpdateVertexes();
+}
+
+
+void AddVertex(std::vector<float> &vec, const vec2 &pos, const vec4 &col)
+{
+  vec.push_back(pos.x);
+  vec.push_back(pos.y);
+
+  vec.push_back(col.r);
+  vec.push_back(col.g);
+  vec.push_back(col.b);
+  vec.push_back(col.a);
+}
+
+void AddTri(std::vector<float> &vec, const vec2 &pos1, const vec2 &pos2, const vec2 &pos3, const vec4 &col)
+{
+  AddVertex(vec, pos1, col);
+  AddVertex(vec, pos2, col);
+  AddVertex(vec, pos3, col);
+}
+
+
+void Renderer::SetupBlockShapes()
+{
+  vec2 tl{0, 0};
+  vec2 bl{0, 50};
+  vec2 tr{50, 0};
+  vec2 br{50, 50};
+  vec2 wtr{100, 0};
+  vec2 wbr{100, 50};
+
+  // vec4 col1{1.0f, 1.0f, 1.0f, 1.0f};
+  vec4 col1{0.7f, 0.7f, 0.7f, 0.7f};
+
+  std::vector<float> vec;
+
+  vec.clear();
+  AddTri(vec, bl, tr, tl, col1);
+  AddTri(vec, br, tr, bl, col1);
+  block_shapes.emplace(BlockType::square, shapes_data.AddShape(vec));
+
+  vec.clear();
+  AddTri(vec, tr, tl, br, col1);
+  block_shapes.emplace(BlockType::triangle_left, shapes_data.AddShape(vec));
+
+  vec.clear();
+  AddTri(vec, tr, tl, bl, col1);
+  block_shapes.emplace(BlockType::triangle_right, shapes_data.AddShape(vec));
+
+  vec.clear();
+  AddTri(vec, bl, wtr, tl, col1);
+  AddTri(vec, wbr, wtr, bl, col1);
+  block_shapes.emplace(BlockType::rectangle, shapes_data.AddShape(vec));
+
+  vec.clear();
+  AddTri(vec, wtr, tl, br, col1);
+  AddTri(vec, wtr, br, wbr, col1);
+  block_shapes.emplace(BlockType::rect_triangle_left, shapes_data.AddShape(vec));
+
+  vec.clear();
+  AddTri(vec, tl, bl, br, col1);
+  AddTri(vec, tl, br, wtr, col1);
+  block_shapes.emplace(BlockType::rect_triangle_right, shapes_data.AddShape(vec));
+
+
+  vec2 ptl{-50, 0};
+  vec2 ptr{50, 0};
+  vec2 pbl{-50, 40};
+  vec2 pbr{50, 40};
+
+  vec.clear();
+  AddTri(vec, ptl, pbl, ptr, col1);
+  AddTri(vec, ptr, pbl, pbr, col1);
+
+  block_shapes.emplace(BlockType::paddle, shapes_data.AddShape(vec));
 }
 
 
@@ -404,18 +480,32 @@ shape_def Renderer::GetRectShape(int w, int h)
 
 void Renderer::RenderBlock(const Block &block, bool draw_normals)
 {
-  for (auto line : block.geometry)
+  auto shape = block_shapes[block.type];
+
+  basic_shader.SetOffset(block.position);
+  basic_shader.SetColour(block.colour);
+  basic_shader.SetRotation(0.0f);
+  basic_shader.SetZoom(1.0f);
+
+  if (shape.offset != 0 and shape.count != 0)
+    DrawShape(GL_TRIANGLES, shape);
+
+
+  if (true)
   {
-    const auto p1 = line.p1; // + block.position;
-    const auto p2 = line.p2; // + block.position;
-
-    DynamicLine(p1, p2, block.colour);
-
-    if (draw_normals)
+    for (auto line : block.geometry)
     {
-      vec2 normal = get_normal(p1, p2);
-      vec2 center = (p1 + p2) / 2.0f;
-      DynamicLine(center, center + (normal * 4.0f), vec4{1.0f, 1.0f, 1.0f, 1.0f});
+      const auto p1 = line.p1; // + block.position;
+      const auto p2 = line.p2; // + block.position;
+
+      DynamicLine(p1, p2, block.colour);
+
+      if (draw_normals)
+      {
+        vec2 normal = get_normal(p1, p2);
+        vec2 center = (p1 + p2) / 2.0f;
+        DynamicLine(center, center + (normal * 4.0f), vec4{1.0f, 1.0f, 1.0f, 1.0f});
+      }
     }
   }
 }
@@ -472,15 +562,7 @@ void Renderer::DrawGameState(const GameState &state)
     RenderBlock(block, draw_normals);
   }
 
-  if (state.particles.size())
-  {
-    particle_data.Clear();
-    particle_data.AddShape(MakeParticleVertexes(state.particles));
-    particle_data.UpdateVertexes();
-
-    DrawVertexData(GL_TRIANGLES, particle_data);
-  }
-
+  TRACE << "Player.block.type = " << (int)(state.player.block.type) << "  ";
 
   RenderBlock(state.player.block, draw_normals);
   if (draw_bounds) RenderBounds(state.player.block.bounds);
@@ -488,6 +570,16 @@ void Renderer::DrawGameState(const GameState &state)
   {
     vec2 pos = state.player.block.position + state.player.sticky_ball_offset;
     DrawCircle(10.0f, pos.x, pos.y);
+  }
+
+
+  if (state.particles.size())
+  {
+    particle_data.Clear();
+    particle_data.AddShape(MakeParticleVertexes(state.particles));
+    particle_data.UpdateVertexes();
+
+    DrawVertexData(GL_TRIANGLES, particle_data);
   }
 
 

@@ -1,8 +1,14 @@
 
 
 # Todo List
+- Menu system?
+  - Start, exit
+- GUI notifications
+  - Level n  and ready before start
+  - Game over
+  - in game pause menu (exit, restart, reset ball)
 - Win game sound/message
-- Rework block rendering (Draw fill then outline, in static buffer)
+- [TODO] Rework block rendering (Draw fill then outline, in static buffer)
 
 
 # Refactor
