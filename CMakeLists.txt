@@ -24,7 +24,7 @@ endif()
 
 ##### Main target
 
-add_library(core
+add_library(core SHARED
   src/game.cpp
   src/gl.cpp
   src/input.cpp
@@ -52,12 +52,11 @@ if(OLD_OPENGL)
 endif()
 
 
-target_link_libraries(core PRIVATE
+target_link_libraries(core PUBLIC
   SDL2::SDL2 SDL2::mixer
   GLFW::GLFW
+  GLEW::GLEW
   OpenGL::GL)
-
-target_link_libraries(core PUBLIC GLEW::GLEW)
 
 
 target_link_libraries(pong PRIVATE core ${MINGW32} SDL2::main SDL2::SDL2)

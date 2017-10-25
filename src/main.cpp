@@ -33,9 +33,6 @@ constexpr int GL_MINOR{5};
 #include "sound.hpp"
 
 
-std::ostringstream TRACE;
-
-
 void glfw_error_callback([[maybe_unused]] int error, const char *description)
 {
   std::cout << "GLFW Error: " << description << std::endl;

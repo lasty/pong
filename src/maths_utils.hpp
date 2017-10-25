@@ -41,5 +41,5 @@ inline std::ostream &operator<<(std::ostream &out, mat4 const &mat)
 }
 
 
-//Defined in main.cpp - outputs to window title, cleared per frame
+//Defined in maths.cpp - outputs to window title, cleared per frame
 extern std::ostringstream TRACE;

@@ -14,6 +14,9 @@ static_assert(sizeof(vec3) == sizeof(float) * 3, "vec3 not packed correctly");
 static_assert(sizeof(vec4) == sizeof(float) * 4, "vec4 not packed correctly");
 
 
+std::ostringstream TRACE;
+
+
 float degrees(float radians)
 {
   return radians * 180.0f / PI;
