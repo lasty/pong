@@ -43,12 +43,21 @@ void Input::SetupBinds()
   AddBind(GLFW_KEY_F5, IntentType::reset_ball);
   AddBind(GLFW_KEY_R, IntentType::reset_ball);
 
+  AddBind(GLFW_KEY_W, IntentType::menu_up);
+  AddBind(GLFW_KEY_UP, IntentType::menu_up);
+
+  AddBind(GLFW_KEY_S, IntentType::menu_down);
+  AddBind(GLFW_KEY_DOWN, IntentType::menu_down);
+
+  AddBind(GLFW_KEY_ENTER, IntentType::menu_activate);
+  AddBind(GLFW_KEY_SPACE, IntentType::menu_activate);
+
+
   AddBind(GLFW_KEY_A, PlayerInput::move_left);
   AddBind(GLFW_KEY_LEFT, PlayerInput::move_left);
 
   AddBind(GLFW_KEY_D, PlayerInput::move_right);
   AddBind(GLFW_KEY_RIGHT, PlayerInput::move_right);
-
   AddBind(GLFW_MOUSE_BUTTON_LEFT, PlayerInput::shoot);
   AddBind(GLFW_MOUSE_BUTTON_RIGHT, PlayerInput::shoot);
 }

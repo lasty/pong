@@ -97,7 +97,9 @@ enum class State
   ball_launch,
   mid_game,
   ball_died,
-  game_won
+  game_won,
+  main_menu,
+  pause_menu
 };
 
 
@@ -121,6 +123,10 @@ struct GameState
 
   std::vector<Collision> collisions;
   std::vector<Particle> particles;
+
+  int selected_menu_item = -1;
+  std::vector<std::string> menu_items;
+  int activated_menu_item = -1;
 };
 
 
@@ -151,7 +157,12 @@ public:
   bool CalculateBallCollision(GameState &state, const Ball &old_ball, vec2 &normal_vec, std::vector<Block *> &out_hit_blocks) const;
   Ball UpdatePhysics(GameState &state, float dt, Ball &b, std::vector<Collision> &collisions) const;
 
+  GameState ProcessGameInput(const GameState &state, const struct Intent &intent) const;
+  GameState ProcessMenuInput(const GameState &state, const struct Intent &intent) const;
+
   GameState ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream) const;
+
+  GameState SetState(const GameState &state, State new_state) const;
   GameState ProcessStateGraph(const GameState &state, float dt) const;
 
   void PlayCollisionSound(const Collision &collision, const GameState &state) const;

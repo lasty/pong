@@ -1,23 +1,26 @@
 
 
 # Todo List
-- Menu system?
+- dispatch inputs and updates as per gamestate::state enum
+- [TODO] Menu system?
   - Start, exit
 - GUI notifications
   - Level n  and ready before start
   - Game over
   - in game pause menu (exit, restart, reset ball)
 - Win game sound/message
-- [TODO] Rework block rendering (Draw fill then outline, in static buffer)
+- [DONE] Rework block rendering (Draw fill then outline, in static buffer)
 
 
 # Refactor
+- [TODO] Simplify the main update functions .. this is getting too complicated
 - see if possible to have sound play commands in one place
-- state graph calls to set state and reset timer in one expression
+- [DONE] state graph calls to set state and reset timer in one expression
 
 
 # Bugs
 - Ball straight up hits a 45 degree block, will go left and right indefinitely
+- Ball increases velocity when bouncing off paddle (normalize vector)
 
 
 ## Todo Low Priority

@@ -532,8 +532,42 @@ void Renderer::RenderBounds(const BoundingBox &bounds)
   }
 }
 
+void Renderer::RenderMenu(const GameState &state)
+{
+  const auto &items = state.menu_items;
+  const auto &selected = state.selected_menu_item;
 
-void Renderer::DrawGameState(const GameState &state)
+
+  lines_data.Clear();
+
+  UseProgram(basic_shader.GetProgramId());
+  UseVAO(shapes_data.GetVAO());
+
+
+  for (int i = 0; i < (int)items.size(); i++)
+  {
+    const auto &str = items.at(i);
+    vec2 pos = {100.0f, 100.0f + (30.0f * i)};
+    vec4 col{1.0f, 1.0f, 0.7f, 1.0f};
+
+    lines_data.AddShape(text.MakeString(str, pos, col));
+
+    if (i == selected)
+    {
+      pos.x -= 30.0f;
+      lines_data.AddShape(text.MakeString(">", pos, col));
+      pos.x += 45.0f + (15 * str.size());
+      lines_data.AddShape(text.MakeString("<", pos, col));
+    }
+  }
+
+  lines_data.UpdateVertexes();
+  basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
+  DrawVertexData(GL_LINES, lines_data);
+}
+
+
+void Renderer::RenderGame(const GameState &state)
 {
   const bool draw_normals = state.debug_enabled;
   const bool draw_velocity = state.debug_enabled;
@@ -542,7 +576,6 @@ void Renderer::DrawGameState(const GameState &state)
   EnableBlend();
 
   lines_data.Clear();
-
 
   UseProgram(basic_shader.GetProgramId());
   UseVAO(shapes_data.GetVAO());
@@ -620,9 +653,7 @@ void Renderer::DrawGameState(const GameState &state)
     }
   }
 
-
   //Draw HUD text
-
   vec4 col{1.0f, 1.0f, 0.7f, 1.0f};
 
   std::ostringstream status1, status2, status3;
@@ -638,12 +669,26 @@ void Renderer::DrawGameState(const GameState &state)
 
 
   lines_data.UpdateVertexes();
-
   basic_shader.SetColour(1.0f, 1.0f, 1.0f, 1.0f);
-
-  //glLineWidth(2.0f);
-
   DrawVertexData(GL_LINES, lines_data);
+}
+
+
+void Renderer::DrawGameState(const GameState &state)
+{
+  if (state.state == State::main_menu or state.state == State::pause_menu)
+  {
+    RenderMenu(state);
+  }
+  else
+  {
+    RenderGame(state);
+  }
+
+
+  UseProgram(0);
+  UseVAO(0);
+
 
 #if OLD_OPENGL
   GLenum err = glGetError();

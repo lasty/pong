@@ -205,9 +205,9 @@ void main_game()
 
   std::cout << "GL Version: " << gl_version_maj << "." << gl_version_min << std::endl;
 
-  #if !OLD_OPENGL
-    GL::Debuging(true);
-  #endif
+#if !OLD_OPENGL
+  GL::Debuging(true);
+#endif
 
   glfwSwapInterval(SWAP_INTERVAL);
   TIMELOG.END();
@@ -221,6 +221,12 @@ void main_game()
 
   Game game{sound};
   GameState gamestate = game.NewGame(width, height);
+
+  gamestate = game.SetState(gamestate, State::main_menu);
+
+#if !NDEBUG
+//gamestate = game.SetState(gamestate, State::new_level);
+#endif
 
   Input input(window);
 
@@ -283,14 +289,19 @@ void main_game()
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
 {
-  try {
 
-  main_game();
+#if CATCH_EXCEPTIONS
+  try
+  {
+    main_game();
   }
-  catch(std::exception &e)
+  catch (std::exception &e)
   {
     std::cout << "std::exception thrown -- " << e.what() << std::endl;
   }
+#else
+  main_game();
+#endif
 
   return EXIT_SUCCESS;
 }

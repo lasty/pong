@@ -46,6 +46,8 @@ void Text::SetupGlyphs()
   glyphs[' '] = {}; //Space is an empty list
   glyphs['.'] = {1, 0};
   glyphs[':'] = {5, 6, 2, 3};
+  glyphs['<'] = {9, 4, 4, 3};
+  glyphs['>'] = {7, 6, 6, 1};
 
   glyphs['A'] = {1, 4, 4, 8, 8, 6, 6, 3, 4, 6};
   glyphs['B'] = {1, 7, 7, 8, 8, 6, 6, 4, 5, 3, 3, 1};

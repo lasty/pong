@@ -22,7 +22,10 @@ enum class IntentType
   toggle_debug,
   new_game,
   reset_ball,
-  player_input
+  player_input,
+  menu_up,
+  menu_down,
+  menu_activate
 };
 
 

@@ -106,5 +106,8 @@ public:
   void RenderBlock(const Block &block, bool draw_normals = false);
   void RenderBounds(const BoundingBox &bounds);
 
+  void RenderMenu(const GameState &state);
+  void RenderGame(const GameState &state);
+
   void DrawGameState(const GameState &state);
 };
