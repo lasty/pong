@@ -96,6 +96,7 @@ enum class State
   new_level,
   ball_launch,
   mid_game,
+  ball_reset,
   ball_died,
   game_won,
   main_menu,
@@ -106,6 +107,7 @@ enum class State
 struct GameState
 {
   bool running = true;
+  bool sound_muted = false;
   int width = 0;
   int height = 0;
 

@@ -9,13 +9,13 @@
   - Game over
   - in game pause menu (exit, restart, reset ball)
 - Win game sound/message
-- [DONE] Rework block rendering (Draw fill then outline, in static buffer)
 
 
 # Refactor
 - [TODO] Simplify the main update functions .. this is getting too complicated
-- see if possible to have sound play commands in one place
-- [DONE] state graph calls to set state and reset timer in one expression
+- Clean up sound code
+- Celan up menu code
+- There is a lot of duplicated code (eg reset ball)
 
 
 # Bugs

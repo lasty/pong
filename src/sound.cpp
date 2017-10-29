@@ -7,7 +7,7 @@
 #include <stdexcept>
 
 constexpr float MASTER_VOLUME = 0.1f;
-constexpr bool MASTER_MUTE = true;
+constexpr bool MASTER_MUTE = false;
 
 
 Sound::Sound()
@@ -54,6 +54,8 @@ void Sound::LoadSoundLibrary()
       sounds["paddle_bounce"] = LoadWav(path + "paddle_bounce.wav");
       sounds["lost_ball"] = LoadWav(path + "lost_ball.wav");
       sounds["error"] = LoadWav(path + "error.wav");
+      sounds["menu_beep"] = LoadWav(path + "menu_beep.wav");
+      sounds["menu_activated"] = LoadWav(path + "menu_beep2.wav");
 
       break;
     }

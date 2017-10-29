@@ -23,6 +23,7 @@ enum class IntentType
   new_game,
   reset_ball,
   player_input,
+  menu,
   menu_up,
   menu_down,
   menu_activate

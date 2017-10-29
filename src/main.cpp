@@ -225,7 +225,7 @@ void main_game()
   gamestate = game.SetState(gamestate, State::main_menu);
 
 #if !NDEBUG
-//gamestate = game.SetState(gamestate, State::new_level);
+  gamestate = game.SetState(gamestate, State::new_level);
 #endif
 
   Input input(window);

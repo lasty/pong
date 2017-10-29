@@ -31,7 +31,7 @@ void Input::AddBind(int key, PlayerInput control)
 
 void Input::SetupBinds()
 {
-  AddBind(GLFW_KEY_ESCAPE, IntentType::quit);
+  AddBind(GLFW_KEY_ESCAPE, IntentType::menu);
   AddBind(GLFW_KEY_Q, IntentType::quit);
 
   AddBind(GLFW_KEY_SPACE, IntentType::new_game);
