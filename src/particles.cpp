@@ -17,19 +17,21 @@ vec2 RandomVec2(float spread)
 }
 
 
-Particle MakeParticle(vec2 location, vec2 vel, float size,
-  const vec4 &col, float ttl)
+Particle::Particle(vec2 location, vec2 vel, float size, const vec4 &col, float ttl)
+: ttl(ttl)
+, size(size)
+, colour(col)
+, position(location)
+, velocity(vel)
 {
-  location += RandomVec2(10.0f);
-  vel += RandomVec2(1.0f);
+  this->ttl += RandomFloat(-0.2f, 0.3f);
+  this->size += RandomFloat(0.0f, 5.0f);
 
-  size += RandomFloat(0.0f, 5.0f);
-  ttl += RandomFloat(-0.2f, 0.3f);
+  position += RandomVec2(10.0f);
+  rotation = RandomFloat(0, TWO_PI);
 
-  float rotation = RandomFloat(0, TWO_PI);
-  float rot_vel = RandomSpread(0.1f);
-
-  return {ttl, size, col, location, rotation, vel, rot_vel};
+  this->velocity += RandomVec2(1.0f);
+  rot_vel = RandomSpread(0.1f);
 }
 
 

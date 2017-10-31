@@ -17,13 +17,17 @@ struct BoundingBox
 
 struct Ball
 {
-  int radius = 20;
+  float radius = 10.0f;
   bool alive = true;
   vec2 position;
   vec2 velocity;
   vec4 colour;
 
   BoundingBox bounds;
+
+  Ball(const vec2 &position, const vec2 &velocity);
+
+  void UpdateBounds();
 };
 
 
@@ -64,6 +68,8 @@ struct Block
   BlockGeometry geometry;
 
   BoundingBox bounds;
+
+  void UpdateBounds();
 };
 
 

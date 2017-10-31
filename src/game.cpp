@@ -15,26 +15,26 @@
 #include "maths_utils.hpp"
 
 
-Game::Game(Sound &sound)
-: sound(sound)
+Ball::Ball(const vec2 &position, const vec2 &velocity)
+: position(position)
+, velocity(velocity)
 {
-  srand(static_cast<unsigned>(time(0)));
-
-  SetupBlockGeometry();
+  colour = RandomRGB();
+  UpdateBounds();
 }
 
 
-BoundingBox MakeBounds(const Ball &ball)
+void Ball::UpdateBounds()
 {
-  const vec2 tl{ball.position.x - ball.radius, ball.position.y - ball.radius};
-  const vec2 br{ball.position.x + ball.radius, ball.position.y + ball.radius};
-
-  return {tl, br};
+  bounds.top_left = {position.x - radius, position.y - radius};
+  bounds.bottom_right = {position.x + radius, position.y + radius};
 }
 
 
-BoundingBox MakeBounds(const Block &block)
+void Block::UpdateBounds()
 {
+  const Block &block = *this;
+
   vec2 tl = block.position;
   vec2 br = block.position;
 
@@ -50,7 +50,17 @@ BoundingBox MakeBounds(const Block &block)
     }
   }
 
-  return {tl, br};
+  bounds.top_left = tl;
+  bounds.bottom_right = br;
+}
+
+
+Game::Game(Sound &sound)
+: sound(sound)
+{
+  srand(static_cast<unsigned>(time(0)));
+
+  SetupBlockGeometry();
 }
 
 
@@ -89,8 +99,8 @@ std::vector<Block> NewWorldBorders(float border, int width, int height)
   outofbounds.geometry.push_back({br, bl});
   b.geometry.push_back({bl, tl});
 
-  b.bounds = MakeBounds(b);
-  outofbounds.bounds = MakeBounds(outofbounds);
+  b.UpdateBounds();
+  outofbounds.UpdateBounds();
 
   return {b, outofbounds};
 }
@@ -148,19 +158,6 @@ BlockGeometry Game::MakeGeometry(BlockType bt, const vec2 &offset) const
 }
 
 
-Ball Game::NewBall(const vec2 &position, const vec2 &velocity) const
-{
-  Ball b;
-  b.position = position;
-  b.velocity = velocity;
-  b.radius = 10.0f;
-  b.colour = RandomRGB();
-  b.bounds = MakeBounds(b);
-
-  return b;
-}
-
-
 Block Game::NewBlock(const vec2 &position, BlockType bt) const
 {
   Block b;
@@ -170,7 +167,7 @@ Block Game::NewBlock(const vec2 &position, BlockType bt) const
   b.colour = RandomRGB();
   b.geometry = MakeGeometry(b.type, position);
 
-  b.bounds = MakeBounds(b);
+  b.UpdateBounds();
 
   return b;
 }
@@ -210,7 +207,7 @@ Paddle Game::MakePlayer(const vec2 &position) const
   block.position = position;
   block.geometry = MakeGeometry(BlockType::paddle, position);
 
-  block.bounds = MakeBounds(block);
+  block.UpdateBounds();
 
   Paddle player;
 
@@ -232,7 +229,7 @@ Paddle Game::UpdatePlayer(const Paddle &old, const vec2 &position) const
 
   player.block.geometry = MakeGeometry(BlockType::paddle, player.block.position);
 
-  player.block.bounds = MakeBounds(player.block);
+  player.block.UpdateBounds();
 
   return player;
 }
@@ -360,7 +357,7 @@ Ball Game::UpdatePhysics(GameState &state, float dt, Ball &old_ball, std::vector
   float orig_speed = get_length(old_ball.velocity);
 
   out.position = old_ball.position + (old_ball.velocity * dt);
-  out.bounds = MakeBounds(out);
+  out.UpdateBounds();
 
 
   std::vector<Block *> hit_blocks{};
@@ -382,7 +379,7 @@ Ball Game::UpdatePhysics(GameState &state, float dt, Ball &old_ball, std::vector
     }
 
     out.position = old_ball.position;
-    out.bounds = MakeBounds(out);
+    out.UpdateBounds();
   }
 
   return out;
@@ -445,7 +442,7 @@ GameState Game::ProcessGameInput(const GameState &state, const Intent &intent) c
           {
             if (state.player.sticky_ball)
             {
-              auto b = NewBall(state.player.block.position + state.player.sticky_ball_offset, {0.0f, -300.0f});
+              auto b = Ball(state.player.block.position + state.player.sticky_ball_offset, {0.0f, -300.0f});
               b.velocity.x += GetPaddleVelocity(state.player) * 30.0f;
               out.balls.push_back(b);
               if (not out.sound_muted) sound.PlaySound("paddle_bounce", state.player.block.position.x / state.width);
@@ -462,7 +459,7 @@ GameState Game::ProcessGameInput(const GameState &state, const Intent &intent) c
             for (int i = 0; i < 10; i++)
             {
               out.particles.emplace_back(
-                MakeParticle(state.player.block.position, particle_vel,
+                Particle(state.player.block.position, particle_vel,
                   1.0f, particle_col, 1.0f));
             }
           }
@@ -561,6 +558,7 @@ std::string ToString(const State &state)
     case State::pause_menu:
       return "pause_menu";
   }
+  return "[ERROR:State not found]";
 }
 
 
@@ -746,7 +744,7 @@ std::vector<Particle> Game::CreateCollisionParticles(const Collision &collision)
       particle_vel = {0.0, 0.0};
 
     particles.emplace_back(
-      MakeParticle(collision.position, particle_vel, 0.5f, particle_col, 1.0f));
+      Particle(collision.position, particle_vel, 0.5f, particle_col, 1.0f));
   }
 
   return particles;
@@ -808,7 +806,7 @@ GameState Game::Simulate(const GameState &state, float dt) const
       }
 
       vec2 vel = {0.0, 0.0f};
-      auto particle = MakeParticle(pos, vel, 4.0f, block.colour, 1.0f);
+      auto particle = Particle(pos, vel, 4.0f, block.colour, 1.0f);
       out.particles.push_back(particle);
     }
   }

@@ -1,32 +1,40 @@
 
 
 # Todo List
-- dispatch inputs and updates as per gamestate::state enum
-- [TODO] Menu system?
-  - Start, exit
+- [DONE] dispatch inputs and updates as per gamestate::state enum
+- [DONE] Menu system?
+  - [DONE] Start, exit
 - GUI notifications
-  - Level n  and ready before start
-  - Game over
-  - in game pause menu (exit, restart, reset ball)
+  - Level n and ready before start
+  - Game over / game win
+  - [DONE] in game pause menu (exit, restart, reset ball)
 - Win game sound/message
+- Particle trail for ball traveling
 
 
 # Refactor
 - [TODO] Simplify the main update functions .. this is getting too complicated
+- Clean up structs (eg, there are a lot of make-xyz that should be constructors
 - Clean up sound code
-- Celan up menu code
+  - Single point of call inside Game class  (able to handle volumes or mute)
+- Clean up menu code
+  - Maybe refactor out menus to separate class or state variable
+  - Repeated strings
 - There is a lot of duplicated code (eg reset ball)
+- Input clean up
+  - collapse player input, and intent type into intent, and/or rename
 
 
 # Bugs
 - Ball straight up hits a 45 degree block, will go left and right indefinitely
 - Ball increases velocity when bouncing off paddle (normalize vector)
-
+- New game resets mute sound setting
 
 ## Todo Low Priority
 - [TODO] Watch more of those videos
 - Level load/save/editor ?
 - Maybe add more varieties in sound
+- Add readme.md for github
 
 
 ## Other Ideas

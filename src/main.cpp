@@ -225,7 +225,9 @@ void main_game()
   gamestate = game.SetState(gamestate, State::main_menu);
 
 #if !NDEBUG
+  //If in Debug mode, quick start and mute sound
   gamestate = game.SetState(gamestate, State::new_level);
+  gamestate.sound_muted = true;
 #endif
 
   Input input(window);

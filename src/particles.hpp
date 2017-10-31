@@ -8,21 +8,20 @@
 
 struct Particle
 {
-  float ttl;
+  float ttl = 0;
 
-  float size;
+  float size = 0;
   vec4 colour;
 
   vec2 position;
-  float rotation;
+  float rotation = 0;
 
   vec2 velocity;
-  float rot_vel;
+  float rot_vel = 0;
+
+  Particle(vec2 location, vec2 vel, float size, const vec4 &col, float ttl);
 };
 
-
-Particle MakeParticle(vec2 location, vec2 vel, float size,
-  const vec4 &col, float ttl);
 
 Particle UpdateParticle(const Particle &p, float dt);
 
