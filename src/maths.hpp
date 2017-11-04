@@ -1,10 +1,10 @@
 
 #pragma once
 
-
 #include "maths_types.hpp"
 
 #include <math.h>
+
 
 constexpr float PI{float{M_PI}};
 constexpr float TWO_PI{2.0f * float{M_PI}};

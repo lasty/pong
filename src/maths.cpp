@@ -2,6 +2,7 @@
 #include "maths.hpp"
 
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 
 #include "maths_collisions.hpp"

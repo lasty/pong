@@ -3,12 +3,8 @@
 
 struct vec2
 {
-  union {
-    float x;
-  };
-  union {
-    float y;
-  };
+  float x;
+  float y;
 };
 
 
