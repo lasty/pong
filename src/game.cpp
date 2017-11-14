@@ -394,29 +394,27 @@ void remove_inplace(CONT &container, const PRED &pred)
 }
 
 
-GameState Game::ProcessGameInput(const GameState &state, const Intent &intent) const
+void Game::ProcessGameInput(GameState &state, const Intent &intent) const
 {
-  GameState out = state;
-
   switch (intent.type)
   {
     case IntentType::quit:
     case IntentType::menu:
-      out = SetState(out, State::pause_menu);
-      if (not out.sound_muted) sound.PlaySound("menu_beep", 0.5f);
+      SetState(state, State::pause_menu);
+      if (not state.sound_muted) sound.PlaySound("menu_beep", 0.5f);
       break;
 
     case IntentType::toggle_debug:
-      out.debug_enabled = not out.debug_enabled;
+      state.debug_enabled = not state.debug_enabled;
       break;
 
     case IntentType::new_game:
-      out = NewGame(state.width, state.height);
+      state = NewGame(state.width, state.height);
       break;
 
     case IntentType::reset_ball:
-      out.balls.clear();
-      if (not out.sound_muted) sound.PlaySound("lost_ball", 0.5f);
+      state.balls.clear();
+      if (not state.sound_muted) sound.PlaySound("lost_ball", 0.5f);
       break;
 
     case IntentType::player_input:
@@ -429,11 +427,11 @@ GameState Game::ProcessGameInput(const GameState &state, const Intent &intent) c
 
         case PlayerInput::mouse_position:
         {
-          out.mouse_pointer = intent.position;
+          state.mouse_pointer = intent.position;
 
           float b = 50 + 10;
           vec2 pos = {clamp(b, state.width - b, intent.position.x), intent.position.y};
-          out.player = UpdatePlayer(out.player, pos);
+          state.player = UpdatePlayer(state.player, pos);
         }
         break;
 
@@ -444,13 +442,13 @@ GameState Game::ProcessGameInput(const GameState &state, const Intent &intent) c
             {
               auto b = Ball(state.player.block.position + state.player.sticky_ball_offset, {0.0f, -300.0f});
               b.velocity.x += GetPaddleVelocity(state.player) * 30.0f;
-              out.balls.push_back(b);
-              if (not out.sound_muted) sound.PlaySound("paddle_bounce", state.player.block.position.x / state.width);
-              out.player.sticky_ball = false;
+              state.balls.push_back(b);
+              if (not state.sound_muted) sound.PlaySound("paddle_bounce", state.player.block.position.x / state.width);
+              state.player.sticky_ball = false;
             }
             else
             {
-              if (not out.sound_muted) sound.PlaySound("error", state.player.block.position.x / state.width);
+              if (not state.sound_muted) sound.PlaySound("error", state.player.block.position.x / state.width);
             }
 
             const vec2 particle_vel{0.0f, -1.0f};
@@ -458,7 +456,7 @@ GameState Game::ProcessGameInput(const GameState &state, const Intent &intent) c
 
             for (int i = 0; i < 10; i++)
             {
-              out.particles.emplace_back(
+              state.particles.emplace_back(
                 Particle(state.player.block.position, particle_vel,
                   1.0f, particle_col, 1.0f));
             }
@@ -470,70 +468,61 @@ GameState Game::ProcessGameInput(const GameState &state, const Intent &intent) c
     default:
       break;
   }
-  return out;
 }
 
 
-GameState Game::ProcessMenuInput(const GameState &state, const Intent &intent) const
+void Game::ProcessMenuInput(GameState &state, const Intent &intent) const
 {
-  GameState out = state;
-
   switch (intent.type)
   {
     case IntentType::quit:
-      out.running = false;
+      state.running = false;
       break;
 
     case IntentType::menu:
-      if (out.state == State::pause_menu)
+      if (state.state == State::pause_menu)
       {
-        out = SetState(out, State::mid_game);
-        if (not out.sound_muted) sound.PlaySound("menu_beep", 0.5f);
+        SetState(state, State::mid_game);
+        if (not state.sound_muted) sound.PlaySound("menu_beep", 0.5f);
       }
       break;
 
     case IntentType::menu_up:
-      out.selected_menu_item--;
-      if (out.selected_menu_item < 0) out.selected_menu_item = out.menu_items.size() - 1;
-      if (not out.sound_muted) sound.PlaySound("menu_beep", 0.5f);
+      state.selected_menu_item--;
+      if (state.selected_menu_item < 0) state.selected_menu_item = state.menu_items.size() - 1;
+      if (not state.sound_muted) sound.PlaySound("menu_beep", 0.5f);
       break;
 
     case IntentType::menu_down:
-      out.selected_menu_item = (out.selected_menu_item + 1) % out.menu_items.size();
-      if (not out.sound_muted) sound.PlaySound("menu_beep", 0.5f);
+      state.selected_menu_item = (state.selected_menu_item + 1) % state.menu_items.size();
+      if (not state.sound_muted) sound.PlaySound("menu_beep", 0.5f);
       break;
 
     case IntentType::menu_activate:
-      out.activated_menu_item = out.selected_menu_item;
+      state.activated_menu_item = state.selected_menu_item;
       break;
 
 
     default:
       break;
   }
-
-  return out;
 }
 
 
-GameState Game::ProcessIntents(const GameState &state,
+void Game::ProcessIntents(GameState &state,
   const std::vector<struct Intent> &intent_stream) const
 {
-  GameState out = state;
-
   for (auto &intent : intent_stream)
   {
-    if (out.state == State::main_menu or out.state == State::pause_menu)
+    if (state.state == State::main_menu or state.state == State::pause_menu)
     {
-      out = ProcessMenuInput(out, intent);
+      ProcessMenuInput(state, intent);
     }
     else
     {
-      out = ProcessGameInput(out, intent);
+      ProcessGameInput(state, intent);
     }
   }
-
-  return out;
 }
 
 
@@ -562,65 +551,60 @@ std::string ToString(const State &state)
 }
 
 
-GameState Game::SetState(const GameState &state, State new_state) const
+void Game::SetState(GameState &state, State new_state) const
 {
   std::cout << "SetState(" << ToString(new_state) << ")" << std::endl;
 
-  GameState out = state;
-
-  out.state_timer = 0.0f;
-  out.state = new_state;
+  state.state_timer = 0.0f;
+  state.state = new_state;
 
   switch (new_state)
   {
     case State::main_menu:
-      out.menu_items = {"New Game", "Toggle Sound", "Quit"};
-      out.selected_menu_item = 0;
-      out.activated_menu_item = -1;
+      state.menu_items = {"New Game", "Toggle Sound", "Quit"};
+      state.selected_menu_item = 0;
+      state.activated_menu_item = -1;
       break;
 
     case State::pause_menu:
-      out.menu_items = {"Resume", "Reset Ball", "Toggle Sound", "Main Menu", "Quit"};
-      out.selected_menu_item = 0;
-      out.activated_menu_item = -1;
+      state.menu_items = {"Resume", "Reset Ball", "Toggle Sound", "Main Menu", "Quit"};
+      state.selected_menu_item = 0;
+      state.activated_menu_item = -1;
       break;
 
     case State::new_level:
-      out = NewGame(state.width, state.height);
+      state = NewGame(state.width, state.height);
       break;
 
     case State::ball_launch:
-      out.player.sticky_ball = true;
+      state.player.sticky_ball = true;
       break;
 
     case State::mid_game:
       break;
 
     case State::ball_reset:
-      out.balls.clear();
-      if (not out.sound_muted) sound.PlaySound("lost_ball", 0.5f);
+      state.balls.clear();
+      if (not state.sound_muted) sound.PlaySound("lost_ball", 0.5f);
       break;
 
     case State::ball_died:
       break;
 
     case State::game_won:
-      if (out.state_timer > 1.0f)
+      if (state.state_timer > 1.0f)
       {
-        out.state = State::new_level;
-        out.state_timer = 0.0f;
+        state.state = State::new_level;
+        state.state_timer = 0.0f;
       }
       break;
   }
-
-  return out;
 }
 
 
-GameState Game::ProcessStateGraph(const GameState &state, float dt) const
+void Game::ProcessStateGraph(GameState &state, float dt) const
 {
-  GameState out = state;
-  out.state_timer += dt;
+  state.state_timer += dt;
 
   switch (state.state)
   {
@@ -629,15 +613,15 @@ GameState Game::ProcessStateGraph(const GameState &state, float dt) const
       {
         const auto &item = state.menu_items.at(state.activated_menu_item);
 
-        if (item == "New Game") out = SetState(out, State::new_level);
+        if (item == "New Game") SetState(state, State::new_level);
         if (item == "Toggle Sound")
         {
-          out.activated_menu_item = -1;
-          out.sound_muted = not out.sound_muted;
+          state.activated_menu_item = -1;
+          state.sound_muted = not state.sound_muted;
         }
-        if (item == "Quit") out.running = false;
+        if (item == "Quit") state.running = false;
 
-        if (not out.sound_muted) sound.PlaySound("menu_activated", 0.5f);
+        if (not state.sound_muted) sound.PlaySound("menu_activated", 0.5f);
       }
       break;
 
@@ -646,57 +630,55 @@ GameState Game::ProcessStateGraph(const GameState &state, float dt) const
       {
         const auto &item = state.menu_items.at(state.activated_menu_item);
 
-        if (item == "Resume") out = SetState(out, State::mid_game);
-        if (item == "Reset Ball") out = SetState(out, State::ball_reset);
-        if (item == "Main Menu") out = SetState(out, State::main_menu);
+        if (item == "Resume") SetState(state, State::mid_game);
+        if (item == "Reset Ball") SetState(state, State::ball_reset);
+        if (item == "Main Menu") SetState(state, State::main_menu);
         if (item == "Toggle Sound")
         {
-          out.activated_menu_item = -1;
-          out.sound_muted = not out.sound_muted;
+          state.activated_menu_item = -1;
+          state.sound_muted = not state.sound_muted;
         }
-        if (item == "Quit") out.running = false;
+        if (item == "Quit") state.running = false;
 
-        if (not out.sound_muted) sound.PlaySound("menu_activated", 0.5f);
+        if (not state.sound_muted) sound.PlaySound("menu_activated", 0.5f);
       }
       break;
 
     case State::new_level:
-      out = SetState(out, State::ball_launch);
+      SetState(state, State::ball_launch);
       break;
 
     case State::ball_launch:
-      if (not out.player.sticky_ball) out = SetState(out, State::mid_game);
+      if (not state.player.sticky_ball) SetState(state, State::mid_game);
       break;
 
     case State::mid_game:
-      if (out.balls.size() == 0) out = SetState(out, State::ball_died);
+      if (state.balls.size() == 0) SetState(state, State::ball_died);
 
-      if (out.blocks.size() == 0) out = SetState(out, State::game_won);
+      if (state.blocks.size() == 0) SetState(state, State::game_won);
 
       break;
 
     case State::ball_reset:
-      out = SetState(out, State::ball_died);
+      SetState(state, State::ball_died);
       break;
 
     case State::ball_died:
-      if (out.state_timer > 1.0f)
+      if (state.state_timer > 1.0f)
       {
-        out = SetState(out, State::ball_launch);
+        SetState(state, State::ball_launch);
       }
       break;
 
     case State::game_won:
-      if (out.state_timer > 1.0f)
+      if (state.state_timer > 1.0f)
       {
-        out = SetState(out, State::main_menu);
+        SetState(state, State::main_menu);
       }
       break;
   }
 
-  TRACE << "State: " << ToString(out.state) << "  ";
-
-  return out;
+  TRACE << "State: " << ToString(state.state) << "  ";
 }
 
 

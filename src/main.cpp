@@ -222,11 +222,11 @@ void main_game()
   Game game{sound};
   GameState gamestate = game.NewGame(width, height);
 
-  gamestate = game.SetState(gamestate, State::main_menu);
+  game.SetState(gamestate, State::main_menu);
 
 #if !NDEBUG
   //If in Debug mode, quick start and mute sound
-  gamestate = game.SetState(gamestate, State::new_level);
+  game.SetState(gamestate, State::new_level);
   gamestate.sound_muted = true;
 #endif
 
@@ -241,10 +241,9 @@ void main_game()
 
     float delta_time = timer.Update();
 
+    game.ProcessIntents(gamestate, input.GetIntentStream());
 
-    gamestate = game.ProcessIntents(gamestate, input.GetIntentStream());
-
-    gamestate = game.ProcessStateGraph(gamestate, delta_time);
+    game.ProcessStateGraph(gamestate, delta_time);
 
     gamestate = game.Simulate(gamestate, delta_time);
 

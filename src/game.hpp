@@ -165,13 +165,12 @@ public:
   bool CalculateBallCollision(GameState &state, const Ball &old_ball, vec2 &normal_vec, std::vector<Block *> &out_hit_blocks) const;
   Ball UpdatePhysics(GameState &state, float dt, Ball &b, std::vector<Collision> &collisions) const;
 
-  GameState ProcessGameInput(const GameState &state, const struct Intent &intent) const;
-  GameState ProcessMenuInput(const GameState &state, const struct Intent &intent) const;
+  void ProcessGameInput(GameState &state, const struct Intent &intent) const;
+  void ProcessMenuInput(GameState &state, const struct Intent &intent) const;
+  void ProcessIntents(GameState &state, const std::vector<struct Intent> &intent_stream) const;
 
-  GameState ProcessIntents(const GameState &state, const std::vector<struct Intent> &intent_stream) const;
-
-  GameState SetState(const GameState &state, State new_state) const;
-  GameState ProcessStateGraph(const GameState &state, float dt) const;
+  void SetState(GameState &state, State new_state) const;
+  void ProcessStateGraph(GameState &state, float dt) const;
 
   void PlayCollisionSound(const Collision &collision, const GameState &state) const;
   std::vector<Particle> CreateCollisionParticles(const Collision &collision) const;

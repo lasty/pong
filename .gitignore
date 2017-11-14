@@ -1,5 +1,6 @@
 Debug/*
 Release/*
 Clang/*
+ClangTidy/*
 others
 .vscode/*
