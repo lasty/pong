@@ -115,7 +115,7 @@ void Input::cursor_position_callback(GLFWwindow* window, double xpos, [[maybe_un
   Input* input = Input::GetThis(window);
 
 
-  Intent i{IntentType::player_input, PlayerInput::mouse_position, {}};
+  Intent i{IntentType::player_input, {PlayerInput::mouse_position}, {}};
   i.position = vec2{float(xpos), float(ypos)};
 
   input->intent_stream.push_back(i);

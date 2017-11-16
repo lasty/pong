@@ -3,9 +3,9 @@
 
 #include <vector>
 
-#include "maths.hpp"
 #include "game.hpp"
 #include "gl.hpp"
+#include "maths.hpp"
 #include "maths_utils.hpp"
 
 
@@ -70,7 +70,7 @@ shape_def VertexData::AddShape(std::vector<float> const &vertexes)
 }
 
 
-void VertexData::AddVertex(const vec2 &position, const vec4 &colour)
+void VertexData::AddVertex(const vec2 &position, const col4 &colour)
 {
   vertex_data.push_back(position.x);
   vertex_data.push_back(position.y);
@@ -143,7 +143,7 @@ void VertexData::DetachAttribute(int attrib_id)
 }
 
 
-std::vector<float> MakeCircle(float radius, int segments, const vec4 &colour)
+std::vector<float> MakeCircle(float radius, int segments, const col4 &colour)
 {
   std::vector<float> out;
 
@@ -167,7 +167,7 @@ std::vector<float> MakeCircle(float radius, int segments, const vec4 &colour)
 }
 
 
-std::vector<float> MakeArrow(float radius, const vec4 &colour)
+std::vector<float> MakeArrow(float radius, const col4 &colour)
 {
   std::vector<float> out;
 
@@ -190,7 +190,7 @@ std::vector<float> MakeArrow(float radius, const vec4 &colour)
 }
 
 
-std::vector<float> MakeRect(float width, float height, vec4 colour)
+std::vector<float> MakeRect(float width, float height, col4 colour)
 {
   std::vector<float> out;
 
@@ -293,7 +293,7 @@ void Renderer::Resize(int width, int height)
 }
 
 
-void Renderer::DynamicLine(vec2 const &v1, vec2 const &v2, const vec4 &colour)
+void Renderer::DynamicLine(vec2 const &v1, vec2 const &v2, const col4 &colour)
 {
   lines_data.AddVertex(v1, colour);
   lines_data.AddVertex(v2, colour);
@@ -316,7 +316,7 @@ void Renderer::DrawVertexData(GLenum draw_type, const VertexData &vertex_data)
 
 void Renderer::SetupShapes()
 {
-  vec4 colour{1.0f, 1.0f, 1.0f, 1.0f};
+  col4 colour{1.0f, 1.0f, 1.0f, 1.0f};
   circle_shape = shapes_data.AddShape(MakeCircle(1, 64, colour));
 
   arrow_shape = shapes_data.AddShape(MakeArrow(20, colour));
@@ -327,7 +327,7 @@ void Renderer::SetupShapes()
 }
 
 
-void AddVertex(std::vector<float> &vec, const vec2 &pos, const vec4 &col)
+void AddVertex(std::vector<float> &vec, const vec2 &pos, const col4 &col)
 {
   vec.push_back(pos.x);
   vec.push_back(pos.y);
@@ -338,7 +338,7 @@ void AddVertex(std::vector<float> &vec, const vec2 &pos, const vec4 &col)
   vec.push_back(col.a);
 }
 
-void AddTri(std::vector<float> &vec, const vec2 &pos1, const vec2 &pos2, const vec2 &pos3, const vec4 &col)
+void AddTri(std::vector<float> &vec, const vec2 &pos1, const vec2 &pos2, const vec2 &pos3, const col4 &col)
 {
   AddVertex(vec, pos1, col);
   AddVertex(vec, pos2, col);
@@ -355,8 +355,8 @@ void Renderer::SetupBlockShapes()
   vec2 wtr{100, 0};
   vec2 wbr{100, 50};
 
-  // vec4 col1{1.0f, 1.0f, 1.0f, 1.0f};
-  vec4 col1{0.7f, 0.7f, 0.7f, 0.7f};
+  // col4 col1{1.0f, 1.0f, 1.0f, 1.0f};
+  col4 col1{0.7f, 0.7f, 0.7f, 0.7f};
 
   std::vector<float> vec;
 
@@ -443,7 +443,7 @@ void Renderer::RenderBall(const Ball &ball, bool draw_outline)
   if (draw_outline)
   {
     float bright = 1.3f;
-    vec4 colour_bright = ball.colour * bright;
+    col4 colour_bright = ball.colour * bright;
     basic_shader.SetColour(colour_bright);
 
     glDrawArrays(GL_LINE_LOOP, circle_shape.offset, circle_shape.count);
@@ -468,7 +468,7 @@ shape_def Renderer::GetRectShape(int w, int h)
   auto shape = rect_shapes[w][h];
   if (shape.offset == 0)
   {
-    vec4 colour{1.0f, 1.0f, 1.0f, 1.0f};
+    col4 colour{1.0f, 1.0f, 1.0f, 1.0f};
     shape = shapes_data.AddShape(MakeRect(w, h, colour));
     shapes_data.UpdateVertexes();
     rect_shapes[w][h] = shape;
@@ -504,7 +504,7 @@ void Renderer::RenderBlock(const Block &block, bool draw_normals)
       {
         vec2 normal = get_normal(p1, p2);
         vec2 center = (p1 + p2) / 2.0f;
-        DynamicLine(center, center + (normal * 4.0f), vec4{1.0f, 1.0f, 1.0f, 1.0f});
+        DynamicLine(center, center + (normal * 4.0f), col4{1.0f, 1.0f, 1.0f, 1.0f});
       }
     }
   }
@@ -548,7 +548,7 @@ void Renderer::RenderMenu(const GameState &state)
   {
     const auto &str = items.at(i);
     vec2 pos = {100.0f, 100.0f + (30.0f * i)};
-    vec4 col{1.0f, 1.0f, 0.7f, 1.0f};
+    col4 col{1.0f, 1.0f, 0.7f, 1.0f};
 
     lines_data.AddShape(text.MakeString(str, pos, col));
 
@@ -637,7 +637,7 @@ void Renderer::RenderGame(const GameState &state)
         {
           vec2 normal = get_normal(line.p1, line.p2);
           vec2 center = (line.p1 + line.p2) / 2.0f;
-          DynamicLine(center, center + (normal * 20.0f), vec4{1.0f, 1.0f, 1.0f, 1.0f});
+          DynamicLine(center, center + (normal * 20.0f), col4{1.0f, 1.0f, 1.0f, 1.0f});
         }
       }
     }
@@ -649,12 +649,12 @@ void Renderer::RenderGame(const GameState &state)
     for (const auto &ball : state.balls)
     {
       vec2 dir = (ball.velocity);
-      DynamicLine(ball.position, ball.position + dir * 1.0f, vec4{1.0f, 1.0f, 1.0f, 1.0f});
+      DynamicLine(ball.position, ball.position + dir * 1.0f, col4{1.0f, 1.0f, 1.0f, 1.0f});
     }
   }
 
   //Draw HUD text
-  vec4 col{1.0f, 1.0f, 0.7f, 1.0f};
+  col4 col{1.0f, 1.0f, 0.7f, 1.0f};
 
   std::ostringstream status; //, status2, status3;
   status << "Balls: " << state.balls.size() << "                       "

@@ -1,9 +1,9 @@
 
 #include "maths.hpp"
 
+#include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <iomanip>
 
 #include "maths_collisions.hpp"
 #include "maths_utils.hpp"
@@ -12,7 +12,8 @@
 //Vectors should be packed for use by opengl functions
 static_assert(sizeof(vec2) == sizeof(float) * 2, "vec2 not packed correctly");
 static_assert(sizeof(vec3) == sizeof(float) * 3, "vec3 not packed correctly");
-static_assert(sizeof(vec4) == sizeof(float) * 4, "vec4 not packed correctly");
+static_assert(sizeof(col4) == sizeof(float) * 4, "col4 not packed correctly");
+//static_assert(sizeof(vec4) == sizeof(float) * 4, "vec4 not packed correctly");
 
 
 std::ostringstream TRACE;
@@ -102,11 +103,19 @@ vec2 &operator/=(vec2 &a, float s)
   return a;
 }
 
-
+/*
 vec4 operator*(vec4 const &a, float s)
 {
   return {a.x * s, a.y * s, a.z * s, a.w * s};
 }
+*/
+
+
+col4 operator*(col4 const &a, float s)
+{
+  return {a.r * s, a.g * s, a.b * s, a.a * s};
+}
+
 
 
 vec2 vec_abs(vec2 const &v)
@@ -252,7 +261,7 @@ const float *gl_data(vec3 const &v)
   return reinterpret_cast<const float *>(&v);
 }
 
-const float *gl_data(vec4 const &v)
+const float *gl_data(col4 const &v)
 {
   return reinterpret_cast<const float *>(&v);
 }
@@ -278,13 +287,13 @@ int RandomInt(int r1, int r2)
 }
 
 
-vec4 RandomRGB()
+col4 RandomRGB()
 {
   return {RandomFloat(), RandomFloat(), RandomFloat(), 1.0f};
 }
 
 
-vec4 RandomRGBA()
+col4 RandomRGBA()
 {
   return {RandomFloat(), RandomFloat(), RandomFloat(), RandomFloat()};
 }

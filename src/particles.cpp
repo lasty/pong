@@ -17,7 +17,7 @@ vec2 RandomVec2(float spread)
 }
 
 
-Particle::Particle(vec2 location, vec2 vel, float size, const vec4 &col, float ttl)
+Particle::Particle(vec2 location, vec2 vel, float size, const col4 &col, float ttl)
 : ttl(ttl)
 , size(size)
 , colour(col)

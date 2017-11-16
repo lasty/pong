@@ -11,7 +11,7 @@ struct Particle
   float ttl = 0;
 
   float size = 0;
-  vec4 colour;
+  col4 colour;
 
   vec2 position;
   float rotation = 0;
@@ -19,7 +19,7 @@ struct Particle
   vec2 velocity;
   float rot_vel = 0;
 
-  Particle(vec2 location, vec2 vel, float size, const vec4 &col, float ttl);
+  Particle(vec2 location, vec2 vel, float size, const col4 &col, float ttl);
 };
 
 

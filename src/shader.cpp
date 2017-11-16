@@ -1,8 +1,8 @@
 
 #include "shader.hpp"
 
-#include <string>
 #include <stdexcept>
+#include <string>
 
 #include "gl.hpp"
 
@@ -93,7 +93,7 @@ void Basic::SetColour(float r, float g, float b, float a)
 }
 
 
-void Basic::SetColour(vec4 const& colour)
+void Basic::SetColour(col4 const& colour)
 {
   glProgramUniform4fv(program_id, uniforms.colour, 1, reinterpret_cast<const GLfloat*>(&colour));
 }

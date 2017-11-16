@@ -28,7 +28,8 @@ vec2 &operator-=(vec2 &a, vec2 const &b);
 vec2 &operator*=(vec2 &a, float s);
 vec2 &operator/=(vec2 &a, float s);
 
-vec4 operator*(vec4 const &a, float s);
+//vec4 operator*(vec4 const &a, float s);
+col4 operator*(col4 const &a, float s);
 
 vec2 vec_abs(vec2 const &v);
 
@@ -49,14 +50,14 @@ float clamp(float min, float max, float val);
 
 const float *gl_data(vec2 const &v);
 const float *gl_data(vec3 const &v);
-const float *gl_data(vec4 const &v);
+const float *gl_data(col4 const &v);
 
 
 float RandomFloat();
 float RandomFloat(const float r1, const float r2);
 int RandomInt(int r1, int r2);
-vec4 RandomRGB();
-vec4 RandomRGBA();
+col4 RandomRGB();
+col4 RandomRGBA();
 
 
 mat4 mat4_identity();

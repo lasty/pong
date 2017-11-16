@@ -21,7 +21,7 @@ struct Ball
   bool alive = true;
   vec2 position;
   vec2 velocity;
-  vec4 colour;
+  col4 colour;
 
   BoundingBox bounds;
 
@@ -63,7 +63,7 @@ struct Block
   bool alive = true;
 
   vec2 position;
-  vec4 colour;
+  col4 colour;
 
   BlockGeometry geometry;
 

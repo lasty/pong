@@ -10,39 +10,28 @@ struct vec2
 
 struct vec3
 {
-  union {
     float x;
-    float r;
-  };
-  union {
     float y;
-    float g;
-  };
-  union {
     float z;
-    float b;
-  };
 };
 
 
+/*
 struct vec4
 {
-  union {
     float x;
-    float r;
-  };
-  union {
     float y;
-    float g;
-  };
-  union {
     float z;
-    float b;
-  };
-  union {
     float w;
+};
+*/
+
+struct col4
+{
+    float r;
+    float g;
+    float b;
     float a;
-  };
 };
 
 

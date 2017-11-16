@@ -4,8 +4,8 @@
 #include <cstdlib>
 #include <ctime>
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 
 #include "input.hpp"
 #include "sound.hpp"
@@ -452,7 +452,7 @@ void Game::ProcessGameInput(GameState &state, const Intent &intent) const
             }
 
             const vec2 particle_vel{0.0f, -1.0f};
-            const vec4 particle_col{1.0f, 1.0f, 0.5f, 1.0f};
+            const col4 particle_col{1.0f, 1.0f, 0.5f, 1.0f};
 
             for (int i = 0; i < 10; i++)
             {
@@ -712,7 +712,7 @@ std::vector<Particle> Game::CreateCollisionParticles(const Collision &collision)
   std::vector<Particle> particles;
 
   // const vec2 particle_vel = collision.in_vel / 50.0f;
-  const vec4 particle_col{1.0f, 1.0f, 0.5f, 1.0f};
+  const col4 particle_col{1.0f, 1.0f, 0.5f, 1.0f};
 
   for (int i = 0; i < 20; i++)
   {

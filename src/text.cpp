@@ -110,7 +110,7 @@ const std::vector<int> &Text::GetGlyph(char ch) const
 
 
 std::vector<float>
-Text::MakeGlyph(char ch, const vec2 &offset, const vec4 &colour) const
+Text::MakeGlyph(char ch, const vec2 &offset, const col4 &colour) const
 {
   std::vector<float> out;
 
@@ -135,7 +135,7 @@ Text::MakeGlyph(char ch, const vec2 &offset, const vec4 &colour) const
 
 
 std::vector<float>
-Text::MakeString(const std::string &str, vec2 offset, const vec4 &colour) const
+Text::MakeString(const std::string &str, vec2 offset, const col4 &colour) const
 {
   std::vector<float> out;
 

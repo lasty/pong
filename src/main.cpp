@@ -1,8 +1,8 @@
 
+#include <ctime>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include <ctime>
 
 
 constexpr int SWAP_INTERVAL{1};
@@ -25,11 +25,11 @@ constexpr int GL_MINOR{5};
 #include <GLFW/glfw3.h>
 
 
-#include "input.hpp"
 #include "game.hpp"
-#include "renderer.hpp"
+#include "input.hpp"
 #include "maths.hpp"
 #include "maths_utils.hpp"
+#include "renderer.hpp"
 #include "sound.hpp"
 
 

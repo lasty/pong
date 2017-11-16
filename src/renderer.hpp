@@ -44,7 +44,7 @@ public:
 
   shape_def AddShape(std::vector<float> const &vertexes);
 
-  void AddVertex(const vec2 &position, const vec4 &colour);
+  void AddVertex(const vec2 &position, const col4 &colour);
 
   void UpdateVertexes();
 
@@ -88,7 +88,7 @@ public:
 
   void Resize(int width, int height);
 
-  void DynamicLine(vec2 const &v1, vec2 const &v2, const vec4 &colour);
+  void DynamicLine(vec2 const &v1, vec2 const &v2, const col4 &colour);
   void DrawVertexData(GLenum draw_type, const VertexData &vertex_data);
 
   void SetupShapes();

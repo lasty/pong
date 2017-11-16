@@ -1,10 +1,10 @@
 
 #include "gl.hpp"
 
-#include <vector>
-#include <map>
 #include <iostream>
+#include <map>
 #include <string.h>
+#include <vector>
 
 
 static_assert(sizeof(GLfloat) == sizeof(float), "opengl float wrong size");
