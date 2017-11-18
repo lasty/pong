@@ -175,7 +175,7 @@ void main_game()
 
   int width = 640;
   int height = 480;
-  GLFWwindow *window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
+  GLFWwindow *window = glfwCreateWindow(width, height, "Hello World", nullptr, nullptr);
 
   if (not window)
   {
@@ -287,6 +287,7 @@ void main_game()
   glfwTerminate();
 }
 
+//#define CATCH_EXCEPTIONS true
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
 {

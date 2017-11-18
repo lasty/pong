@@ -18,6 +18,8 @@
 Ball::Ball(const vec2 &position, const vec2 &velocity)
 : position(position)
 , velocity(velocity)
+, colour {}
+, bounds{}
 {
   colour = RandomRGB();
   UpdateBounds();
@@ -58,7 +60,7 @@ void Block::UpdateBounds()
 Game::Game(Sound &sound)
 : sound(sound)
 {
-  srand(static_cast<unsigned>(time(0)));
+  srand(static_cast<unsigned>(time(nullptr)));
 
   SetupBlockGeometry();
 }
@@ -283,19 +285,20 @@ void Game::OnHitBlock(Ball &ball, Block &block) const
   }
 }
 
+//TODO maybe refactor this into a loop taking a lambda, eg, for_all_blocks(f)
 
 struct BlockIterator
 {
   Block *i1;
   Block *i2;
 
-  BlockIterator(std::vector<Block> &vec)
+  explicit BlockIterator(std::vector<Block> &vec)
   : i1(vec.data())
   , i2(vec.data() + vec.size())
   {
   }
 
-  BlockIterator(Block &single)
+  explicit BlockIterator(Block &single)
   : i1(&single)
   , i2(i1 + 1)
   {
@@ -653,9 +656,9 @@ void Game::ProcessStateGraph(GameState &state, float dt) const
       break;
 
     case State::mid_game:
-      if (state.balls.size() == 0) SetState(state, State::ball_died);
+      if (state.balls.empty()) SetState(state, State::ball_died);
 
-      if (state.blocks.size() == 0) SetState(state, State::game_won);
+      if (state.blocks.empty()) SetState(state, State::game_won);
 
       break;
 
@@ -716,7 +719,7 @@ std::vector<Particle> Game::CreateCollisionParticles(const Collision &collision)
 
   for (int i = 0; i < 20; i++)
   {
-    vec2 particle_vel;
+    vec2 particle_vel {};
     const int r = RandomInt(0, 3);
     if (r == 0)
       particle_vel = collision.in_vel / 150.0f;

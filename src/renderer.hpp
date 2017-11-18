@@ -79,7 +79,7 @@ private:
 
 public:
   Renderer();
-  ~Renderer();
+  // ~Renderer();
 
   void UseProgram(int program_id);
   void UseVAO(int vao_id);

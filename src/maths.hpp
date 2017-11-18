@@ -48,10 +48,6 @@ vec2 get_intersection(vec2 ps1, vec2 pe1, vec2 ps2, vec2 pe2); //Throws
 bool in_range(float beg, float end, float p);
 float clamp(float min, float max, float val);
 
-const float *gl_data(vec2 const &v);
-const float *gl_data(vec3 const &v);
-const float *gl_data(col4 const &v);
-
 
 float RandomFloat();
 float RandomFloat(const float r1, const float r2);

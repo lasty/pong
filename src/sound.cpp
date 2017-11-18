@@ -34,7 +34,7 @@ Mix_Chunk *Sound::LoadWav(const std::string &filename)
 {
   Mix_Chunk *sample = Mix_LoadWAV(filename.c_str());
 
-  if (!sample)
+  if (sample == nullptr)
   {
     throw std::runtime_error("Mix_LoadWAV failed");
   }

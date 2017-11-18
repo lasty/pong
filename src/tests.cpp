@@ -33,7 +33,7 @@ void TestVec2()
     cout << "in = " << in << endl;
 
     //vec2 out = GetGLStyle(gl_data(in));
-    vec2 out = GetGLStyle(gl_data(in));
+    vec2 out = GetGLStyle(reinterpret_cast<const float*>(&in));
 
     cout << "out = " << out << endl;
 

@@ -60,7 +60,7 @@ shape_def VertexData::AddShape(std::vector<float> const &vertexes)
     throw std::runtime_error("Uneven vertexes given to AddShape");
   }
 
-  shape_def s;
+  shape_def s{};
   s.offset = GetOffset();
   s.count = vertexes.size() / floats_per_vertex;
 
@@ -125,7 +125,7 @@ void VertexData::AttachAttribute(int attrib_id, int size, int offset, GLenum typ
   constexpr int buffer_index = 0;
   const int relative_offset = offset * sizeof(float);
   glEnableVertexArrayAttrib(vao_id, attrib_id);
-  glVertexArrayAttribFormat(vao_id, attrib_id, size, type, false, relative_offset);
+  glVertexArrayAttribFormat(vao_id, attrib_id, size, type, GL_FALSE, relative_offset);
   glVertexArrayAttribBinding(vao_id, attrib_id, buffer_index);
 #endif
 }
@@ -228,6 +228,8 @@ std::vector<float> MakeRect(float width, float height, col4 colour)
 
 Renderer::Renderer()
 : shapes_data(GL_STATIC_DRAW)
+, circle_shape{}
+, arrow_shape{}
 , lines_data(GL_DYNAMIC_DRAW)
 , particle_data(GL_DYNAMIC_DRAW)
 {
@@ -240,11 +242,6 @@ Renderer::Renderer()
     std::cout << "Renderer constructor: GL Error: " << err << std::endl;
   }
 #endif
-}
-
-
-Renderer::~Renderer()
-{
 }
 
 
@@ -544,7 +541,7 @@ void Renderer::RenderMenu(const GameState &state)
   UseVAO(shapes_data.GetVAO());
 
 
-  for (int i = 0; i < (int)items.size(); i++)
+  for (int i = 0; i < static_cast<int>(items.size()); i++)
   {
     const auto &str = items.at(i);
     vec2 pos = {100.0f, 100.0f + (30.0f * i)};
@@ -595,7 +592,7 @@ void Renderer::RenderGame(const GameState &state)
     RenderBlock(block, draw_normals);
   }
 
-  TRACE << "Player.block.type = " << (int)(state.player.block.type) << "  ";
+  TRACE << "Player.block.type = " << static_cast<int>(state.player.block.type) << "  ";
 
   RenderBlock(state.player.block, draw_normals);
   if (draw_bounds) RenderBounds(state.player.block.bounds);
@@ -606,7 +603,7 @@ void Renderer::RenderGame(const GameState &state)
   }
 
 
-  if (state.particles.size())
+  if (not state.particles.empty())
   {
     particle_data.Clear();
     particle_data.AddShape(MakeParticleVertexes(state.particles));

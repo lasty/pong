@@ -65,9 +65,9 @@ void Input::SetupBinds()
 
 Input* Input::GetThis(GLFWwindow* window)
 {
-  Input* input = static_cast<Input*>(glfwGetWindowUserPointer(window));
+  auto input = static_cast<Input*>(glfwGetWindowUserPointer(window));
 
-  if (not input) throw std::runtime_error("Key callback user pointer not set");
+  if (input == nullptr) throw std::runtime_error("Key callback user pointer not set");
 
   return input;
 }

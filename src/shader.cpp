@@ -57,6 +57,22 @@ Basic::~Basic()
 }
 
 
+const float *gl_data(vec2 const &v)
+{
+  return reinterpret_cast<const float *>(&v);
+}
+
+// const float *gl_data(vec3 const &v)
+// {
+//   return reinterpret_cast<const float *>(&v);
+// }
+
+const float *gl_data(col4 const &v)
+{
+  return reinterpret_cast<const float *>(&v);
+}
+
+
 void Basic::SetResolution(int width, int height)
 {
   glProgramUniform2i(program_id, uniforms.screen_resolution, width, height);
@@ -95,7 +111,7 @@ void Basic::SetColour(float r, float g, float b, float a)
 
 void Basic::SetColour(col4 const& colour)
 {
-  glProgramUniform4fv(program_id, uniforms.colour, 1, reinterpret_cast<const GLfloat*>(&colour));
+  glProgramUniform4fv(program_id, uniforms.colour, 1, gl_data(colour));
 }
 
 

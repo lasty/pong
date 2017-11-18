@@ -162,11 +162,11 @@ vec2 normalize(vec2 const &v)
 }
 
 
-vec2 reflect(vec2 const &I, vec2 const &N)
+vec2 reflect(vec2 const &incident, vec2 const &normal)
 {
   //const vec2 N = normalize(normal);
 
-  return I - N * dot(N, I) * 2.0f;
+  return incident - normal * dot(normal, incident) * 2.0f;
 }
 
 
@@ -248,22 +248,6 @@ bool in_range(float beg, float end, float p)
 float clamp(float min, float max, float val)
 {
   return std::min(std::max(min, val), max);
-}
-
-
-const float *gl_data(vec2 const &v)
-{
-  return reinterpret_cast<const float *>(&v);
-}
-
-const float *gl_data(vec3 const &v)
-{
-  return reinterpret_cast<const float *>(&v);
-}
-
-const float *gl_data(col4 const &v)
-{
-  return reinterpret_cast<const float *>(&v);
 }
 
 

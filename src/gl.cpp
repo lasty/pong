@@ -1,9 +1,9 @@
 
 #include "gl.hpp"
 
+#include <cstring>
 #include <iostream>
 #include <map>
-#include <string.h>
 #include <vector>
 
 
@@ -81,14 +81,14 @@ void Debuging(bool enable)
 {
   if (enable)
   {
-    glDebugMessageCallback(opengl_debug_callback, 0);
+    glDebugMessageCallback(opengl_debug_callback, nullptr);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glEnable(GL_DEBUG_OUTPUT);
   }
   else
   {
     glDisable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(nullptr, 0);
+    glDebugMessageCallback(nullptr, nullptr);
   }
 }
 
@@ -122,7 +122,7 @@ std::string GetShaderLog(int shader_id)
   int log_length = GetShaderi(shader_id, GL_INFO_LOG_LENGTH);
   if (log_length == 0) return "";
 
-  std::vector<GLchar> log_data((size_t)log_length);
+  std::vector<GLchar> log_data(log_length);
   glGetShaderInfoLog(shader_id, log_length, nullptr, log_data.data());
 
   std::string log_str{log_data.begin(), log_data.begin() + log_length};
@@ -136,7 +136,7 @@ std::string GetProgramLog(int program_id)
   int log_length = GetProgrami(program_id, GL_INFO_LOG_LENGTH);
   if (log_length == 0) return "";
 
-  std::vector<GLchar> log_data((size_t)log_length);
+  std::vector<GLchar> log_data(log_length);
   glGetProgramInfoLog(program_id, log_length, nullptr, log_data.data());
 
   std::string log_str{log_data.begin(), log_data.begin() + log_length};
@@ -147,10 +147,10 @@ std::string GetProgramLog(int program_id)
 
 int CreateShader(int shader_type, const std::string &shader_source)
 {
-  const GLchar *source_ptrs[1]{shader_source.c_str()};
+  std::array<const GLchar*,1> source_ptrs {{shader_source.c_str()}};
 
   int shader_id = glCreateShader(shader_type);
-  glShaderSource(shader_id, 1, source_ptrs, nullptr);
+  glShaderSource(shader_id, 1, source_ptrs.data(), nullptr);
   glCompileShader(shader_id);
 
   int status = GetShaderi(shader_id, GL_COMPILE_STATUS);

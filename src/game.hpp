@@ -162,8 +162,8 @@ public:
 
   void OnHitBlock(Ball &ball, Block &block) const;
 
-  bool CalculateBallCollision(GameState &state, const Ball &old_ball, vec2 &normal_vec, std::vector<Block *> &out_hit_blocks) const;
-  Ball UpdatePhysics(GameState &state, float dt, Ball &b, std::vector<Collision> &collisions) const;
+  bool CalculateBallCollision(GameState &state, const Ball &old_ball, vec2 &out_normal_vec, std::vector<Block *> &out_hit_blocks) const;
+  Ball UpdatePhysics(GameState &state, float dt, Ball &old_ball, std::vector<Collision> &collisions) const;
 
   void ProcessGameInput(GameState &state, const struct Intent &intent) const;
   void ProcessMenuInput(GameState &state, const struct Intent &intent) const;
