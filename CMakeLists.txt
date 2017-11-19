@@ -33,7 +33,8 @@ add_library(core SHARED
   src/renderer.cpp
   src/shader.cpp
   src/sound.cpp
-  src/text.cpp)
+  src/text.cpp
+  src/to_string.cpp)
 
 add_executable(pong WIN32 src/main.cpp)
 add_executable(test_pong EXCLUDE_FROM_ALL src/tests.cpp)

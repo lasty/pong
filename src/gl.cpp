@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 
+#include "to_string.hpp"
 
 static_assert(sizeof(GLfloat) == sizeof(float), "opengl float wrong size");
 static_assert(sizeof(GLint) == sizeof(int), "opengl int wrong size");
@@ -16,36 +17,6 @@ namespace GL {
 
 
 //Debugging stuff
-
-const std::map<GLenum, std::string> enum_to_string{
-  {GL_DEBUG_SEVERITY_HIGH, "SEVERITY_HIGH"},
-  {GL_DEBUG_SEVERITY_MEDIUM, "SEVERITY_MEDIUM"},
-  {GL_DEBUG_SEVERITY_LOW, "SEVERITY_LOW"},
-  {GL_DEBUG_SEVERITY_NOTIFICATION, "NOTIFICATION"},
-  {GL_DEBUG_TYPE_ERROR, "ERROR"},
-  {GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, "DEPRECATED_BEHAVIOR"},
-  {GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR, "UNDEFINED_BEHAVIOR"},
-  {GL_DEBUG_TYPE_PORTABILITY, "PORTABILITY"},
-  {GL_DEBUG_TYPE_PERFORMANCE, "PERFORMANCE"},
-  {GL_DEBUG_TYPE_MARKER, "MARKER"},
-  {GL_DEBUG_TYPE_PUSH_GROUP, "PUSH_GROUP"},
-  {GL_DEBUG_TYPE_POP_GROUP, "POP_GROUP"},
-  {GL_DEBUG_TYPE_OTHER, "OTHER"},
-  {GL_DEBUG_SOURCE_API, "SOURCE_API"},
-  {GL_DEBUG_SOURCE_WINDOW_SYSTEM, "SOURCE_WINDOW_SYSTEM"},
-  {GL_DEBUG_SOURCE_SHADER_COMPILER, "SHADER_COMPILER"},
-  {GL_DEBUG_SOURCE_THIRD_PARTY, "SOURCE_THIRD_PARTY"},
-  {GL_DEBUG_SOURCE_APPLICATION, "SOURCE_APPLICATION"},
-  {GL_DEBUG_SOURCE_OTHER, "SOURCE_OTHER"}};
-
-
-template<typename MAP>
-typename MAP::mapped_type const get_map(MAP const &map, typename MAP::key_type const &key, typename MAP::mapped_type const &default_value)
-{
-  auto const &it = map.find(key);
-  if (it == map.end()) return default_value;
-  return it->second;
-}
 
 
 //typedef void (APIENTRY *DEBUGPROC)
@@ -62,9 +33,9 @@ void opengl_debug_callback(
   if (strstr(message, "Buffer detailed") != message)
   {
     std::cout << "[OPENGL"
-              << " " << get_map(enum_to_string, type, "?")
-              << " " << get_map(enum_to_string, severity, "?")
-              //<< " " << get_map(enum_to_string, source, "?")
+              << " " << ToString(type)
+              << " " << ToString(severity)
+              //<< " " << ToString(source)
               << "]  " << message << std::endl;
   }
 }

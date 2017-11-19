@@ -6,7 +6,6 @@
 #include <sstream>
 
 #include "maths_collisions.hpp"
-#include "maths_utils.hpp"
 
 
 //Vectors should be packed for use by opengl functions
@@ -15,8 +14,6 @@ static_assert(sizeof(vec3) == sizeof(float) * 3, "vec3 not packed correctly");
 static_assert(sizeof(col4) == sizeof(float) * 4, "col4 not packed correctly");
 //static_assert(sizeof(vec4) == sizeof(float) * 4, "vec4 not packed correctly");
 
-
-std::ostringstream TRACE;
 
 
 float degrees(float radians)

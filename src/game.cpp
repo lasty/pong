@@ -12,7 +12,8 @@
 
 #include "maths.hpp"
 #include "maths_collisions.hpp"
-#include "maths_utils.hpp"
+#include "to_string.hpp"
+
 
 
 Ball::Ball(const vec2 &position, const vec2 &velocity)
@@ -528,30 +529,6 @@ void Game::ProcessIntents(GameState &state,
   }
 }
 
-
-std::string ToString(const State &state)
-{
-  switch (state)
-  {
-    case State::new_level:
-      return "new_level";
-    case State::ball_launch:
-      return "ball_launch";
-    case State::mid_game:
-      return "mid_game";
-    case State::ball_reset:
-      return "ball_reset";
-    case State::ball_died:
-      return "ball_died";
-    case State::game_won:
-      return "game_won";
-    case State::main_menu:
-      return "main_menu";
-    case State::pause_menu:
-      return "pause_menu";
-  }
-  return "[ERROR:State not found]";
-}
 
 
 void Game::SetState(GameState &state, State new_state) const

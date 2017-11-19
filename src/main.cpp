@@ -28,9 +28,9 @@ constexpr int GL_MINOR{5};
 #include "game.hpp"
 #include "input.hpp"
 #include "maths.hpp"
-#include "maths_utils.hpp"
 #include "renderer.hpp"
 #include "sound.hpp"
+#include "to_string.hpp"
 
 
 void glfw_error_callback([[maybe_unused]] int error, const char *description)

@@ -4,10 +4,10 @@ using std::cout;
 using std::endl;
 
 #include "maths.hpp"
-#include "maths_utils.hpp"
+#include "to_string.hpp"
 
 
-std::ostringstream TRACE;
+//std::ostringstream TRACE;
 
 
 vec2 GetGLStyle(const float *data)
